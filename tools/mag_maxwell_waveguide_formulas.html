@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magnetostatics · Maxwell's Equations · Waveguide — Formula Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {
+    delimiters: [
+      {left:'$$', right:'$$', display:true},
+      {left:'$', right:'$', display:false}
+    ]
+  });"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0D1B2A;
+    --card:    #1A2D40;
+    --border:  #203548;
+    --cyan:    #00C9FF;
+    --amber:   #FFB347;
+    --green:   #4ECCA3;
+    --red:     #FF6B6B;
+    --violet:  #B388FF;
+    --rose:    #FF8FAB;
+    --text:    #E8F1F8;
+    --muted:   #7A9BB5;
+    --mono:    'JetBrains Mono', monospace;
+    --sans:    'Inter', sans-serif;
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #0a1520 0%, #132131 55%, #12203a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 24px 24px;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 80% at 50% 0%, rgba(179,136,255,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .chapter-tag {
+    display: inline-block; font-family: var(--mono); font-size: 11px;
+    color: var(--violet); background: rgba(179,136,255,0.1);
+    border: 1px solid rgba(179,136,255,0.3); border-radius: 4px;
+    padding: 2px 10px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px;
+  }
+  h1 { font-size: clamp(20px, 4vw, 34px); font-weight: 700; color: #fff; letter-spacing: -0.5px; margin-bottom: 6px; }
+  h1 .t1 { color: var(--violet); }
+  h1 .t2 { color: var(--amber); }
+  h1 .t3 { color: var(--cyan); }
+  .subtitle { font-size: 13px; color: var(--muted); }
+  .header-meta { margin-top: 16px; display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+  .meta-pill { font-family: var(--mono); font-size: 11px; color: var(--muted); background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 20px; padding: 3px 12px; }
+
+  /* ── Chapter tabs ── */
+  .chapter-nav {
+    display: flex; gap: 0; border-bottom: 1px solid var(--border);
+    background: #0f1f30; position: sticky; top: 0; z-index: 10;
+  }
+  .ch-tab {
+    flex: 1; padding: 10px 8px; text-align: center; cursor: pointer;
+    font-size: 12px; font-weight: 600; color: var(--muted);
+    border-right: 1px solid var(--border); transition: all 0.2s;
+    user-select: none;
+  }
+  .ch-tab:last-child { border-right: none; }
+  .ch-tab:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+  .ch-tab.active-mag  { color: var(--violet); border-bottom: 2px solid var(--violet); background: rgba(179,136,255,0.05); }
+  .ch-tab.active-max  { color: var(--amber);  border-bottom: 2px solid var(--amber);  background: rgba(255,179,71,0.05); }
+  .ch-tab.active-wave { color: var(--cyan);   border-bottom: 2px solid var(--cyan);   background: rgba(0,201,255,0.05); }
+
+  /* ── Layout ── */
+  main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 60px; }
+  .chapter-block { display: none; }
+  .chapter-block.active { display: block; }
+
+  .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; align-items: start; }
+  .full-width { grid-column: 1 / -1; }
+
+  /* ── Cards ── */
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s; margin-bottom: 0; }
+  .section:hover { border-color: rgba(255,255,255,0.1); }
+
+  .section-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; cursor: pointer; user-select: none;
+    border-left: 3px solid var(--violet);
+    background: rgba(179,136,255,0.04);
+  }
+  .section-header.amber  { border-left-color: var(--amber);  background: rgba(255,179,71,0.04); }
+  .section-header.cyan   { border-left-color: var(--cyan);   background: rgba(0,201,255,0.04); }
+  .section-header.green  { border-left-color: var(--green);  background: rgba(78,204,163,0.04); }
+  .section-header.red    { border-left-color: var(--red);    background: rgba(255,107,107,0.04); }
+  .section-header.rose   { border-left-color: var(--rose);   background: rgba(255,143,171,0.04); }
+
+  .section-num { font-family: var(--mono); font-size: 10px; color: var(--muted); min-width: 24px; }
+  .section-title { font-size: 13px; font-weight: 600; color: #fff; flex: 1; }
+  .section-subtitle { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .toggle-icon { font-size: 12px; color: var(--muted); transition: transform 0.25s; }
+  .section.collapsed .toggle-icon { transform: rotate(-90deg); }
+  .section.collapsed .section-body { display: none; }
+  .section-body { padding: 4px 0 8px; }
+
+  /* ── Formula rows ── */
+  .formula-row {
+    display: grid; grid-template-columns: 190px 1fr;
+    padding: 7px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); align-items: start;
+  }
+  .formula-row:last-child { border-bottom: none; }
+  .formula-row:hover { background: rgba(255,255,255,0.025); }
+  .formula-label { font-size: 12px; color: var(--muted); padding-right: 12px; padding-top: 2px; }
+  .formula-label strong { display: block; color: var(--text); font-size: 12px; font-weight: 500; }
+  .formula-label .sym { font-family: var(--mono); font-size: 11px; color: var(--violet); }
+  .formula-label .sym.amber  { color: var(--amber); }
+  .formula-label .sym.cyan   { color: var(--cyan); }
+  .formula-label .sym.green  { color: var(--green); }
+  .formula-label .sym.red    { color: var(--red); }
+  .formula-label .sym.rose   { color: var(--rose); }
+  .formula-math { font-size: 13.5px; overflow-x: auto; padding-bottom: 2px; }
+  .formula-note { grid-column: 2; font-size: 11px; color: var(--muted); font-style: italic; padding-top: 2px; }
+
+  .divider-label {
+    font-family: var(--mono); font-size: 10px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 8px 16px 4px; border-top: 1px solid var(--border); margin-top: 4px;
+  }
+
+  /* ── Maxwell table ── */
+  .maxwell-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .maxwell-table th {
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--muted); font-weight: 500;
+    padding: 8px 14px; border-bottom: 1px solid var(--border); text-align: left;
+    background: rgba(255,255,255,0.02);
+  }
+  .maxwell-table td {
+    padding: 9px 14px; border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  .maxwell-table tr:last-child td { border-bottom: none; }
+  .maxwell-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .maxwell-table .eq-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; }
+  .maxwell-table .eq-name small { display: block; font-size: 10px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+  .pill {
+    display: inline-block; font-family: var(--mono); font-size: 10px;
+    padding: 1px 8px; border-radius: 3px; border: 1px solid; margin-bottom: 4px;
+  }
+  .pill.diff { color: var(--amber); border-color: rgba(255,179,71,0.4); background: rgba(255,179,71,0.08); }
+  .pill.intg { color: var(--cyan);  border-color: rgba(0,201,255,0.4);  background: rgba(0,201,255,0.08); }
+
+  /* ── Relation / Tip boxes ── */
+  .relation-box {
+    margin: 6px 16px; padding: 8px 12px;
+    border-radius: 6px; font-size: 12px; color: var(--muted);
+    background: rgba(179,136,255,0.06); border: 1px solid rgba(179,136,255,0.2);
+  }
+  .relation-box strong { color: var(--violet); }
+  .relation-box.amber { background: rgba(255,179,71,0.06); border-color: rgba(255,179,71,0.2); }
+  .relation-box.amber strong { color: var(--amber); }
+  .relation-box.cyan { background: rgba(0,201,255,0.06); border-color: rgba(0,201,255,0.2); }
+  .relation-box.cyan strong { color: var(--cyan); }
+  .relation-box.green { background: rgba(78,204,163,0.06); border-color: rgba(78,204,163,0.2); }
+  .relation-box.green strong { color: var(--green); }
+
+  .tip-box {
+    margin: 8px 16px; padding: 10px 14px;
+    background: rgba(0,201,255,0.05); border: 1px solid rgba(0,201,255,0.15);
+    border-radius: 6px; font-size: 12px; color: var(--muted);
+  }
+  .tip-title { font-family: var(--mono); font-size: 10px; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+  .tip-box p { margin-bottom: 4px; }
+  .tip-box p:last-child { margin-bottom: 0; }
+
+  /* ── Waveguide mode grid ── */
+  .mode-grid { display: grid; grid-template-columns: 1fr 1fr; }
+  .mode-cell { padding: 10px 16px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .mode-cell:nth-child(2n) { border-right: none; }
+  .mode-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .mode-label { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+
+  .katex { font-size: 1em !important; }
+  .katex-display { margin: 4px 0 !important; }
+
+  @media (max-width: 700px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .full-width { grid-column: 1; }
+    .formula-row { grid-template-columns: 140px 1fr; }
+    .mode-grid { grid-template-columns: 1fr; }
+    .mode-cell { border-right: none; }
+    .maxwell-table { font-size: 12px; }
+    .maxwell-table td, .maxwell-table th { padding: 7px 10px; }
+    .ch-tab { font-size: 11px; padding: 9px 4px; }
+  }
+
+  @media print {
+    body { background: #fff; color: #000; }
+    header { background: #fff; border-bottom: 2px solid #000; }
+    .chapter-nav { display: none; }
+    .chapter-block { display: block !important; margin-bottom: 40px; }
+    .section { border: 1px solid #ccc; page-break-inside: avoid; }
+    .section-header { background: #f5f5f5 !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="chapter-tag">EEE · Electromagnetic Fields</div>
+  <h1>
+    <span class="t1">Magnetostatics</span> ·
+    <span class="t2">Maxwell's Equations</span> ·
+    <span class="t3">Waveguide</span>
+  </h1>
+  <p class="subtitle">Complete Formula Reference — সকল সূত্র + Nomenclature</p>
+  <div class="header-meta">
+    <span class="meta-pill">3 Chapters</span>
+    <span class="meta-pill">Biot-Savart · Ampere · Faraday</span>
+    <span class="meta-pill">TE / TM Modes · Cut-off Frequency</span>
+  </div>
+</header>
+
+<!-- Chapter Navigation -->
+<div class="chapter-nav">
+  <div class="ch-tab active-mag" onclick="showChapter('mag', this)">🧲 Magnetostatics</div>
+  <div class="ch-tab" onclick="showChapter('max', this)">⚡ Maxwell's Equations</div>
+  <div class="ch-tab" onclick="showChapter('wave', this)">🌊 Waveguide</div>
+</div>
+
+<main>
+
+<!-- ════════════════════════════════════════
+     CHAPTER 1 — MAGNETOSTATICS
+     ════════════════════════════════════════ -->
+<div id="ch-mag" class="chapter-block active">
+<div class="grid2">
+
+<!-- Biot-Savart -->
+<div class="section full-width" id="m1">
+  <div class="section-header" onclick="toggle('m1')">
+    <span class="section-num">1.1</span>
+    <div>
+      <div class="section-title">Biot-Savart's Law — বায়োট-স্যাভার্ট সূত্র</div>
+      <div class="section-subtitle">Current element থেকে magnetic field বের করার মূল সূত্র</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>General Form</strong>
+        <span class="sym">$d\bar{H}$</span>
+      </div>
+      <div class="formula-math">$$d\bar{H} = \frac{I\,d\bar{l} \times \hat{a}_R}{4\pi R^2} = \frac{I\,d\bar{l} \times \bar{R}}{4\pi R^3} \quad \text{A/m}$$</div>
+    </div>
+    <div class="formula-note">$\bar{R} = \bar{r} - \bar{r}'$ (field point − source point), $R = |\bar{R}|$, $\hat{a}_R = \bar{R}/R$</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Total $\bar{H}$ (Line)</strong>
+        <span class="sym">Integration</span>
+      </div>
+      <div class="formula-math">$$\bar{H} = \int_L \frac{I\,d\bar{l} \times \hat{a}_R}{4\pi R^2} \quad \text{A/m}$$</div>
+    </div>
+
+    <div class="divider-label">বিশেষ geometry — shortcut</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Finite Straight Wire</strong>
+        <span class="sym">angles $\alpha_1, \alpha_2$</span>
+      </div>
+      <div class="formula-math">$$\bar{H} = \frac{I}{4\pi\rho}(\cos\alpha_2 - \cos\alpha_1)\,\hat{a}_\phi \quad \text{A/m}$$</div>
+    </div>
+    <div class="formula-note">$\rho$ = wire থেকে লম্ব দূরত্ব। $\alpha_1, \alpha_2$ = wire-এর দুই প্রান্তের কোণ (তার বরাবর অক্ষ থেকে)।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Infinite Straight Wire</strong>
+        <span class="sym">$\alpha_1{=}180°,\,\alpha_2{=}0°$</span>
+      </div>
+      <div class="formula-math">$$\bar{H} = \frac{I}{2\pi\rho}\,\hat{a}_\phi \quad \text{A/m}$$</div>
+    </div>
+    <div class="formula-note">সবচেয়ে বেশি ব্যবহৃত। $\cos 0° - \cos 180° = 1-(-1) = 2$ থেকে আসে।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Circular Loop (Centre)</strong>
+        <span class="sym">radius $a$</span>
+      </div>
+      <div class="formula-math">$$\bar{H} = \frac{I}{2a}\,\hat{a}_z \quad \text{A/m}$$</div>
+    </div>
+    <div class="formula-note">Loop-এর কেন্দ্রে। Axis বরাবর দূরত্ব $z$ হলে: $\bar{H} = \dfrac{Ia^2}{2(a^2+z^2)^{3/2}}\hat{a}_z$</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Solenoid ($N$ turns, len $L$)</strong>
+        <span class="sym">Inside</span>
+      </div>
+      <div class="formula-math">$$\bar{H} = \frac{NI}{L}\,\hat{a}_z \quad \text{A/m}$$</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Ampere's Law -->
+<div class="section" id="m2">
+  <div class="section-header amber" onclick="toggle('m2')">
+    <span class="section-num">1.2</span>
+    <div>
+      <div class="section-title">Ampere's Circuital Law</div>
+      <div class="section-subtitle">Symmetry থাকলে সবচেয়ে দ্রুত $\bar{H}$ পাওয়ার পদ্ধতি</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Integral Form</strong>
+        <span class="sym amber">$\oint \bar{H}\cdot d\bar{l}$</span>
+      </div>
+      <div class="formula-math">$$\oint_L \bar{H}\cdot d\bar{l} = I_{enc} \quad \text{A}$$</div>
+    </div>
+    <div class="formula-note">Amperian loop বেছে নাও যেন $\bar{H}$ constant ও tangential থাকে।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Point / Differential Form</strong>
+        <span class="sym amber">Maxwell 4th (static)</span>
+      </div>
+      <div class="formula-math">$$\nabla\times\bar{H} = \bar{J}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Toroid ($N$ turns)</strong>
+        <span class="sym amber">radius $\rho$</span>
+      </div>
+      <div class="formula-math">$$\bar{H} = \frac{NI}{2\pi\rho}\,\hat{a}_\phi \quad \text{A/m (inside)}$$</div>
+    </div>
+    <div class="formula-note">Toroid-এর বাইরে $\bar{H} = 0$। $N$ = মোট পাকের সংখ্যা।</div>
+
+  </div>
+</div>
+
+<!-- Flux Density & Potential -->
+<div class="section" id="m3">
+  <div class="section-header green" onclick="toggle('m3')">
+    <span class="section-num">1.3</span>
+    <div>
+      <div class="section-title">Magnetic Flux Density ও Vector Potential</div>
+      <div class="section-subtitle">$\bar{B}$, $\Psi$, এবং $\bar{A}$</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Flux Density</strong>
+        <span class="sym green">$\bar{B}$ (Tesla)</span>
+      </div>
+      <div class="formula-math">$$\bar{B} = \mu\bar{H} = \mu_0\mu_r\bar{H} \quad \text{T}$$</div>
+    </div>
+    <div class="formula-note">$\mu_0 = 4\pi\times10^{-7}$ H/m। Free space-এ $\mu_r = 1$।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Magnetic Flux</strong>
+        <span class="sym green">$\Psi$ (Weber)</span>
+      </div>
+      <div class="formula-math">$$\Psi = \int_S \bar{B}\cdot d\bar{S} \quad \text{Wb}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Gauss's Law (Magnetic)</strong>
+        <span class="sym green">No monopole</span>
+      </div>
+      <div class="formula-math">$$\oint_S \bar{B}\cdot d\bar{S} = 0 \quad \Longleftrightarrow \quad \nabla\cdot\bar{B} = 0$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Vector Potential</strong>
+        <span class="sym green">$\bar{A}$ (Wb/m)</span>
+      </div>
+      <div class="formula-math">$$\bar{B} = \nabla\times\bar{A}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>$\bar{A}$ for Line Current</strong>
+      </div>
+      <div class="formula-math">$$\bar{A} = \frac{\mu I}{4\pi}\oint\frac{d\bar{l}}{R} \quad \text{Wb/m}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Poisson's Eq. (Magnetic)</strong>
+        <span class="sym green">$\nabla^2\bar{A}$</span>
+      </div>
+      <div class="formula-math">$$\nabla^2\bar{A} = -\mu\bar{J}$$</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Force & Inductance -->
+<div class="section" id="m4">
+  <div class="section-header red" onclick="toggle('m4')">
+    <span class="section-num">1.4</span>
+    <div>
+      <div class="section-title">Magnetic Force ও Inductance</div>
+      <div class="section-subtitle">Lorentz Force, বল, এবং $L$</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Lorentz Force</strong>
+        <span class="sym red">$\bar{F}$ (Newton)</span>
+      </div>
+      <div class="formula-math">$$\bar{F} = q(\bar{E} + \bar{u}\times\bar{B}) \quad \text{N}$$</div>
+    </div>
+    <div class="formula-note">$\bar{u}$ = চার্জ $q$-এর বেগ। Pure magnetic: $\bar{F} = q(\bar{u}\times\bar{B})$</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Force on Current Element</strong>
+        <span class="sym red">$d\bar{F}$</span>
+      </div>
+      <div class="formula-math">$$d\bar{F} = I\,d\bar{l}\times\bar{B} \quad \text{N}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Force between Two Wires</strong>
+        <span class="sym red">per unit length</span>
+      </div>
+      <div class="formula-math">$$\frac{F}{L} = \frac{\mu_0 I_1 I_2}{2\pi d} \quad \text{N/m}$$</div>
+    </div>
+    <div class="formula-note">$d$ = দুই parallel তারের মধ্যে দূরত্ব। Same direction current → attractive।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Torque on Loop</strong>
+        <span class="sym red">$\bar{T}$</span>
+      </div>
+      <div class="formula-math">$$\bar{T} = \bar{m}\times\bar{B} = NIA\hat{a}_n\times\bar{B} \quad \text{N·m}$$</div>
+    </div>
+    <div class="formula-note">$\bar{m} = NIA\hat{a}_n$ = magnetic dipole moment, $A$ = loop area</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Inductance</strong>
+        <span class="sym red">$L$ (Henry)</span>
+      </div>
+      <div class="formula-math">$$L = \frac{\lambda}{I} = \frac{N\Psi}{I} \quad \text{H}$$</div>
+    </div>
+    <div class="formula-note">$\lambda = N\Psi$ = flux linkage। Self-inductance হলে same coil-এর $\Psi$ ও $I$।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Mutual Inductance</strong>
+        <span class="sym red">$M$</span>
+      </div>
+      <div class="formula-math">$$M = \frac{N_2\Psi_{12}}{I_1} = \frac{N_1\Psi_{21}}{I_2} \quad \text{H}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Energy in Magnetic Field</strong>
+        <span class="sym red">$W_m$</span>
+      </div>
+      <div class="formula-math">$$W_m = \frac{1}{2}LI^2 = \frac{1}{2}\int_v \bar{B}\cdot\bar{H}\,dv \quad \text{J}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Magnetic Energy Density</strong>
+        <span class="sym red">$w_m$ (J/m³)</span>
+      </div>
+      <div class="formula-math">$$w_m = \frac{1}{2}\mu|\bar{H}|^2 = \frac{|\bar{B}|^2}{2\mu} \quad \text{J/m}^3$$</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Boundary Conditions Magneto -->
+<div class="section full-width" id="m5">
+  <div class="section-header cyan" onclick="toggle('m5')">
+    <span class="section-num">1.5</span>
+    <div>
+      <div class="section-title">Magnetostatic Boundary Conditions</div>
+      <div class="section-subtitle">দুই মিডিয়ামের সীমানায় $\bar{B}$ ও $\bar{H}$</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Normal $\bar{B}$ (লম্ব)</strong>
+        <span class="sym cyan">Continuous</span>
+      </div>
+      <div class="formula-math">$$B_{n1} = B_{n2} \quad \Rightarrow \quad \mu_1 H_{n1} = \mu_2 H_{n2}$$</div>
+    </div>
+    <div class="formula-note">$\bar{B}$-এর লম্ব অংশ সীমানায় সর্বদা continuous থাকে।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Tangential $\bar{H}$ (স্পর্শক)</strong>
+        <span class="sym cyan">Discontinuous</span>
+      </div>
+      <div class="formula-math">$$H_{t1} - H_{t2} = K \quad \text{(A/m, surface current density)}$$</div>
+    </div>
+    <div class="formula-note">Surface current $K = 0$ হলে: $H_{t1} = H_{t2}$</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Refraction Law</strong>
+        <span class="sym cyan">$\theta_1, \theta_2$</span>
+      </div>
+      <div class="formula-math">$$\frac{\tan\theta_1}{\tan\theta_2} = \frac{\mu_1}{\mu_2}$$</div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- end grid2 -->
+</div><!-- end ch-mag -->
+
+
+<!-- ════════════════════════════════════════
+     CHAPTER 2 — MAXWELL'S EQUATIONS
+     ════════════════════════════════════════ -->
+<div id="ch-max" class="chapter-block">
+<div class="grid2">
+
+<!-- Maxwell Table -->
+<div class="section full-width" id="mx1">
+  <div class="section-header amber" onclick="toggle('mx1')">
+    <span class="section-num">2.1</span>
+    <div>
+      <div class="section-title">Maxwell's 4 Equations — একসাথে</div>
+      <div class="section-subtitle">Time-varying field-এর জন্য সম্পূর্ণ রূপ (উভয় form)</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+    <table class="maxwell-table">
+      <thead>
+        <tr>
+          <th style="width:180px">সূত্র</th>
+          <th>Differential Form</th>
+          <th>Integral Form</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="eq-name">Gauss's Law<small>for Electricity</small></span></td>
+          <td><span class="pill diff">Diff</span><br>$\nabla\cdot\bar{D} = \rho_v$</td>
+          <td><span class="pill intg">Intg</span><br>$\displaystyle\oint_S \bar{D}\cdot d\bar{S} = Q_{enc}$</td>
+        </tr>
+        <tr>
+          <td><span class="eq-name">Gauss's Law<small>for Magnetism</small></span></td>
+          <td><span class="pill diff">Diff</span><br>$\nabla\cdot\bar{B} = 0$</td>
+          <td><span class="pill intg">Intg</span><br>$\displaystyle\oint_S \bar{B}\cdot d\bar{S} = 0$</td>
+        </tr>
+        <tr>
+          <td><span class="eq-name">Faraday's Law<small>Induction</small></span></td>
+          <td><span class="pill diff">Diff</span><br>$\nabla\times\bar{E} = -\dfrac{\partial\bar{B}}{\partial t}$</td>
+          <td><span class="pill intg">Intg</span><br>$\displaystyle\oint_L \bar{E}\cdot d\bar{l} = -\int_S\frac{\partial\bar{B}}{\partial t}\cdot d\bar{S}$</td>
+        </tr>
+        <tr>
+          <td><span class="eq-name">Ampere-Maxwell<small>Modified Ampere's Law</small></span></td>
+          <td><span class="pill diff">Diff</span><br>$\nabla\times\bar{H} = \bar{J} + \dfrac{\partial\bar{D}}{\partial t}$</td>
+          <td><span class="pill intg">Intg</span><br>$\displaystyle\oint_L \bar{H}\cdot d\bar{l} = \int_S\!\left(\bar{J}+\frac{\partial\bar{D}}{\partial t}\right)\!\cdot d\bar{S}$</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="relation-box amber" style="margin-top:10px">
+      <strong>Static vs Time-varying:</strong>&nbsp; Static-এ $\partial/\partial t = 0$ রাখলে Maxwell's equations থেকেই Electrostatics ও Magnetostatics-এর সূত্র পাবে।
+    </div>
+  </div>
+</div>
+
+<!-- Faraday's Law -->
+<div class="section" id="mx2">
+  <div class="section-header" onclick="toggle('mx2')">
+    <span class="section-num">2.2</span>
+    <div>
+      <div class="section-title">Faraday's Law — EMF Induction</div>
+      <div class="section-subtitle">তিনটি case আলাদা করে বোঝো</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>General EMF</strong>
+        <span class="sym">$V_{emf}$ (Volt)</span>
+      </div>
+      <div class="formula-math">$$V_{emf} = -\frac{d\Psi}{dt} = -\frac{d}{dt}\int_S \bar{B}\cdot d\bar{S} \quad \text{V}$$</div>
+    </div>
+    <div class="formula-note">Negative sign = Lenz's Law — induced EMF opposes the change</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Transformer EMF</strong>
+        <span class="sym">Stationary loop</span>
+      </div>
+      <div class="formula-math">$$V_{emf} = -\int_S\frac{\partial\bar{B}}{\partial t}\cdot d\bar{S} \quad \text{V}$$</div>
+    </div>
+    <div class="formula-note">Loop স্থির, $\bar{B}$ সময়ের সাথে পরিবর্তন হচ্ছে।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Motional EMF</strong>
+        <span class="sym">Moving loop</span>
+      </div>
+      <div class="formula-math">$$V_{emf} = \oint_L (\bar{v}\times\bar{B})\cdot d\bar{l} \quad \text{V}$$</div>
+    </div>
+    <div class="formula-note">$\bar{B}$ constant, loop বেগ $\bar{v}$-তে নড়ছে।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Total EMF (Combined)</strong>
+      </div>
+      <div class="formula-math">$$V_{emf} = -\int_S\frac{\partial\bar{B}}{\partial t}\cdot d\bar{S} + \oint_L(\bar{v}\times\bar{B})\cdot d\bar{l}$$</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Displacement Current -->
+<div class="section" id="mx3">
+  <div class="section-header rose" onclick="toggle('mx3')">
+    <span class="section-num">2.3</span>
+    <div>
+      <div class="section-title">Displacement Current</div>
+      <div class="section-subtitle">Maxwell-এর সবচেয়ে গুরুত্বপূর্ণ অবদান</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Displacement Current Density</strong>
+        <span class="sym rose">$\bar{J}_d$ (A/m²)</span>
+      </div>
+      <div class="formula-math">$$\bar{J}_d = \frac{\partial\bar{D}}{\partial t} = \varepsilon\frac{\partial\bar{E}}{\partial t}$$</div>
+    </div>
+    <div class="formula-note">Capacitor gap-এ real current নেই, কিন্তু $\bar{J}_d$ আছে — এটাই continuity রক্ষা করে।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Conduction Current Density</strong>
+        <span class="sym rose">$\bar{J}_c$</span>
+      </div>
+      <div class="formula-math">$$\bar{J}_c = \sigma\bar{E} \quad \text{A/m}^2$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Total Current Density</strong>
+        <span class="sym rose">$\bar{J}_{total}$</span>
+      </div>
+      <div class="formula-math">$$\bar{J} = \bar{J}_c + \bar{J}_d = \sigma\bar{E} + \varepsilon\frac{\partial\bar{E}}{\partial t}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Displacement Current</strong>
+        <span class="sym rose">$I_d$ (Ampere)</span>
+      </div>
+      <div class="formula-math">$$I_d = \int_S \bar{J}_d\cdot d\bar{S} = \varepsilon\frac{d}{dt}\int_S\bar{E}\cdot d\bar{S} \quad \text{A}$$</div>
+    </div>
+
+    <div class="relation-box" style="margin: 8px 16px; background: rgba(255,143,171,0.06); border-color: rgba(255,143,171,0.2);">
+      <strong style="color:var(--rose)">Ratio মনে রাখো:</strong>&nbsp;
+      $\dfrac{J_d}{J_c} = \dfrac{\omega\varepsilon}{\sigma} = \dfrac{1}{\tan\delta_c}$
+      &nbsp;— এটাই loss tangent-এর বিপরীত।
+    </div>
+
+  </div>
+</div>
+
+<!-- Phasor Maxwell -->
+<div class="section" id="mx4">
+  <div class="section-header green" onclick="toggle('mx4')">
+    <span class="section-num">2.4</span>
+    <div>
+      <div class="section-title">Maxwell's Equations — Phasor Form</div>
+      <div class="section-subtitle">Sinusoidal steady-state এ $\partial/\partial t \to j\omega$</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label"><strong>Faraday</strong></div>
+      <div class="formula-math">$$\nabla\times\bar{E}_s = -j\omega\mu\bar{H}_s$$</div>
+    </div>
+    <div class="formula-row">
+      <div class="formula-label"><strong>Ampere-Maxwell</strong></div>
+      <div class="formula-math">$$\nabla\times\bar{H}_s = (\sigma + j\omega\varepsilon)\bar{E}_s = \bar{J}_s + j\omega\varepsilon\bar{E}_s$$</div>
+    </div>
+    <div class="formula-row">
+      <div class="formula-label"><strong>Gauss (Electric)</strong></div>
+      <div class="formula-math">$$\nabla\cdot\bar{D}_s = \rho_{vs}$$</div>
+    </div>
+    <div class="formula-row">
+      <div class="formula-label"><strong>Gauss (Magnetic)</strong></div>
+      <div class="formula-math">$$\nabla\cdot\bar{B}_s = 0$$</div>
+    </div>
+
+    <div class="relation-box green">
+      <strong>Wave Equation:</strong>&nbsp; Phasor Maxwell থেকে derive করা যায়:&nbsp;
+      $\nabla^2\bar{E}_s = \gamma^2\bar{E}_s$&nbsp;
+      যেখানে $\gamma^2 = j\omega\mu(\sigma + j\omega\varepsilon)$
+    </div>
+
+  </div>
+</div>
+
+</div><!-- end grid2 -->
+</div><!-- end ch-max -->
+
+
+<!-- ════════════════════════════════════════
+     CHAPTER 3 — WAVEGUIDE
+     ════════════════════════════════════════ -->
+<div id="ch-wave" class="chapter-block">
+<div class="grid2">
+
+<!-- Cut-off Frequency -->
+<div class="section full-width" id="w1">
+  <div class="section-header cyan" onclick="toggle('w1')">
+    <span class="section-num">3.1</span>
+    <div>
+      <div class="section-title">Cut-off Frequency ও Mode — $TE_{mn}$ / $TM_{mn}$</div>
+      <div class="section-subtitle">Rectangular waveguide: width $a$, height $b$ (সাধারণত $a > b$)</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Cut-off Frequency</strong>
+        <span class="sym cyan">$f_{c,mn}$</span>
+      </div>
+      <div class="formula-math">$$f_{c,mn} = \frac{u'}{2}\sqrt{\left(\frac{m}{a}\right)^2 + \left(\frac{n}{b}\right)^2} \quad \text{Hz}$$</div>
+    </div>
+    <div class="formula-note">$m, n$ = integer mode indices (0, 1, 2, …). $u' = c/\sqrt{\mu_r\varepsilon_r}$ = unbounded medium speed. Air/free space: $u' = c = 3\times10^8$ m/s</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Dominant Mode ($TE_{10}$)</strong>
+        <span class="sym cyan">$m{=}1, n{=}0$</span>
+      </div>
+      <div class="formula-math">$$f_{c,10} = \frac{u'}{2a} \quad \text{Hz}$$</div>
+    </div>
+    <div class="formula-note">সবচেয়ে কম cut-off frequency। Practical waveguide-এ এই mode-এ operate করা হয়।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Cut-off Wavenumber</strong>
+        <span class="sym cyan">$k_c$</span>
+      </div>
+      <div class="formula-math">$$k_c = \frac{\omega_c}{u'} = \pi\sqrt{\left(\frac{m}{a}\right)^2 + \left(\frac{n}{b}\right)^2} \quad \text{rad/m}$$</div>
+    </div>
+
+    <div class="divider-label">Mode existence conditions</div>
+
+    <div class="mode-grid">
+      <div class="mode-cell">
+        <div class="mode-label" style="color:var(--cyan)">TE mode ($TM_{mn}$)</div>
+        <div style="font-size:12px; color:var(--muted)">$m = 0, 1, 2, \ldots$ <br> $n = 0, 1, 2, \ldots$ <br> (m ও n একসাথে 0 নয়)<br>$E_z = 0$</div>
+      </div>
+      <div class="mode-cell">
+        <div class="mode-label" style="color:var(--amber)">TM mode ($TM_{mn}$)</div>
+        <div style="font-size:12px; color:var(--muted)">$m = 1, 2, 3, \ldots$ <br> $n = 1, 2, 3, \ldots$ <br> (m বা n = 0 allowed নয়)<br>$H_z = 0$</div>
+      </div>
+    </div>
+
+    <div class="relation-box cyan" style="margin-top:10px">
+      <strong>Operation condition:</strong>&nbsp; Signal propagate করবে যদি $f > f_c$। $f < f_c$ হলে evanescent mode — signal attenuate হয়, propagate করে না।
+    </div>
+
+  </div>
+</div>
+
+<!-- Propagation Parameters -->
+<div class="section" id="w2">
+  <div class="section-header" onclick="toggle('w2')">
+    <span class="section-num">3.2</span>
+    <div>
+      <div class="section-title">Propagation Parameters</div>
+      <div class="section-subtitle">$\beta_g$, $v_p$, $v_g$, $\lambda_g$ — সবই $(f_c/f)$ দিয়ে চেনা যায়</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Phase Constant (Guided)</strong>
+        <span class="sym">$\beta_g$ (rad/m)</span>
+      </div>
+      <div class="formula-math">$$\beta_g = \beta'\sqrt{1 - \left(\frac{f_c}{f}\right)^2} \quad \text{rad/m}$$</div>
+    </div>
+    <div class="formula-note">$\beta' = \omega/u' = \omega\sqrt{\mu\varepsilon}$ = unbounded medium-এর phase constant</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Phase Velocity</strong>
+        <span class="sym">$u_p$ (m/s)</span>
+      </div>
+      <div class="formula-math">$$u_p = \frac{u'}{\sqrt{1-(f_c/f)^2}} \geq u' \quad \text{m/s}$$</div>
+    </div>
+    <div class="formula-note">Phase velocity সবসময় $u'$ এর চেয়ে বড় — কিন্তু এটা signal speed নয়।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Group Velocity</strong>
+        <span class="sym">$u_g$ (m/s)</span>
+      </div>
+      <div class="formula-math">$$u_g = u'\sqrt{1-\left(\frac{f_c}{f}\right)^2} \leq u' \quad \text{m/s}$$</div>
+    </div>
+    <div class="formula-note">Signal ও energy এই বেগে travel করে। সর্বদা $u' = c$ এর কম।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Velocity Relation</strong>
+        <span class="sym">Important!</span>
+      </div>
+      <div class="formula-math">$$u_p \cdot u_g = (u')^2 \quad \text{(air: } = c^2\text{)}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Guided Wavelength</strong>
+        <span class="sym">$\lambda_g$ (m)</span>
+      </div>
+      <div class="formula-math">$$\lambda_g = \frac{\lambda'}{\sqrt{1-(f_c/f)^2}} \quad \text{m}$$</div>
+    </div>
+    <div class="formula-note">$\lambda' = u'/f$ = unbounded medium wavelength। $\lambda_g > \lambda'$ সর্বদা।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Attenuation ($f < f_c$)</strong>
+        <span class="sym">Evanescent</span>
+      </div>
+      <div class="formula-math">$$\alpha = \beta'\sqrt{\left(\frac{f_c}{f}\right)^2 - 1} \quad \text{Np/m}$$</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Wave Impedance -->
+<div class="section" id="w3">
+  <div class="section-header amber" onclick="toggle('w3')">
+    <span class="section-num">3.3</span>
+    <div>
+      <div class="section-title">Wave Impedance — TE ও TM Mode</div>
+      <div class="section-subtitle">$\eta_{TE}$ ও $\eta_{TM}$ সবসময় real (propagating mode)</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>TE Mode Impedance</strong>
+        <span class="sym amber">$\eta_{TE}$</span>
+      </div>
+      <div class="formula-math">$$\eta_{TE} = \frac{\eta'}{\sqrt{1-(f_c/f)^2}} \geq \eta' \quad \Omega$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>TM Mode Impedance</strong>
+        <span class="sym amber">$\eta_{TM}$</span>
+      </div>
+      <div class="formula-math">$$\eta_{TM} = \eta'\sqrt{1-\left(\frac{f_c}{f}\right)^2} \leq \eta' \quad \Omega$$</div>
+    </div>
+    <div class="formula-note">$\eta' = \sqrt{\mu/\varepsilon}$ = medium intrinsic impedance। Free space: $\eta' = 120\pi \approx 377\,\Omega$</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Impedance Product</strong>
+        <span class="sym amber">Relation</span>
+      </div>
+      <div class="formula-math">$$\eta_{TE}\cdot\eta_{TM} = (\eta')^2$$</div>
+    </div>
+
+    <div class="relation-box amber" style="margin-top: 8px;">
+      <strong>Pattern মনে রাখো:</strong> &nbsp;TE → "উপরে": $\eta_{TE} = \eta'/\sqrt{\cdots}$ &nbsp;·&nbsp; TM → "নিচে": $\eta_{TM} = \eta'\sqrt{\cdots}$
+      <br>Phase velocity-ও TE-এর মতো ($u_p$), group velocity TM-এর মতো ($u_g$)।
+    </div>
+
+  </div>
+</div>
+
+<!-- Field Equations TE10 -->
+<div class="section" id="w4">
+  <div class="section-header green" onclick="toggle('w4')">
+    <span class="section-num">3.4</span>
+    <div>
+      <div class="section-title">$TE_{10}$ Mode — Field Components</div>
+      <div class="section-subtitle">Dominant mode, সবচেয়ে বেশি পরীক্ষায় আসে</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>$H_z$ (dominant)</strong>
+      </div>
+      <div class="formula-math">$$H_z = H_0\cos\!\left(\frac{\pi x}{a}\right)e^{-j\beta_g z}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label"><strong>$E_y$</strong></div>
+      <div class="formula-math">$$E_y = \frac{j\omega\mu a}{\pi}H_0\sin\!\left(\frac{\pi x}{a}\right)e^{-j\beta_g z}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label"><strong>$H_x$</strong></div>
+      <div class="formula-math">$$H_x = \frac{j\beta_g a}{\pi}H_0\sin\!\left(\frac{\pi x}{a}\right)e^{-j\beta_g z}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label"><strong>$E_x = H_y = E_z = 0$</strong></div>
+      <div class="formula-math" style="color:var(--muted); font-size:12px; padding-top: 6px;">$TE_{10}$ mode-এ এই components শূন্য।</div>
+    </div>
+
+    <div class="relation-box green">
+      <strong>Relation:</strong>&nbsp; $E_y / H_x = -\eta_{TE}$ &nbsp;·&nbsp; $\hat{a}_z \times \bar{E} = \eta_{TE}\bar{H}_t$
+    </div>
+
+  </div>
+</div>
+
+<!-- Quick reference -->
+<div class="section full-width" id="w5">
+  <div class="section-header rose" onclick="toggle('w5')">
+    <span class="section-num">✦</span>
+    <div>
+      <div class="section-title">Waveguide Quick Reference — একনজরে</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+    <div class="tip-box">
+      <div class="tip-title">Step-by-step — Waveguide ম্যাথ সলভ করো</div>
+      <p><strong style="color:var(--cyan)">Step 1 — Identify mode:</strong> $m, n$ দেওয়া থাকলে TE নাকি TM check করো। $TE_{10}$ → dominant, সবচেয়ে সহজ।</p>
+      <p><strong style="color:var(--amber)">Step 2 — Cut-off frequency:</strong> $f_{c,mn} = \dfrac{u'}{2}\sqrt{(m/a)^2+(n/b)^2}$ দিয়ে $f_c$ বের করো।</p>
+      <p><strong style="color:var(--green)">Step 3 — Check propagation:</strong> দেওয়া $f > f_c$ কিনা দেখো। হলে propagating; না হলে evanescent।</p>
+      <p><strong style="color:var(--violet)">Step 4 — Parameters:</strong> $\beta_g$, $u_p$, $u_g$, $\lambda_g$, $\eta_{TE/TM}$ — সবই $\sqrt{1-(f_c/f)^2}$ দিয়ে বের করো।</p>
+    </div>
+  </div>
+</div>
+
+</div><!-- end grid2 -->
+</div><!-- end ch-wave -->
+
+</main>
+
+<script>
+  function toggle(id) {
+    document.getElementById(id).classList.toggle('collapsed');
+  }
+
+  function showChapter(ch, tabEl) {
+    // Hide all
+    document.querySelectorAll('.chapter-block').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.ch-tab').forEach(el => el.className = 'ch-tab');
+
+    // Show target
+    document.getElementById('ch-' + ch).classList.add('active');
+    const cls = ch === 'mag' ? 'active-mag' : ch === 'max' ? 'active-max' : 'active-wave';
+    tabEl.classList.add(cls);
+  }
+</script>
+</body>
+</html>

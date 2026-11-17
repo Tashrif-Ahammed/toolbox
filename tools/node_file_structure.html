@@ -1,0 +1,97 @@
+
+<style>
+  body { font-family: var(--font-mono, monospace); font-size: 13px; color: var(--color-text-primary); padding: 0; margin: 0; }
+  .tree { padding: 16px 20px; line-height: 1.75; }
+  .folder { color: var(--color-text-primary); font-weight: 500; }
+  .file { color: var(--color-text-secondary); }
+  .badge { display: inline-block; font-size: 10px; font-weight: 500; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
+  .built  { background: #C0DD97; color: #27500A; }
+  .planned { background: #B5D4F4; color: #0C447C; }
+  .rebuild { background: #FAC775; color: #633806; }
+  .special { background: #F4C0D1; color: #72243E; }
+  .indent1 { padding-left: 20px; }
+  .indent2 { padding-left: 40px; }
+  .indent3 { padding-left: 60px; }
+  .indent4 { padding-left: 80px; }
+  .dim { color: var(--color-text-tertiary); }
+  .section-label { font-size: 10px; font-weight: 500; letter-spacing: .06em; color: var(--color-text-tertiary); margin: 8px 0 2px; text-transform: uppercase; }
+  hr { border: none; border-top: 1px solid var(--color-border-tertiary); margin: 10px 0; }
+</style>
+<div class="tree">
+  <div class="folder">📁 NODE_app/</div>
+
+  <div class="indent1 file">├── index.js <span class="dim">← App entry point. Terminal chat loop.</span></div>
+  <div class="indent1 file">├── package.json</div>
+  <div class="indent1 file">├── .env <span class="dim">← API keys. NEVER commit to git.</span></div>
+  <div class="indent1 file">└── .gitignore <span class="dim">← Includes: .env, data/, logs/</span></div>
+
+  <hr>
+  <div class="indent1 section-label">Layer 1 — Tools (11 files)</div>
+  <div class="indent1 folder">├── 📁 tools/</div>
+  <div class="indent2 file">├── ai_router.js <span class="badge built">BUILT</span><span class="dim"> ← Only file that calls Gemini API</span></div>
+  <div class="indent2 file">├── storage.js <span class="badge built">BUILT</span><span class="dim"> ← Only file that reads/writes JSON data</span></div>
+  <div class="indent2 file">├── notifier.js <span class="badge built">BUILT</span><span class="dim"> ← Only file that creates notifications</span></div>
+  <div class="indent2 file">├── location.js <span class="badge built">BUILT</span><span class="dim"> ← 4-level fallback location detection</span></div>
+  <div class="indent2 file">├── date_time.js <span class="badge built">BUILT</span><span class="dim"> ← Bangladesh timezone + Bangla parsing</span></div>
+  <div class="indent2 file">├── logger.js <span class="badge built">BUILT</span><span class="dim"> ← 5 levels, daily rotating files</span></div>
+  <div class="indent2 file">├── weather.js <span class="badge planned">PLANNED</span><span class="dim"> ← OpenWeatherMap, 1-hour cache</span></div>
+  <div class="indent2 file">├── scheduler.js <span class="badge planned">PLANNED</span><span class="dim"> ← 60-second polling loop</span></div>
+  <div class="indent2 file">├── timer_widget.js <span class="badge planned">PLANNED</span><span class="dim"> ← Pomodoro / countdown / stopwatch</span></div>
+  <div class="indent2 file">├── firebase_sync.js <span class="badge planned">PLANNED</span><span class="dim"> ← Backup/restore only. Nightly 3 AM.</span></div>
+  <div class="indent2 file">└── prompt_loader.js <span class="badge planned">PLANNED</span><span class="dim"> ← Hot-reload .txt prompt cache</span></div>
+
+  <hr>
+  <div class="indent1 section-label">Layer 2 — Managers (10 files)</div>
+  <div class="indent1 folder">├── 📁 managers/</div>
+  <div class="indent2 file">├── job_router.js <span class="badge rebuild">NEEDS REBUILD</span><span class="dim"> ← Entry point. Routes every message.</span></div>
+  <div class="indent2 file">├── question_controller.js <span class="badge built">BUILT</span><span class="dim"> ← One question at a time queue</span></div>
+  <div class="indent2 file">├── data_collector.js <span class="badge planned">PLANNED</span><span class="dim"> ← Detects blank fields in records</span></div>
+  <div class="indent2 file">├── auto_trigger_manager.js <span class="badge planned">PLANNED</span><span class="dim"> ← Scheduled jobs. Nightly rebuild.</span></div>
+  <div class="indent2 file">├── preference_manager.js <span class="badge planned">PLANNED</span><span class="dim"> ← NEVER / JUST_NOW / RESUME states</span></div>
+  <div class="indent2 file">├── storage_sync_manager.js <span class="badge planned">PLANNED</span><span class="dim"> ← Guards data integrity</span></div>
+  <div class="indent2 file">├── context_memory_manager.js <span class="badge planned">PLANNED</span><span class="dim"> ← Injects context into every AI call</span></div>
+  <div class="indent2 file">├── worker_collaborator.js <span class="badge planned">PLANNED</span><span class="dim"> ← Shared data bus across workers</span></div>
+  <div class="indent2 file">├── error_manager.js <span class="badge planned">PLANNED</span><span class="dim"> ← Bangla error messages, degradation</span></div>
+  <div class="indent2 file">└── worker_adder_manager.js <span class="badge planned">PLANNED</span><span class="dim"> ← Hot-add workers without restart</span></div>
+
+  <hr>
+  <div class="indent1 section-label">Layer 3 — Workers (124 files)</div>
+  <div class="indent1 folder">├── 📁 workers/</div>
+  <div class="indent2 file">├── W000_general.js <span class="badge special">SPECIAL</span><span class="dim"> ← General conversation fallback</span></div>
+  <div class="indent2 file">├── W404_offline.js <span class="badge special">SPECIAL</span><span class="dim"> ← AI-failure handler</span></div>
+  <div class="indent2 file dim">├── W001_reminder.js → W015_follow_up_reminder.js</div>
+  <div class="indent2 file dim">├── W016_exam_data.js → W028_flashcard_quiz.js</div>
+  <div class="indent2 file dim">├── W029_expense.js → W041_subscription_tracker.js</div>
+  <div class="indent2 file dim">├── W042_contact_saver.js → W050_profile_viewer.js</div>
+  <div class="indent2 file dim">├── W051_todo_adder.js → W064_task_dependency.js</div>
+  <div class="indent2 file dim">├── W065_water_reminder.js → W076_stress_detector.js</div>
+  <div class="indent2 file dim">├── W077_weather_brief.js → W083_temperature_alert.js</div>
+  <div class="indent2 file dim">├── W084_note_saver.js → W095_fact_sender.js</div>
+  <div class="indent2 file dim">├── W096_social_commitment.js → W100_relationship_tracker.js</div>
+  <div class="indent2 file dim">├── W101_phone_charge.js → W107_app_usage.js</div>
+  <div class="indent2 file dim">└── W108_morning_greeting.js → W122_proactive_suggestion.js</div>
+
+  <hr>
+  <div class="indent1 section-label">Prompts — 367 .txt files (3 per worker)</div>
+  <div class="indent1 folder">├── 📁 prompts/</div>
+  <div class="indent2 file">├── job_router_route.txt <span class="dim">← Main routing prompt template</span></div>
+  <div class="indent2 file dim">├── W001_route.txt / W001_extract.txt / W001_response.txt</div>
+  <div class="indent2 file dim">├── W029_route.txt / W029_extract.txt / W029_response.txt</div>
+  <div class="indent2 file dim">└── ... (3 files × 122 workers = 366 files total)</div>
+
+  <hr>
+  <div class="indent1 section-label">Data — 17 JSON files (auto-created)</div>
+  <div class="indent1 folder">├── 📁 data/</div>
+  <div class="indent2 file">├── profile.json &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; worker_registry.json &nbsp;&nbsp;&nbsp;&nbsp; preferences.json</div>
+  <div class="indent2 file">├── schedules.json &nbsp;&nbsp;&nbsp;&nbsp; reminders.json &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; exams.json</div>
+  <div class="indent2 file">├── finance.json &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; diary.json &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; notes.json</div>
+  <div class="indent2 file">├── todos.json &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; contacts.json &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; notifications.json</div>
+  <div class="indent2 file">├── location_cache.json &nbsp; upcoming_events.json &nbsp;&nbsp; question_queue.json</div>
+  <div class="indent2 file">└── rate_limits.json &nbsp;&nbsp; logging_config.json</div>
+
+  <hr>
+  <div class="indent1 section-label">Logs — auto-created, 14-day retention</div>
+  <div class="indent1 folder">└── 📁 logs/</div>
+  <div class="indent2 file">├── node_2026-05-08.log</div>
+  <div class="indent2 file">└── node_2026-05-07.log &nbsp;<span class="dim">...</span></div>
+</div>

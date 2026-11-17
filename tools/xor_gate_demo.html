@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XOR Gate — Switch + Battery + LED</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a140f;
+    --board:#0f1f17;
+    --board-line:#1c3327;
+    --copper:#a07a4e;
+    --copper-dim:#4d5c4f;
+    --gold:#ffb703;
+    --gold-soft:rgba(255,183,3,.45);
+    --led-off:#3a1414;
+    --led-on:#ff4630;
+    --text:#eaf3ec;
+    --text-dim:#9fb4a5;
+    --accent:#52d9a6;
+    --row-current:rgba(255,183,3,.16);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    background-image:
+      linear-gradient(var(--board-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--board-line) 1px, transparent 1px);
+    background-size:38px 38px;
+    background-attachment:fixed;
+    color:var(--text);
+    font-family:'Noto Sans Bengali','Space Mono',monospace;
+    line-height:1.65;
+  }
+  .page{max-width:880px;margin:0 auto;padding:36px 20px 70px;}
+  header{text-align:center;margin-bottom:28px;}
+  h1{
+    font-family:'Space Mono',monospace;
+    font-size:clamp(22px,4.2vw,32px);
+    letter-spacing:.5px;
+    margin:0 0 8px;
+    color:var(--text);
+  }
+  h1 .tag{color:var(--gold);}
+  .subtitle{color:var(--text-dim);font-size:14.5px;margin:0;}
+
+  .demo-card{
+    background:var(--board);
+    border:1px solid var(--board-line);
+    border-radius:14px;
+    padding:18px 14px 22px;
+    box-shadow:0 0 0 1px rgba(255,255,255,.02), 0 18px 40px -20px rgba(0,0,0,.6);
+  }
+  .circuit-wrap{width:100%;}
+  svg#circuit{width:100%;height:auto;display:block;}
+
+  .wire{fill:none;stroke:var(--copper-dim);stroke-width:5;stroke-linecap:round;transition:stroke .25s, filter .25s;}
+  .wire.live{stroke:var(--gold);filter:drop-shadow(0 0 6px var(--gold-soft));}
+  .wire.live.flow{stroke-dasharray:12 9;animation:flow .5s linear infinite;}
+  @keyframes flow{to{stroke-dashoffset:-21;}}
+  @media (prefers-reduced-motion: reduce){ .wire.live.flow{animation:none;} }
+
+  .contact{fill:var(--board);stroke:var(--copper-dim);stroke-width:3;transition:.2s;}
+  .contact.selected{stroke:var(--gold);fill:rgba(255,183,3,.18);}
+
+  .lever{stroke:var(--copper);stroke-width:6;stroke-linecap:round;cursor:pointer;transition:stroke .2s, filter .2s;}
+  .lever.live{stroke:var(--gold);filter:drop-shadow(0 0 6px var(--gold-soft));}
+  .pivot{fill:var(--copper);}
+
+  .switch-group{cursor:pointer;}
+  .switch-group:hover .lever{stroke:var(--accent);}
+  .switch-group:focus-visible{outline:none;}
+  .switch-group:focus-visible .pivot{stroke:var(--accent);stroke-width:3;}
+  .switch-label{font-family:'Space Mono',monospace;font-size:15px;fill:var(--text);text-anchor:middle;}
+  .switch-val{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;fill:var(--text-dim);text-anchor:middle;transition:fill .2s;}
+  .switch-val.on{fill:var(--gold);}
+
+  .led-bulb{fill:var(--led-off);stroke:var(--copper-dim);stroke-width:3;transition:fill .3s, filter .3s;}
+  .led-bulb.live{fill:var(--led-on);filter:drop-shadow(0 0 20px var(--led-on));}
+  .led-ray{stroke:var(--led-on);stroke-width:3;stroke-linecap:round;opacity:0;transition:opacity .3s;}
+  .led-ray.live{opacity:1;}
+  .diagram-label{font-family:'Space Mono',monospace;font-size:12.5px;fill:var(--text-dim);text-anchor:middle;}
+  .small-label{font-family:'Space Mono',monospace;font-size:11px;fill:var(--text-dim);text-anchor:middle;}
+
+  .controls{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:14px;padding:0 6px;}
+  .readout{font-family:'Space Mono',monospace;font-size:15px;color:var(--text-dim);}
+  .readout b{color:var(--text);font-size:17px;}
+  .readout .out{color:var(--gold);font-size:19px;}
+  button#autoBtn{
+    background:transparent;
+    border:1px solid var(--copper);
+    color:var(--text);
+    font-family:'Space Mono',monospace;
+    font-size:13.5px;
+    padding:9px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:.2s;
+  }
+  button#autoBtn:hover{border-color:var(--gold);color:var(--gold);}
+  button#autoBtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  section{margin-top:34px;}
+  h2{font-family:'Space Mono',monospace;font-size:16.5px;color:var(--accent);letter-spacing:.3px;margin:0 0 12px;}
+
+  table#truthTable{width:100%;border-collapse:collapse;font-family:'Space Mono',monospace;font-size:14.5px;background:var(--board);border:1px solid var(--board-line);border-radius:10px;overflow:hidden;}
+  table#truthTable th,table#truthTable td{padding:10px 14px;text-align:center;border-bottom:1px solid var(--board-line);}
+  table#truthTable th{color:var(--text-dim);font-weight:400;font-size:12.5px;letter-spacing:.5px;}
+  table#truthTable tbody tr{transition:background .25s;}
+  table#truthTable tbody tr.current{background:var(--row-current);}
+  table#truthTable tbody tr.current td:last-child{color:var(--gold);font-weight:700;}
+  table#truthTable tbody tr:last-child td{border-bottom:none;}
+
+  .explain p{font-size:15px;color:var(--text);margin:0 0 14px;}
+  .explain p code{background:var(--board);border:1px solid var(--board-line);padding:1px 6px;border-radius:4px;font-family:'Space Mono',monospace;font-size:13.5px;color:var(--gold);}
+  .explain strong{color:var(--accent);}
+
+  footer{margin-top:36px;text-align:center;color:var(--text-dim);font-size:12px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>XOR Gate <span class="tag">⊕</span> Switch + Battery + LED দিয়ে</h1>
+    <p class="subtitle">সুইচে ক্লিক করো বা নিচের অটো-ডেমো চালিয়ে দেখো কারেন্ট কীভাবে ফ্লো করে</p>
+  </header>
+
+  <div class="demo-card">
+    <div class="circuit-wrap">
+      <svg id="circuit" viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="XOR gate circuit diagram with battery, two switches and an LED">
+
+        <!-- return path (bottom rail) -->
+        <line id="segLeftStub" class="wire" x1="70" y1="250" x2="70" y2="520"/>
+        <line id="segBottomRail" class="wire" x1="70" y1="520" x2="840" y2="520"/>
+        <line id="segRightStub" class="wire" x1="840" y1="520" x2="840" y2="250"/>
+
+        <!-- battery to switch A -->
+        <line id="segBatteryToA" class="wire" x1="70" y1="250" x2="300" y2="250"/>
+        <line x1="120" y1="213" x2="120" y2="287" stroke="var(--copper)" stroke-width="5" stroke-linecap="round"/>
+        <line x1="158" y1="231" x2="158" y2="269" stroke="var(--copper)" stroke-width="3" stroke-linecap="round"/>
+        <text class="diagram-label" x="120" y="200">+</text>
+        <text class="diagram-label" x="158" y="200">−</text>
+        <text class="small-label" x="139" y="312">DC ব্যাটারি</text>
+
+        <!-- crossing wires (drawn first, under levers) -->
+        <line id="crossWire1" class="wire" x1="300" y1="150" x2="700" y2="350"/>
+        <line id="crossWire2" class="wire" x1="300" y1="350" x2="700" y2="150"/>
+
+        <!-- switch A -->
+        <g id="switchA" class="switch-group" tabindex="0" role="button" aria-pressed="false" aria-label="ইনপুট A সুইচ, ক্লিক করে টগল করো">
+          <circle id="contactA_top" class="contact" cx="300" cy="150" r="8"/>
+          <circle id="contactA_bottom" class="contact" cx="300" cy="350" r="8"/>
+          <circle class="pivot" cx="300" cy="250" r="9"/>
+          <line id="leverA" class="lever" x1="300" y1="250" x2="300" y2="350"/>
+          <text class="switch-label" x="300" y="105">ইনপুট A</text>
+          <text id="valA" class="switch-val" x="265" y="256">0</text>
+        </g>
+
+        <!-- switch B -->
+        <g id="switchB" class="switch-group" tabindex="0" role="button" aria-pressed="false" aria-label="ইনপুট B সুইচ, ক্লিক করে টগল করো">
+          <circle id="contactB_top" class="contact" cx="700" cy="150" r="8"/>
+          <circle id="contactB_bottom" class="contact" cx="700" cy="350" r="8"/>
+          <circle class="pivot" cx="700" cy="250" r="9"/>
+          <line id="leverB" class="lever" x1="700" y1="250" x2="700" y2="350"/>
+          <text class="switch-label" x="700" y="105">ইনপুট B</text>
+          <text id="valB" class="switch-val" x="735" y="256">0</text>
+        </g>
+
+        <!-- B to LED -->
+        <line id="segBtoLED" class="wire" x1="700" y1="250" x2="762" y2="250"/>
+        <g>
+          <circle id="ledBulb" class="led-bulb" cx="792" cy="250" r="26"/>
+          <path d="M780,238 L780,262 L802,250 Z" fill="var(--board)" stroke="var(--copper-dim)" stroke-width="2"/>
+          <line x1="804" y1="238" x2="804" y2="262" stroke="var(--copper-dim)" stroke-width="3"/>
+          <line class="led-ray" x1="808" y1="222" x2="818" y2="210"/>
+          <line class="led-ray" x1="792" y1="216" x2="792" y2="202"/>
+          <line class="led-ray" x1="776" y1="222" x2="766" y2="210"/>
+          <text class="small-label" x="792" y="298">LED (Output)</text>
+        </g>
+        <line id="segLEDtoCorner" class="wire" x1="818" y1="250" x2="840" y2="250"/>
+
+        <text class="small-label" x="500" y="430">⤬ crossed wiring — switch দুটো একইদিকে থাকলে circuit খোলা, আলাদা থাকলে বন্ধ</text>
+      </svg>
+    </div>
+
+    <div class="controls">
+      <div class="readout">A: <b id="valA2">0</b>&nbsp;&nbsp; B: <b id="valB2">0</b>&nbsp;&nbsp; → &nbsp;&nbsp;Output: <b class="out" id="valOut">0</b></div>
+      <button id="autoBtn">▶ অটো ডেমো চালান</button>
+    </div>
+  </div>
+
+  <section>
+    <h2>Truth Table</h2>
+    <table id="truthTable">
+      <thead><tr><th>A</th><th>B</th><th>Output (A ⊕ B)</th></tr></thead>
+      <tbody>
+        <tr data-a="0" data-b="0"><td>0</td><td>0</td><td>0</td></tr>
+        <tr data-a="0" data-b="1"><td>0</td><td>1</td><td>1</td></tr>
+        <tr data-a="1" data-b="0"><td>1</td><td>0</td><td>1</td></tr>
+        <tr data-a="1" data-b="1"><td>1</td><td>1</td><td>0</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="explain">
+    <h2>এই সার্কিট আসলে কী দেখাচ্ছে</h2>
+    <p>XOR (Exclusive OR) gate-এর আউটপুট তখনই HIGH (1) হয় যখন দুইটা ইনপুট <strong>আলাদা</strong> হয় — A আর B একইরকম হলে output 0, আলাদা হলে output 1। উপরের সার্কিটটা ঠিক এই behavior-টাই reproduce করছে, শুধু একটা battery, দুইটা switch আর একটা LED দিয়ে — কোনো IC বা transistor লাগেনি।</p>
+    <p>Trick-টা হলো <strong>crossed wiring</strong>। প্রতিটা switch আসলে একটা SPDT (single-pole, double-throw) switch — battery থেকে আসা current-টা lever দিয়ে দুইটা contact-এর মধ্যে যেকোনো একটায় পাঠানো যায়। দুই switch-এর contact গুলো এমনভাবে cross করে wire করা যে: switch দুটো <strong>একইদিকে</strong> (দুটোই উপরে বা দুটোই নিচে) থাকলে wire-টা গিয়ে অন্য পাশের <em>খালি</em> contact-এ dangling থেকে যায় — circuit incomplete, কারেন্ট পাস হয় না, LED বন্ধ থাকে। কিন্তু switch দুটো <strong>আলাদা দিকে</strong> থাকলে একটা crossed wire ঠিক দুই পাশের lever-কেই touch করে ফেলে — circuit complete, LED জ্বলে ওঠে।</p>
+    <p>এই same wiring বাস্তবেও দেখেছ — বাড়ির সিঁড়িতে যেখানে দুইটা switch দিয়ে একটাই বাতি control করা হয় (নিচ থেকে on করলে উপর থেকেও off করা যায়), সেটা ঠিক এই crossed-wiring principle — মানে ওটা physically একটা XOR gate। উপরের <code>▶ অটো ডেমো</code> চাপলে চারটা combination (00, 01, 10, 11) automatically cycle করে current flow দেখাবে।</p>
+    <p>Real digital electronics-এ অবশ্যই XOR gate বানানো হয় diode/transistor logic বা IC (যেমন 7486) দিয়ে, mechanical switch দিয়ে না — কিন্তু এই model intuition-টা ঠিকঠাক দেয়: একটা logic gate মূলত একটা শর্তসাপেক্ষ "কারেন্ট পাস হবে কি না" সিদ্ধান্ত।</p>
+  </section>
+
+  <footer>switch-এ ক্লিক করো বা কীবোর্ডে Tab + Enter চেপে টগল করতে পারবে</footer>
+</div>
+
+<script>
+let stateA = false, stateB = false;
+let autoTimer = null;
+
+function setLive(id, live){
+  const el = document.getElementById(id);
+  el.classList.toggle('live', live);
+  el.classList.toggle('flow', live);
+}
+function setSelected(id, selected){
+  document.getElementById(id).classList.toggle('selected', selected);
+}
+
+function render(){
+  const aOn = stateA, bOn = stateB;
+  const live1 = aOn && !bOn;   // A-top -> B-bottom
+  const live2 = !aOn && bOn;   // A-bottom -> B-top
+  const output = live1 || live2;
+
+  document.getElementById('valA').textContent = aOn ? 1 : 0;
+  document.getElementById('valB').textContent = bOn ? 1 : 0;
+  document.getElementById('valA').classList.toggle('on', aOn);
+  document.getElementById('valB').classList.toggle('on', bOn);
+  document.getElementById('valA2').textContent = aOn ? 1 : 0;
+  document.getElementById('valB2').textContent = bOn ? 1 : 0;
+  document.getElementById('valOut').textContent = output ? 1 : 0;
+
+  document.getElementById('leverA').setAttribute('y2', aOn ? 150 : 350);
+  document.getElementById('leverB').setAttribute('y2', bOn ? 150 : 350);
+
+  setSelected('contactA_top', aOn);
+  setSelected('contactA_bottom', !aOn);
+  setSelected('contactB_top', bOn);
+  setSelected('contactB_bottom', !bOn);
+
+  setLive('leverA', output);
+  setLive('leverB', output);
+  setLive('segBatteryToA', output);
+  setLive('segBtoLED', output);
+  setLive('segLEDtoCorner', output);
+  setLive('segLeftStub', output);
+  setLive('segBottomRail', output);
+  setLive('segRightStub', output);
+  setLive('crossWire1', live1);
+  setLive('crossWire2', live2);
+
+  document.getElementById('ledBulb').classList.toggle('live', output);
+  document.querySelectorAll('.led-ray').forEach(r => r.classList.toggle('live', output));
+
+  document.getElementById('switchA').setAttribute('aria-pressed', String(aOn));
+  document.getElementById('switchB').setAttribute('aria-pressed', String(bOn));
+
+  document.querySelectorAll('#truthTable tbody tr').forEach(tr => {
+    const a = +tr.dataset.a, b = +tr.dataset.b;
+    tr.classList.toggle('current', a === (aOn ? 1 : 0) && b === (bOn ? 1 : 0));
+  });
+}
+
+function toggleSwitch(which){
+  if(autoTimer) stopAuto();
+  if(which === 'A') stateA = !stateA; else stateB = !stateB;
+  render();
+}
+
+document.getElementById('switchA').addEventListener('click', () => toggleSwitch('A'));
+document.getElementById('switchB').addEventListener('click', () => toggleSwitch('B'));
+['switchA','switchB'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if(e.key === ' ' || e.key === 'Enter'){
+      e.preventDefault();
+      toggleSwitch(id === 'switchA' ? 'A' : 'B');
+    }
+  });
+});
+
+const sequence = [[false,false],[false,true],[true,false],[true,true]];
+const autoBtn = document.getElementById('autoBtn');
+
+function startAuto(){
+  let i = 0;
+  autoBtn.textContent = '⏸ থামান';
+  autoTimer = setInterval(() => {
+    [stateA, stateB] = sequence[i % sequence.length];
+    render();
+    i++;
+  }, 1400);
+}
+function stopAuto(){
+  clearInterval(autoTimer);
+  autoTimer = null;
+  autoBtn.textContent = '▶ অটো ডেমো চালান';
+}
+autoBtn.addEventListener('click', () => { autoTimer ? stopAuto() : startAuto(); });
+
+render();
+</script>
+</body>
+</html>

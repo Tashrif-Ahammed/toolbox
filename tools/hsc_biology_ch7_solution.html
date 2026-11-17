@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>সমাধান পত্র — চলন ও অঙ্গচালনা (অধ্যায় ৭)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F0EBE1;
+    --paper: #FAFAF7;
+    --ink: #1E1C18;
+    --ink-soft: #5A5650;
+    --rule: #DDD8CE;
+    --green: #1B5E35;
+    --green-light: #E6F4EC;
+    --green-mid: #2E7D52;
+    --amber: #7A4F00;
+    --amber-light: #FFF8E6;
+    --red: #8A2020;
+    --red-light: #FDEAEA;
+    --blue: #1A3A6B;
+    --blue-light: #EAF0FB;
+    --teal: #0F5460;
+    --teal-light: #E8F6F8;
+    --badge: #1B3A26;
+    --badge-fg: #E8F5EE;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    font-family: 'Hind Siliguri', sans-serif;
+    color: var(--ink);
+    padding: 24px 14px 72px;
+    line-height: 1.6;
+  }
+
+  /* ── WRAPPER ── */
+  .wrap { max-width: 920px; margin: 0 auto; }
+
+  /* ── TOP BADGE ── */
+  .top-badge {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .top-badge span {
+    display: inline-block;
+    background: var(--badge);
+    color: var(--badge-fg);
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 5px 16px;
+    border-radius: 20px;
+  }
+
+  /* ── HEADER ── */
+  .header-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-top: 4px solid var(--green);
+    border-radius: 10px;
+    padding: 32px 36px 26px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 24px -8px rgba(0,0,0,.12);
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .header-text { flex: 1; min-width: 200px; }
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .header-card h1 {
+    font-family: 'Tiro Bangla', serif;
+    font-size: 26px;
+    line-height: 1.35;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .header-card p { font-size: 14.5px; color: var(--ink-soft); }
+  .stat-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .pill {
+    background: var(--green-light);
+    border: 1px solid #B2D8C0;
+    color: var(--green);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 20px;
+  }
+  .score-box {
+    background: var(--green);
+    color: #fff;
+    border-radius: 10px;
+    padding: 20px 24px;
+    text-align: center;
+    min-width: 110px;
+    flex-shrink: 0;
+  }
+  .score-box .big { font-size: 42px; font-weight: 700; line-height: 1; font-family: 'Tiro Bangla', serif; }
+  .score-box .lbl { font-size: 12px; opacity: .8; margin-top: 4px; letter-spacing: .05em; }
+
+  /* ── NAV TABS ── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 5px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px -4px rgba(0,0,0,.08);
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all .2s;
+    border: none;
+    background: none;
+    font-family: 'Hind Siliguri', sans-serif;
+  }
+  .tab.active {
+    background: var(--green);
+    color: #fff;
+  }
+  .tab:hover:not(.active) { background: var(--green-light); color: var(--green); }
+
+  /* ── SECTIONS ── */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ══════════════════════════════════
+     SECTION 1: DETAILED SOLUTIONS
+  ══════════════════════════════════ */
+  .category-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0 14px;
+  }
+  .category-label .cat-name {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    white-space: nowrap;
+  }
+  .category-label .cat-line {
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .sol-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  @media (min-width: 680px) {
+    .sol-grid { grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+  }
+
+  .sol-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 9px;
+    padding: 15px 17px;
+    box-shadow: 0 2px 8px -4px rgba(0,0,0,.07);
+    transition: box-shadow .15s;
+  }
+  .sol-card:hover { box-shadow: 0 4px 16px -6px rgba(0,0,0,.14); }
+
+  .sol-qrow {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .sol-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--badge);
+    color: var(--badge-fg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Tiro Bangla', serif;
+  }
+  .sol-q {
+    font-size: 14.5px;
+    font-weight: 500;
+    line-height: 1.5;
+    padding-top: 3px;
+  }
+  .answer-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 7px;
+    background: var(--green-light);
+    border: 1px solid #B2D8C0;
+    margin-bottom: 8px;
+  }
+  .ans-label { font-size: 12px; font-weight: 700; color: var(--green-mid); letter-spacing: .08em; }
+  .ans-check { font-size: 16px; }
+  .ans-text { font-size: 14px; font-weight: 600; color: var(--green); flex: 1; }
+  .sol-exp {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    padding: 0 2px;
+  }
+  .sol-exp strong { color: var(--ink); font-weight: 600; }
+
+  /* ══════════════════════════════════
+     SECTION 2: ANSWER SHEET
+  ══════════════════════════════════ */
+  .ans-sheet-intro {
+    background: var(--amber-light);
+    border: 1px solid #E8D0A0;
+    border-radius: 9px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: var(--amber);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .ans-sheet-intro .icon { font-size: 20px; flex-shrink: 0; }
+
+  .ans-table-wrap {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 16px -6px rgba(0,0,0,.1);
+    margin-bottom: 20px;
+  }
+  .ans-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .ans-table thead tr {
+    background: var(--green);
+    color: #fff;
+  }
+  .ans-table th {
+    padding: 12px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: .06em;
+  }
+  .ans-table td {
+    padding: 9px 10px;
+    text-align: center;
+    font-size: 14px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .ans-table tbody tr:last-child td { border-bottom: none; }
+  .ans-table tbody tr:nth-child(even) td { background: #F4F9F6; }
+  .ans-table .q-no { font-weight: 700; color: var(--ink-soft); font-size: 13px; }
+  .ans-table .correct {
+    font-weight: 700;
+    color: var(--green);
+    font-size: 15px;
+  }
+  .ans-table .full-ans { font-size: 13px; color: var(--ink); text-align: left; padding-left: 14px; }
+
+  /* quick grid answer layout */
+  .quick-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 500px) {
+    .quick-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  .qg-cell {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 7px;
+    padding: 8px 6px;
+    text-align: center;
+    box-shadow: 0 1px 4px -2px rgba(0,0,0,.08);
+  }
+  .qg-cell .n { font-size: 11px; color: var(--ink-soft); font-weight: 600; }
+  .qg-cell .a { font-size: 17px; font-weight: 700; color: var(--green); font-family: 'Tiro Bangla', serif; }
+
+  /* ══════════════════════════════════
+     SECTION 3: TIPS & SUMMARY
+  ══════════════════════════════════ */
+  .tips-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media (min-width: 680px) {
+    .tips-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .tip-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px -4px rgba(0,0,0,.09);
+  }
+  .tip-head {
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tip-head.green { background: var(--green); color: #fff; }
+  .tip-head.blue { background: var(--blue); color: #fff; }
+  .tip-head.teal { background: var(--teal); color: #fff; }
+  .tip-head.red { background: var(--red); color: #fff; }
+  .tip-head.amber { background: #8A5200; color: #fff; }
+  .tip-body { padding: 14px 18px; }
+  .tip-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .tip-item:last-child { margin-bottom: 0; }
+  .tip-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+  .tip-item strong { color: var(--ink); font-weight: 600; }
+
+  .mem-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin-top: 4px;
+  }
+  .mem-table th {
+    background: #f0f4f0;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--green-mid);
+    border-bottom: 1px solid var(--rule);
+    letter-spacing: .06em;
+  }
+  .mem-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #EDEAE4;
+    vertical-align: top;
+  }
+  .mem-table tr:last-child td { border-bottom: none; }
+  .mem-table .key { font-weight: 700; color: var(--ink); }
+  .mem-table .val { color: var(--ink-soft); }
+
+  .highlight-box {
+    background: var(--teal-light);
+    border: 1px solid #9DD0D8;
+    border-radius: 9px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+  .highlight-box h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--teal);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .highlight-box ul {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+  }
+  @media (max-width: 500px) { .highlight-box ul { grid-template-columns: 1fr; } }
+  .highlight-box li {
+    font-size: 13.5px;
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+  }
+  .highlight-box li::before { content: "→"; color: var(--teal); font-weight: 700; flex-shrink: 0; }
+
+  .print-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 11px 22px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Hind Siliguri', sans-serif;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background .15s;
+  }
+  .print-btn:hover { background: var(--green-mid); }
+
+  footer {
+    text-align: center;
+    padding: 30px 0 0;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .tabs, .tab, .print-btn { display: none !important; }
+    .section { display: block !important; }
+    .wrap { max-width: 100%; }
+    .header-card { box-shadow: none; border: 1px solid #ccc; }
+  }
+  @media (max-width: 520px) {
+    .header-card { padding: 22px 18px 18px; }
+    .header-card h1 { font-size: 21px; }
+    .score-box { padding: 14px 16px; min-width: 90px; }
+    .score-box .big { font-size: 34px; }
+    .tabs { flex-wrap: wrap; }
+    .tab { font-size: 12.5px; padding: 8px 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- TOP BADGE -->
+  <div class="top-badge">
+    <span>HSC জীববিজ্ঞান দ্বিতীয় পত্র · অধ্যায় ৭ · সমাধান পত্র</span>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header-card">
+    <div class="header-text">
+      <p class="eyebrow">চলন ও অঙ্গচালনা — অস্থি, সন্ধি ও পেশিতন্ত্র</p>
+      <h1>MCQ সম্পূর্ণ সমাধান ও ব্যাখ্যা</h1>
+      <p>মেডিকেল ভর্তি পরীক্ষা মানের ৫০টি প্রশ্নের বিস্তারিত উত্তর, কুইক আনসার শিট এবং মনে রাখার টিপস।</p>
+      <div class="stat-pills">
+        <span class="pill">মোট প্রশ্ন: ৫০</span>
+        <span class="pill">অস্থিতন্ত্র: ৩০টি</span>
+        <span class="pill">সন্ধি: ১০টি</span>
+        <span class="pill">পেশিতন্ত্র: ১০টি</span>
+      </div>
+    </div>
+    <div class="score-box">
+      <div class="big">৫০</div>
+      <div class="lbl">মোট নম্বর</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('solutions')">📘 বিস্তারিত সমাধান</button>
+    <button class="tab" onclick="showTab('answersheet')">✅ আনসার শিট</button>
+    <button class="tab" onclick="showTab('tips')">💡 টিপস ও সারসংক্ষেপ</button>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SECTION 1: DETAILED SOLUTIONS
+  ══════════════════════════════════ -->
+  <div id="solutions" class="section active">
+
+    <!-- CATEGORY: অস্থিতন্ত্র -->
+    <div class="category-label">
+      <span class="cat-name">🦴 অস্থিতন্ত্র (প্রশ্ন ১–৩০)</span>
+      <div class="cat-line"></div>
+    </div>
+    <div class="sol-grid">
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">১</span><p class="sol-q">মানবদেহে মোট অস্থির সংখ্যা কত?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ২০৬</span></div>
+        <p class="sol-exp">প্রাপ্তবয়স্ক মানুষের দেহে মোট <strong>২০৬টি</strong> অস্থি থাকে। শিশু অবস্থায় প্রায় ২৭০+ কার্টিলেজ থাকে, যা বড় হওয়ার সাথে সাথে একত্রিত হয়ে ২০৬-এ পরিণত হয়।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">২</span><p class="sol-q">অক্ষীয় কঙ্কালে অস্থির সংখ্যা কত?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. ৮০</span></div>
+        <p class="sol-exp">Axial skeleton-এ <strong>৮০টি</strong> অস্থি। মাথার খুলি (২২) + মেরুদণ্ড (২৬) + পাঁজর (২৪) + স্টার্নাম (১) + হাইয়ড (১) + কানের ছোট অস্থি (৬) = ৮০।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৩</span><p class="sol-q">উপাংশীয় কঙ্কালে অস্থির সংখ্যা কত?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">ঘ. ১২৬</span></div>
+        <p class="sol-exp">Appendicular skeleton-এ <strong>১২৬টি</strong> অস্থি। ২০৬ − ৮০ = ১২৬। এর মধ্যে পেক্টোরাল গার্ডল, উপরের অঙ্গ, পেলভিক গার্ডল ও নিচের অঙ্গ অন্তর্ভুক্ত।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৪</span><p class="sol-q">করোটিতে মোট অস্থির সংখ্যা কত?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">ঘ. ২২</span></div>
+        <p class="sol-exp">খুলিতে মোট <strong>২২টি</strong> অস্থি: ক্রেনিয়াল ৮টি + ফেসিয়াল ১৪টি = ২২।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৫</span><p class="sol-q">ক্রেনিয়াল অস্থির সংখ্যা কত?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ৮</span></div>
+        <p class="sol-exp">মস্তিষ্ককে আবৃত করে <strong>৮টি</strong> ক্রেনিয়াল অস্থি: Frontal(১), Parietal(২), Temporal(২), Occipital(১), Sphenoid(১), Ethmoid(১)।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৬</span><p class="sol-q">ফেসিয়াল অস্থির সংখ্যা কত?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. ১৪</span></div>
+        <p class="sol-exp">মুখমণ্ডলে <strong>১৪টি</strong> ফেসিয়াল অস্থি: Mandible(১), Maxilla(২), Zygomatic(২), Nasal(২), Lacrimal(২), Palatine(২), Inferior nasal concha(২), Vomer(১)।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৭</span><p class="sol-q">মেরুদণ্ডে মোট কশেরুকার সংখ্যা কত?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. ৩৩</span></div>
+        <p class="sol-exp">মেরুদণ্ডে <strong>৩৩টি</strong> কশেরুকা: Cervical(৭) + Thoracic(১২) + Lumbar(৫) + Sacral(৫) + Coccygeal(৪) = ৩৩। (প্রাপ্তবয়স্কে Sacral ও Coccygeal একত্রিত হয়ে ২৬ হয়।)</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৮</span><p class="sol-q">সারভাইক্যাল কশেরুকার সংখ্যা কত?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ৭</span></div>
+        <p class="sol-exp">গলার অঞ্চলে <strong>৭টি</strong> Cervical vertebrae (C1–C7)। মনে রাখুন: ঘাড় ঘোরে ৭ দিকে — তাই ৭টি।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৯</span><p class="sol-q">প্রথম সারভাইক্যাল কশেরুকাকে কী বলা হয়?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. অ্যাটলাস</span></div>
+        <p class="sol-exp">C1 = <strong>Atlas</strong> (মাথার ভার বহন করে, গ্রিক টাইটান Atlas-এর নামে)। C2 = Axis। Atlas ও Axis মিলে মাথা ঘুরতে সাহায্য করে।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">১০</span><p class="sol-q">থোরাসিক কশেরুকার সংখ্যা কত?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. ১২</span></div>
+        <p class="sol-exp">বুকের অঞ্চলে <strong>১২টি</strong> Thoracic vertebrae (T1–T12)। প্রতিটির সাথে একটি করে পাঁজর যুক্ত থাকে।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">১১</span><p class="sol-q">লাম্বার কশেরুকার সংখ্যা কত?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ৫</span></div>
+        <p class="sol-exp">কোমরের অঞ্চলে <strong>৫টি</strong> Lumbar vertebrae (L1–L5)। এগুলো সবচেয়ে বড় ও শক্তিশালী কশেরুকা, কারণ এরা সবচেয়ে বেশি ভার বহন করে।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">১২</span><p class="sol-q">মানবদেহে পাঁজরের জোড়া সংখ্যা কত?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. ১২</span></div>
+        <p class="sol-exp">মোট <strong>১২ জোড়া</strong> পাঁজর = ২৪টি। True ribs: ৭ জোড়া, False ribs: ৩ জোড়া, Floating ribs: ২ জোড়া।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">১৩</span><p class="sol-q">সত্যিকার পাঁজরের জোড়া সংখ্যা কত?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. ৭</span></div>
+        <p class="sol-exp">প্রথম <strong>৭ জোড়া</strong> পাঁজর সরাসরি স্টার্নামের সাথে যুক্ত — এদের True Ribs বলে।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">১৪</span><p class="sol-q">ভাসমান পাঁজরের জোড়া সংখ্যা কত?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ২</span></div>
+        <p class="sol-exp">১১তম ও ১২তম পাঁজর — এরা সামনে কোনো কিছুর সাথে যুক্ত নয়, তাই <strong>Floating ribs (২ জোড়া)</strong>।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">১৫</span><p class="sol-q">স্টার্নামের সবচেয়ে নিচের অংশ?</p></div>
+        <div name="sol-q" class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. জাইফয়েড প্রসেস</span></div>
+        <p class="sol-exp">স্টার্নাম ৩ অংশে বিভক্ত: Manubrium (উপরে) → Body (মাঝে) → <strong>Xiphoid process</strong> (নিচে)। Xiphoid প্রসেস তরুণাস্থি দিয়ে তৈরি।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">১৬</span><p class="sol-q">পেক্টোরাল গার্ডল কোন অস্থি দিয়ে তৈরি?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ক্ল্যাভিকল ও স্ক্যাপুলা</span></div>
+        <p class="sol-exp">Pectoral girdle = <strong>Clavicle + Scapula</strong>। এটি হাতকে অক্ষীয় কঙ্কালের সাথে সংযুক্ত করে।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">১৭</span><p class="sol-q">কলারবোন নামে পরিচিত অস্থিটি?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ক্ল্যাভিকল</span></div>
+        <p class="sol-exp"><strong>Clavicle</strong> = Collarbone। এটি শরীরের প্রথম অস্থি যা শক্ত হয় এবং সবচেয়ে বেশি ভাঙে।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">১৮</span><p class="sol-q">পেলভিক গার্ডল কতটি হিপ বোন দিয়ে তৈরি?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ২</span></div>
+        <p class="sol-exp">Pelvic girdle = <strong>২টি</strong> hip bone (os coxae)। বাম + ডান = ২টি হিপ বোন মিলে Pelvis গঠিত হয়।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">১৯</span><p class="sol-q">হিপ বোন কোন তিনটি অস্থির সংযুক্তিতে?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">ক. ইলিয়াম, ইসকিয়াম, পিউবিস</span></div>
+        <p class="sol-exp">Hip bone = <strong>Ilium + Ischium + Pubis</strong>। শিশুতে আলাদা থাকে, বড় হলে একত্রিত হয়ে হিপ বোন তৈরি করে।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">২০</span><p class="sol-q">মানবদেহের দীর্ঘতম অস্থি কোনটি?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. ফিমার</span></div>
+        <p class="sol-exp"><strong>Femur</strong> (উরুর অস্থি) = শরীরের দীর্ঘতম ও শক্তিশালী অস্থি। ছোট্ট ট্রিক: "Femur = First longest"।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">২১</span><p class="sol-q">বাহুর ঊর্ধ্বাংশের অস্থি?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. হিউমেরাস</span></div>
+        <p class="sol-exp">কাঁধ থেকে কনুই পর্যন্ত = <strong>Humerus</strong>। Humerus → H = Hand's upper bone।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">২২</span><p class="sol-q">বাহুর নিম্নাংশে কতটি অস্থি?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ২</span></div>
+        <p class="sol-exp">Forearm-এ <strong>২টি</strong>: Radius (বুড়ো আঙুলের দিকে) + Ulna (কনিষ্ঠার দিকে)।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">২৩</span><p class="sol-q">প্রতিটি হাতের কব্জিতে কার্পাল অস্থির সংখ্যা?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. ৮</span></div>
+        <p class="sol-exp">প্রতিটি Wrist = <strong>৮টি</strong> Carpal bone। স্মৃতিসূত্র: "Some Lovers Try Positions That They Cannot Handle" (Scaphoid, Lunate, Triquetrum, Pisiform, Trapezium, Trapezoid, Capitate, Hamate)।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">২৪</span><p class="sol-q">প্রতিটি হাতে মেটাকার্পাল অস্থির সংখ্যা?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ৫</span></div>
+        <p class="sol-exp">প্রতিটি হাতের তালুতে <strong>৫টি</strong> Metacarpal bone — প্রতিটি আঙুলের জন্য একটি।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">২৫</span><p class="sol-q">প্রতিটি হাতে ফ্যালাঞ্জেসের সংখ্যা?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. ১৪</span></div>
+        <p class="sol-exp">বুড়ো আঙুল = ২টি, বাকি ৪ আঙুল = ৩টি করে। মোট = ২ + (৪×৩) = <strong>১৪টি</strong> Phalanges।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">২৬</span><p class="sol-q">প্রতিটি পায়ের গোড়ালিতে টারসাল অস্থির সংখ্যা?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ৭</span></div>
+        <p class="sol-exp">প্রতিটি পায়ের গোড়ালি ও পায়ের পিছনে <strong>৭টি</strong> Tarsal bone। Calcaneus সবচেয়ে বড় Tarsal।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">২৭</span><p class="sol-q">মানবদেহের বৃহত্তম সিসাময়েড অস্থি?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. প্যাটেলা</span></div>
+        <p class="sol-exp"><strong>Patella</strong> (হাঁটুর উপরিভাগের চাকতি) = শরীরের বৃহত্তম Sesamoid bone। এটি Quadriceps tendon-এ থাকে।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">২৮</span><p class="sol-q">দীর্ঘ অস্থির উদাহরণ?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ফিমার</span></div>
+        <p class="sol-exp">Long bones: Femur, Humerus, Tibia, Fibula, Radius, Ulna। এগুলোর দৈর্ঘ্য প্রস্থের চেয়ে বেশি।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">২৯</span><p class="sol-q">চ্যাপ্টা অস্থির উদাহরণ?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. স্ক্যাপুলা</span></div>
+        <p class="sol-exp">Flat bones: Scapula, Parietal, Frontal, Sternum, Ribs। এগুলো সমতল এবং অঙ্গ রক্ষা করে।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৩০</span><p class="sol-q">অনিয়তাকার অস্থির উদাহরণ?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">ক. কশেরুকা</span></div>
+        <p class="sol-exp">Irregular bones: Vertebrae, Sphenoid, Ethmoid, Hip bone। এগুলোর আকৃতি অনিয়মিত।</p>
+      </div>
+
+    </div>
+
+    <!-- CATEGORY: কার্টিলেজ ও সন্ধি -->
+    <div class="category-label">
+      <span class="cat-name">🔗 কার্টিলেজ ও সন্ধি (প্রশ্ন ৩১–৪২)</span>
+      <div class="cat-line"></div>
+    </div>
+    <div class="sol-grid">
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৩১</span><p class="sol-q">কনড্রোসাইট কোষ কোথায় পাওয়া যায়?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. কার্টিলেজে</span></div>
+        <p class="sol-exp"><strong>Chondrocyte</strong> = কার্টিলেজের কোষ (Chondro = কার্টিলেজ)। অস্থির কোষ = Osteocyte, পেশির কোষ = Myocyte।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৩২</span><p class="sol-q">মানবদেহে কত প্রকার কার্টিলেজ?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ৩</span></div>
+        <p class="sol-exp">৩ প্রকার: <strong>①</strong> Hyaline cartilage, <strong>②</strong> Fibrocartilage, <strong>③</strong> Elastic cartilage।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৩৩</span><p class="sol-q">দুটি অস্থির সংযোগস্থলকে কী বলা হয়?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. অস্থিসন্ধি (Joint)</span></div>
+        <p class="sol-exp">দুই বা তার বেশি অস্থির সংযোগস্থল = <strong>Joint (Arthrology)</strong>। Ligament অস্থিকে অস্থির সাথে যুক্ত করে।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৩৪</span><p class="sol-q">সম্পূর্ণ অনড় অস্থিসন্ধিকে কী বলা হয়?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">ক. ফাইব্রাস জয়েন্ট</span></div>
+        <p class="sol-exp"><strong>Fibrous joint (Synarthrosis)</strong> = সম্পূর্ণ অনড়। যেমন: Skull sutures। Cartilaginous = আংশিক নড়াচড়া। Synovial = সম্পূর্ণ নড়াচড়া।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৩৫</span><p class="sol-q">কনুই ও হাঁটুর সন্ধি কোন প্রকার?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. হিঞ্জ জয়েন্ট</span></div>
+        <p class="sol-exp"><strong>Hinge joint</strong> = এক দিকে মাত্র নড়ে (দরজার কব্জার মতো)। Elbow, Knee, Ankle — সব Hinge joint।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৩৬</span><p class="sol-q">কাঁধ ও হিপের সন্ধি কোন প্রকার?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. বল অ্যান্ড সকেট জয়েন্ট</span></div>
+        <p class="sol-exp"><strong>Ball &amp; Socket joint</strong> = সব দিকে নড়তে পারে (৩৬০°)। Shoulder ও Hip-এর সর্বোচ্চ গতিশীলতা।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৩৭</span><p class="sol-q">অ্যাটলাস ও অ্যাক্সিসের মধ্যবর্তী সন্ধি?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. পিভট জয়েন্ট</span></div>
+        <p class="sol-exp"><strong>Pivot joint</strong> = ঘূর্ণন গতি। Atlas-Axis joint → মাথা "না" বলার সময় ঘোরে। Radius-Ulna joint-ও Pivot joint।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৩৮</span><p class="sol-q">কার্পাল অস্থিসমূহের মধ্যবর্তী সন্ধি?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. গ্লাইডিং জয়েন্ট</span></div>
+        <p class="sol-exp"><strong>Gliding (Plane) joint</strong> = পিচ্ছিল সমতলে স্লাইডিং। Carpal, Tarsal হাড়ের মধ্যে দেখা যায়।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৩৯</span><p class="sol-q">বৃদ্ধাঙ্গুলির কার্পোমেটাকার্পাল সন্ধি?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. সাডল জয়েন্ট</span></div>
+        <p class="sol-exp"><strong>Saddle joint</strong> = দুই দিকে নড়তে পারে। শুধুমাত্র বুড়ো আঙুলের Carpometacarpal joint-এ দেখা যায়।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৪০</span><p class="sol-q">অস্থির সাথে অস্থিকে যুক্ত করে কোনটি?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. লিগামেন্ট</span></div>
+        <p class="sol-exp"><strong>Ligament</strong> = অস্থি ↔ অস্থি। <strong>Tendon</strong> = পেশি ↔ অস্থি। মনে রাখুন: "L" for Ligament → Links bone to bone।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৪১</span><p class="sol-q">পেশিকে অস্থির সাথে যুক্ত করে কোনটি?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. টেন্ডন</span></div>
+        <p class="sol-exp"><strong>Tendon</strong> = পেশি ↔ অস্থি। Tendons হলো অস্থিস্থিতিস্থাপক কোলাজেন তন্তু। "T" for Tendon → Takes muscle to bone।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৪২</span><p class="sol-q">সাইনোভিয়াল ফ্লুইড নিঃসৃত হয় কোথা থেকে?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. সাইনোভিয়াল মেমব্রেন</span></div>
+        <p class="sol-exp"><strong>Synovial membrane</strong> থেকে Synovial fluid নিঃসৃত হয়। এটি সন্ধির মসৃণতা ও পুষ্টি সরবরাহ করে।</p>
+      </div>
+
+    </div>
+
+    <!-- CATEGORY: পেশিতন্ত্র -->
+    <div class="category-label">
+      <span class="cat-name">💪 পেশিতন্ত্র (প্রশ্ন ৪৩–৫০)</span>
+      <div class="cat-line"></div>
+    </div>
+    <div class="sol-grid">
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৪৩</span><p class="sol-q">মানবদেহে পেশি কত প্রকার?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ৩</span></div>
+        <p class="sol-exp"><strong>৩ প্রকার পেশি:</strong> ① Skeletal (ঐচ্ছিক), ② Smooth (অনৈচ্ছিক), ③ Cardiac (হৃৎপিণ্ড)।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৪৪</span><p class="sol-q">ঐচ্ছিক ও রৈখিক পেশিকে কী বলা হয়?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. স্কেলিটাল মাসল</span></div>
+        <p class="sol-exp"><strong>Skeletal muscle</strong> = ঐচ্ছিক + রৈখিক (striated)। আমরা ইচ্ছামতো নাড়াতে পারি। বহুনিউক্লিয়াসযুক্ত।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৪৫</span><p class="sol-q">হৃৎপিণ্ডের পেশি কোন প্রকারের?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">গ. কার্ডিয়াক</span></div>
+        <p class="sol-exp"><strong>Cardiac muscle</strong> = অনৈচ্ছিক + রৈখিক। শুধুমাত্র হৃৎপিণ্ডে থাকে। একক নিউক্লিয়াস, intercalated disc দেখা যায়।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৪৬</span><p class="sol-q">পেশি তন্তুর কার্যগত একক কী?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. সারকোমিয়ার</span></div>
+        <p class="sol-exp"><strong>Sarcomere</strong> = পেশির কার্যগত একক। দুটি Z-line-এর মধ্যবর্তী অংশ = একটি Sarcomere। Myofibril → Sarcomere।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৪৭</span><p class="sol-q">পেশির পুরু তন্তু কোন প্রোটিন দিয়ে?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. মায়োসিন</span></div>
+        <p class="sol-exp"><strong>Myosin</strong> = পুরু তন্তু (Thick filament)। <strong>Actin</strong> = সরু তন্তু (Thin filament)। Troponin ও Tropomyosin = সহায়ক প্রোটিন।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৪৮</span><p class="sol-q">পেশি সংকোচনের তত্ত্বটি কী নামে পরিচিত?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. স্লাইডিং ফিলামেন্ট তত্ত্ব</span></div>
+        <p class="sol-exp"><strong>Sliding Filament Theory</strong> (Huxley, 1954)। Actin (thin) filament, Myosin (thick) filament-এর উপর দিয়ে স্লাইড করে — Sarcomere ছোট হয়।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৪৯</span><p class="sol-q">পেশি সংকোচনের জন্য প্রয়োজনীয় শক্তির প্রধান উৎস?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. ATP</span></div>
+        <p class="sol-exp"><strong>ATP</strong> (Adenosine Triphosphate) = পেশি সংকোচনের সরাসরি শক্তির উৎস। Myosin ATPase এনজাইম ATP ভাঙে।</p>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-qrow"><span class="sol-num">৫০</span><p class="sol-q">পেশি সংকোচনের সময় ক্যালসিয়াম আয়ন আসে কোথা থেকে?</p></div>
+        <div class="answer-row"><span class="ans-label">উত্তর</span><span class="ans-check">✔</span><span class="ans-text">খ. সারকোপ্লাজমিক রেটিকুলাম</span></div>
+        <p class="sol-exp"><strong>Sarcoplasmic Reticulum (SR)</strong> থেকে Ca²⁺ মুক্ত হয়। Ca²⁺ → Troponin-C-এর সাথে যুক্ত হয় → Actin সক্রিয় হয় → পেশি সংকুচিত হয়।</p>
+      </div>
+
+    </div>
+
+    <div style="text-align:center; margin-top:28px;">
+      <button class="print-btn" onclick="window.print()">🖨️ প্রিন্ট করুন</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SECTION 2: ANSWER SHEET
+  ══════════════════════════════════ -->
+  <div id="answersheet" class="section">
+    <div class="ans-sheet-intro">
+      <span class="icon">📋</span>
+      <div>দ্রুত মিলিয়ে নেওয়ার জন্য কুইক আনসার গ্রিড। প্রতিটি ঘরে সঠিক উত্তরের অপশন লেটার দেওয়া আছে।</div>
+    </div>
+
+    <!-- Quick Answer Grid -->
+    <div class="quick-grid">
+      <div class="qg-cell"><div class="n">০১</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">০২</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">০৩</div><div class="a">ঘ</div></div>
+      <div class="qg-cell"><div class="n">০৪</div><div class="a">ঘ</div></div>
+      <div class="qg-cell"><div class="n">০৫</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">০৬</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">০৭</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">০৮</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">০৯</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">১০</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">১১</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">১২</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">১৩</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">১৪</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">১৫</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">১৬</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">১৭</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">১৮</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">১৯</div><div class="a">ক</div></div>
+      <div class="qg-cell"><div class="n">২০</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">২১</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">২২</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">২৩</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">২৪</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">২৫</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">২৬</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">২৭</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">২৮</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">২৯</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">৩০</div><div class="a">ক</div></div>
+      <div class="qg-cell"><div class="n">৩১</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">৩২</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">৩৩</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">৩৪</div><div class="a">ক</div></div>
+      <div class="qg-cell"><div class="n">৩৫</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">৩৬</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">৩৭</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">৩৮</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">৩৯</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">৪০</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">৪১</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">৪২</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">৪৩</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">৪৪</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">৪৫</div><div class="a">গ</div></div>
+      <div class="qg-cell"><div class="n">৪৬</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">৪৭</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">৪৮</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">৪৯</div><div class="a">খ</div></div>
+      <div class="qg-cell"><div class="n">৫০</div><div class="a">খ</div></div>
+    </div>
+
+    <!-- Full Answer Table -->
+    <div class="ans-table-wrap">
+      <table class="ans-table">
+        <thead>
+          <tr>
+            <th>প্র. নং</th>
+            <th>সঠিক উত্তর</th>
+            <th style="text-align:left; padding-left:14px;">সম্পূর্ণ উত্তর</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="q-no">১</td><td class="correct">খ</td><td class="full-ans">২০৬</td></tr>
+          <tr><td class="q-no">২</td><td class="correct">গ</td><td class="full-ans">৮০</td></tr>
+          <tr><td class="q-no">৩</td><td class="correct">ঘ</td><td class="full-ans">১২৬</td></tr>
+          <tr><td class="q-no">৪</td><td class="correct">ঘ</td><td class="full-ans">২২</td></tr>
+          <tr><td class="q-no">৫</td><td class="correct">খ</td><td class="full-ans">৮</td></tr>
+          <tr><td class="q-no">৬</td><td class="correct">গ</td><td class="full-ans">১৪</td></tr>
+          <tr><td class="q-no">৭</td><td class="correct">গ</td><td class="full-ans">৩৩</td></tr>
+          <tr><td class="q-no">৮</td><td class="correct">খ</td><td class="full-ans">৭</td></tr>
+          <tr><td class="q-no">৯</td><td class="correct">খ</td><td class="full-ans">অ্যাটলাস (Atlas)</td></tr>
+          <tr><td class="q-no">১০</td><td class="correct">গ</td><td class="full-ans">১২</td></tr>
+          <tr><td class="q-no">১১</td><td class="correct">খ</td><td class="full-ans">৫</td></tr>
+          <tr><td class="q-no">১২</td><td class="correct">গ</td><td class="full-ans">১২ জোড়া</td></tr>
+          <tr><td class="q-no">১৩</td><td class="correct">গ</td><td class="full-ans">৭ জোড়া</td></tr>
+          <tr><td class="q-no">১৪</td><td class="correct">খ</td><td class="full-ans">২ জোড়া</td></tr>
+          <tr><td class="q-no">১৫</td><td class="correct">গ</td><td class="full-ans">জাইফয়েড প্রসেস (Xiphoid process)</td></tr>
+          <tr><td class="q-no">১৬</td><td class="correct">খ</td><td class="full-ans">ক্ল্যাভিকল ও স্ক্যাপুলা</td></tr>
+          <tr><td class="q-no">১৭</td><td class="correct">খ</td><td class="full-ans">ক্ল্যাভিকল (Clavicle)</td></tr>
+          <tr><td class="q-no">১৮</td><td class="correct">খ</td><td class="full-ans">২টি হিপ বোন</td></tr>
+          <tr><td class="q-no">১৯</td><td class="correct">ক</td><td class="full-ans">ইলিয়াম, ইসকিয়াম, পিউবিস</td></tr>
+          <tr><td class="q-no">২০</td><td class="correct">গ</td><td class="full-ans">ফিমার (Femur)</td></tr>
+          <tr><td class="q-no">২১</td><td class="correct">গ</td><td class="full-ans">হিউমেরাস (Humerus)</td></tr>
+          <tr><td class="q-no">২২</td><td class="correct">খ</td><td class="full-ans">২টি (Radius + Ulna)</td></tr>
+          <tr><td class="q-no">২৩</td><td class="correct">গ</td><td class="full-ans">৮টি Carpal bone</td></tr>
+          <tr><td class="q-no">২৪</td><td class="correct">খ</td><td class="full-ans">৫টি Metacarpal</td></tr>
+          <tr><td class="q-no">২৫</td><td class="correct">গ</td><td class="full-ans">১৪টি Phalanges</td></tr>
+          <tr><td class="q-no">২৬</td><td class="correct">খ</td><td class="full-ans">৭টি Tarsal bone</td></tr>
+          <tr><td class="q-no">২৭</td><td class="correct">খ</td><td class="full-ans">প্যাটেলা (Patella)</td></tr>
+          <tr><td class="q-no">২৮</td><td class="correct">খ</td><td class="full-ans">ফিমার (Long bone)</td></tr>
+          <tr><td class="q-no">২৯</td><td class="correct">খ</td><td class="full-ans">স্ক্যাপুলা (Flat bone)</td></tr>
+          <tr><td class="q-no">৩০</td><td class="correct">ক</td><td class="full-ans">কশেরুকা (Irregular bone)</td></tr>
+          <tr><td class="q-no">৩১</td><td class="correct">খ</td><td class="full-ans">কার্টিলেজে (Chondrocyte)</td></tr>
+          <tr><td class="q-no">৩২</td><td class="correct">খ</td><td class="full-ans">৩ প্রকার</td></tr>
+          <tr><td class="q-no">৩৩</td><td class="correct">গ</td><td class="full-ans">অস্থিসন্ধি (Joint)</td></tr>
+          <tr><td class="q-no">৩৪</td><td class="correct">ক</td><td class="full-ans">ফাইব্রাস জয়েন্ট (Fibrous joint)</td></tr>
+          <tr><td class="q-no">৩৫</td><td class="correct">খ</td><td class="full-ans">হিঞ্জ জয়েন্ট (Hinge joint)</td></tr>
+          <tr><td class="q-no">৩৬</td><td class="correct">গ</td><td class="full-ans">বল অ্যান্ড সকেট জয়েন্ট</td></tr>
+          <tr><td class="q-no">৩৭</td><td class="correct">খ</td><td class="full-ans">পিভট জয়েন্ট (Pivot joint)</td></tr>
+          <tr><td class="q-no">৩৮</td><td class="correct">খ</td><td class="full-ans">গ্লাইডিং জয়েন্ট (Gliding joint)</td></tr>
+          <tr><td class="q-no">৩৯</td><td class="correct">গ</td><td class="full-ans">সাডল জয়েন্ট (Saddle joint)</td></tr>
+          <tr><td class="q-no">৪০</td><td class="correct">খ</td><td class="full-ans">লিগামেন্ট (Ligament)</td></tr>
+          <tr><td class="q-no">৪১</td><td class="correct">খ</td><td class="full-ans">টেন্ডন (Tendon)</td></tr>
+          <tr><td class="q-no">৪২</td><td class="correct">খ</td><td class="full-ans">সাইনোভিয়াল মেমব্রেন</td></tr>
+          <tr><td class="q-no">৪৩</td><td class="correct">খ</td><td class="full-ans">৩ প্রকার</td></tr>
+          <tr><td class="q-no">৪৪</td><td class="correct">গ</td><td class="full-ans">স্কেলিটাল মাসল (Skeletal muscle)</td></tr>
+          <tr><td class="q-no">৪৫</td><td class="correct">গ</td><td class="full-ans">কার্ডিয়াক মাসল (Cardiac muscle)</td></tr>
+          <tr><td class="q-no">৪৬</td><td class="correct">খ</td><td class="full-ans">সারকোমিয়ার (Sarcomere)</td></tr>
+          <tr><td class="q-no">৪৭</td><td class="correct">খ</td><td class="full-ans">মায়োসিন (Myosin)</td></tr>
+          <tr><td class="q-no">৪৮</td><td class="correct">খ</td><td class="full-ans">স্লাইডিং ফিলামেন্ট তত্ত্ব</td></tr>
+          <tr><td class="q-no">৪৯</td><td class="correct">খ</td><td class="full-ans">ATP</td></tr>
+          <tr><td class="q-no">৫০</td><td class="correct">খ</td><td class="full-ans">সারকোপ্লাজমিক রেটিকুলাম</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="text-align:center;">
+      <button class="print-btn" onclick="window.print()">🖨️ প্রিন্ট করুন</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SECTION 3: TIPS & SUMMARY
+  ══════════════════════════════════ -->
+  <div id="tips" class="section">
+
+    <!-- Highlight numbers -->
+    <div class="highlight-box">
+      <h3>🔢 অবশ্যই মুখস্থ রাখতে হবে — গুরুত্বপূর্ণ সংখ্যাগুলো</h3>
+      <ul>
+        <li>মোট অস্থি: <strong>২০৬</strong></li>
+        <li>অক্ষীয় কঙ্কাল: <strong>৮০</strong></li>
+        <li>উপাংশীয় কঙ্কাল: <strong>১২৬</strong></li>
+        <li>খুলির অস্থি: <strong>২২</strong> (৮+১৪)</li>
+        <li>মেরুদণ্ড: <strong>৩৩</strong> কশেরুকা</li>
+        <li>সারভাইক্যাল: <strong>৭</strong>, থোরাসিক: <strong>১২</strong></li>
+        <li>লাম্বার: <strong>৫</strong>, স্যাক্রাল: <strong>৫</strong></li>
+        <li>পাঁজর: <strong>১২ জোড়া</strong> (True ৭, False ৩, Float ২)</li>
+        <li>কার্পাল: <strong>৮</strong>, মেটাকার্পাল: <strong>৫</strong></li>
+        <li>ফ্যালাঞ্জেস (হাত): <strong>১৪</strong></li>
+        <li>টারসাল: <strong>৭</strong></li>
+        <li>কার্টিলেজ প্রকার: <strong>৩</strong></li>
+        <li>পেশি প্রকার: <strong>৩</strong></li>
+      </ul>
+    </div>
+
+    <!-- Tips cards -->
+    <div class="tips-grid">
+
+      <div class="tip-card">
+        <div class="tip-head green">🧠 স্মৃতিসূত্র (Mnemonics)</div>
+        <div class="tip-body">
+          <div class="tip-item"><span class="tip-icon">💡</span><div><strong>Carpal bones (৮টি):</strong> "Some Lovers Try Positions That They Cannot Handle" — Scaphoid, Lunate, Triquetrum, Pisiform, Trapezium, Trapezoid, Capitate, Hamate</div></div>
+          <div class="tip-item"><span class="tip-icon">💡</span><div><strong>Femur = দীর্ঘতম:</strong> "F for First, F for Femur"</div></div>
+          <div class="tip-item"><span class="tip-icon">💡</span><div><strong>Ligament vs Tendon:</strong> "L = Ligament = Links bone to bone" | "T = Tendon = Takes muscle to bone"</div></div>
+          <div class="tip-item"><span class="tip-icon">💡</span><div><strong>C1=Atlas (মাথা ধরে), C2=Axis (মাথা ঘোরায়)</strong> — Atlas পৃথিবী ধরে রেখেছে।</div></div>
+          <div class="tip-item"><span class="tip-icon">💡</span><div><strong>Hip bone = IIP:</strong> Ilium + Ischium + Pubis</div></div>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-head blue">🔗 জয়েন্টের প্রকারভেদ</div>
+        <div class="tip-body">
+          <table class="mem-table">
+            <thead><tr><th>জয়েন্ট</th><th>উদাহরণ</th></tr></thead>
+            <tbody>
+              <tr><td class="key">Hinge</td><td class="val">Elbow, Knee, Ankle</td></tr>
+              <tr><td class="key">Ball & Socket</td><td class="val">Shoulder, Hip</td></tr>
+              <tr><td class="key">Pivot</td><td class="val">Atlas-Axis, Radius-Ulna</td></tr>
+              <tr><td class="key">Gliding</td><td class="val">Carpal, Tarsal</td></tr>
+              <tr><td class="key">Saddle</td><td class="val">বুড়ো আঙুলের CMC</td></tr>
+              <tr><td class="key">Fibrous</td><td class="val">Skull sutures (অনড়)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-head teal">💪 পেশি সংকোচন — ধাপে ধাপে</div>
+        <div class="tip-body">
+          <div class="tip-item"><span class="tip-icon">①</span><div>নার্ভ সিগন্যাল → Motor end plate</div></div>
+          <div class="tip-item"><span class="tip-icon">②</span><div>Sarcoplasmic reticulum থেকে <strong>Ca²⁺</strong> মুক্ত</div></div>
+          <div class="tip-item"><span class="tip-icon">③</span><div>Ca²⁺ + Troponin-C → Tropomyosin সরে যায়</div></div>
+          <div class="tip-item"><span class="tip-icon">④</span><div>Actin site উন্মুক্ত → Myosin head যুক্ত</div></div>
+          <div class="tip-item"><span class="tip-icon">⑤</span><div>ATP ভাঙে → Myosin টেনে ধরে → Actin স্লাইড করে</div></div>
+          <div class="tip-item"><span class="tip-icon">⑥</span><div>Sarcomere ছোট হয় → পেশি সংকুচিত</div></div>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-head amber">⚠️ পরীক্ষায় প্রায়ই যেখানে ভুল হয়</div>
+        <div class="tip-body">
+          <div class="tip-item"><span class="tip-icon">❌</span><div><strong>২০৬ নাকি ২১২?</strong> সঠিক = ২০৬। শিশুতে ২৭০+, বড় হলে ২০৬।</div></div>
+          <div class="tip-item"><span class="tip-icon">❌</span><div><strong>Axial = ৮০, Appendicular = ১২৬</strong> — উল্টো মুখস্থ করবেন না।</div></div>
+          <div class="tip-item"><span class="tip-icon">❌</span><div><strong>Sarcomere</strong> = কার্যগত একক, <strong>Myofibril</strong> ≠ একক।</div></div>
+          <div class="tip-item"><span class="tip-icon">❌</span><div><strong>Thick = Myosin, Thin = Actin</strong> — উল্টো বলবেন না।</div></div>
+          <div class="tip-item"><span class="tip-icon">❌</span><div><strong>Chondrocyte</strong> = কার্টিলেজ। Osteocyte = অস্থি।</div></div>
+          <div class="tip-item"><span class="tip-icon">❌</span><div><strong>Floating ribs = ২ জোড়া</strong> (১১ ও ১২ নং), ৩ নয়।</div></div>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-head red">🦴 অস্থির প্রকারভেদ</div>
+        <div class="tip-body">
+          <table class="mem-table">
+            <thead><tr><th>প্রকার</th><th>উদাহরণ</th></tr></thead>
+            <tbody>
+              <tr><td class="key">Long bone</td><td class="val">Femur, Humerus, Tibia</td></tr>
+              <tr><td class="key">Short bone</td><td class="val">Carpal, Tarsal</td></tr>
+              <tr><td class="key">Flat bone</td><td class="val">Skull, Scapula, Sternum, Ribs</td></tr>
+              <tr><td class="key">Irregular</td><td class="val">Vertebrae, Hip bone, Sphenoid</td></tr>
+              <tr><td class="key">Sesamoid</td><td class="val">Patella (সবচেয়ে বড়)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-head green">📌 মেডিকেল ভর্তি বিশেষ টিপস</div>
+        <div class="tip-body">
+          <div class="tip-item"><span class="tip-icon">🎯</span><div>এই অধ্যায় থেকে <strong>প্রতি বছর ৩–৫টি</strong> MCQ আসে।</div></div>
+          <div class="tip-item"><span class="tip-icon">🎯</span><div><strong>সংখ্যাভিত্তিক</strong> প্রশ্ন বেশি — সবগুলো সংখ্যা ভালো করে মুখস্থ রাখুন।</div></div>
+          <div class="tip-item"><span class="tip-icon">🎯</span><div>Joint types + Sliding Filament Theory = হাই-ভ্যালু টপিক।</div></div>
+          <div class="tip-item"><span class="tip-icon">🎯</span><div>Latin/English term মুখস্থ রাখুন — MBBS-এ কাজে আসবে।</div></div>
+          <div class="tip-item"><span class="tip-icon">🎯</span><div>ছবি এঁকে পড়লে অস্থির অবস্থান মনে থাকে বেশি।</div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="text-align:center; margin-top: 8px;">
+      <button class="print-btn" onclick="window.print()">🖨️ প্রিন্ট করুন</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>HSC জীববিজ্ঞান দ্বিতীয় পত্র · অধ্যায় ৭ · চলন ও অঙ্গচালনা — সমাধান পত্র</p>
+  </footer>
+
+</div>
+
+<script>
+  function showTab(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
+</body>
+</html>

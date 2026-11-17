@@ -1,0 +1,3754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NoteSpace — Personal Notes</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap');
+
+/* ══════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box}
+html{height:100%;font-size:14px}
+body{height:100%;background:#f8f9fa;color:#1a1a2e;font-family:'Inter',sans-serif;font-weight:400;overflow:hidden}
+
+/* ══════════════════════════════════════════
+   NOTEBOOK
+══════════════════════════════════════════ */
+#notebook{display:flex;flex-direction:column;height:100vh;background:#ffffff}
+
+/* Notebook topbar */
+.d-topbar{
+  height:52px;background:#fff;border-bottom:1px solid #e8eaed;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.25rem;flex-shrink:0;gap:8px
+}
+.d-brand{
+  display:flex;align-items:center;gap:8px;
+  font-size:15px;font-weight:600;color:#1a1a2e;letter-spacing:-0.3px
+}
+.d-brand-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:linear-gradient(135deg,#2ecc71,#27ae60);
+  box-shadow:0 0 0 2px #d4f5e3
+}
+.d-brand-sub{font-size:11px;color:#9aa0ab;font-weight:400}
+.d-topbar-actions{display:flex;gap:6px}
+
+/* Notebook body layout */
+.d-body{display:grid;grid-template-columns:220px 1fr;flex:1;min-height:0;overflow:hidden}
+
+/* Notebook sidebar */
+.d-sidebar{
+  background:#fafbfc;border-right:1px solid #e8eaed;
+  display:flex;flex-direction:column;overflow:hidden
+}
+.d-sidebar-top{padding:1rem;border-bottom:1px solid #e8eaed}
+.d-sidebar-label{
+  font-size:10px;color:#9aa0ab;letter-spacing:1px;
+  text-transform:uppercase;font-weight:600;padding:0.75rem 1rem 0.35rem
+}
+.d-nb-btn{
+  display:flex;align-items:center;gap:9px;width:100%;
+  background:none;border:none;border-radius:6px;
+  padding:7px 1rem;color:#4a5568;font-size:13px;
+  font-family:'Inter',sans-serif;cursor:pointer;
+  transition:background 0.12s,color 0.12s;text-align:left;font-weight:500;
+  margin:1px 0
+}
+.d-nb-btn:hover{background:#f0f4f8;color:#1a1a2e}
+.d-nb-btn.active{background:#e8f8ef;color:#1a9e52;font-weight:600}
+.d-nb-btn svg{width:14px;height:14px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8}
+.d-nb-count{margin-left:auto;font-size:10px;color:#9aa0ab;background:#f0f2f5;border-radius:10px;padding:1px 6px}
+.d-nb-btn.active .d-nb-count{background:#c8f0da;color:#1a9e52}
+.d-sidebar-footer{margin-top:auto;padding:0.75rem 1rem;border-top:1px solid #e8eaed}
+.d-sidebar-status{font-size:11px;color:#9aa0ab;line-height:1.6}
+
+/* Notebook main area */
+.d-main{display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* Notebook search bar */
+.d-searchbar{
+  padding:0.75rem 1.25rem;border-bottom:1px solid #e8eaed;
+  display:flex;align-items:center;gap:8px;flex-shrink:0
+}
+.d-search-wrap{flex:1;position:relative}
+.d-search{
+  width:100%;background:#f5f7fa;border:1.5px solid #e8eaed;
+  border-radius:8px;padding:7px 10px 7px 32px;color:#1a1a2e;
+  font-family:'Inter',sans-serif;font-size:13px;outline:none;
+  transition:border 0.15s,background 0.15s
+}
+.d-search:focus{border-color:#2ecc71;background:#fff}
+.d-search::placeholder{color:#9aa0ab}
+.d-search-icon{
+  position:absolute;left:9px;top:50%;transform:translateY(-50%);
+  pointer-events:none;color:#9aa0ab
+}
+
+/* Notebook note list */
+.d-note-list{flex:1;overflow-y:auto;padding:0.5rem}
+.d-note-card{
+  border-radius:8px;padding:11px 13px;cursor:pointer;
+  transition:background 0.12s,border-color 0.12s;margin-bottom:3px;
+  border:1.5px solid transparent
+}
+.d-note-card:hover{background:#f5f7fa;border-color:#e8eaed}
+.d-nc-title{font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:3px}
+.d-nc-preview{font-size:12px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.d-nc-date{font-size:11px;color:#9aa0ab;margin-top:5px}
+.d-nc-tag{
+  display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;
+  margin-bottom:5px;font-weight:500
+}
+.tag-journal{background:#e8f0fe;color:#3b5bdb}
+.tag-work{background:#fff3e0;color:#c45c00}
+.tag-ideas{background:#f3e8ff;color:#7c3aed}
+.tag-personal{background:#e8f8ef;color:#1a9e52}
+
+/* Notebook editor */
+.d-editor{display:none;flex-direction:column;flex:1;overflow:hidden}
+.d-editor-bar{
+  padding:0.6rem 1.25rem;border-bottom:1px solid #e8eaed;
+  display:flex;align-items:center;gap:8px;flex-shrink:0
+}
+.d-editor-actions{display:flex;gap:4px;margin-left:auto}
+.d-title-input{
+  background:transparent;border:none;color:#1a1a2e;
+  font-family:'Inter',sans-serif;font-size:16px;font-weight:600;
+  outline:none;flex:1;min-width:0
+}
+.d-title-input::placeholder{color:#9aa0ab;font-weight:400}
+.d-textarea{
+  flex:1;background:transparent;border:none;color:#374151;
+  font-family:'Inter',sans-serif;font-size:13px;line-height:1.9;
+  padding:1.25rem;resize:none;outline:none;overflow-y:auto
+}
+.d-textarea::placeholder{color:#9aa0ab}
+.d-editor-statusbar{
+  padding:5px 1.25rem;border-top:1px solid #e8eaed;flex-shrink:0;
+  display:flex;align-items:center;gap:12px
+}
+.d-editor-stat{font-size:11px;color:#9aa0ab}
+
+/* Common notebook buttons */
+.d-btn{
+  background:#f5f7fa;border:1.5px solid #e8eaed;color:#4a5568;
+  border-radius:6px;padding:5px 11px;font-size:12px;
+  font-family:'Inter',sans-serif;cursor:pointer;
+  transition:all 0.12s;display:flex;align-items:center;gap:5px;
+  font-weight:500;white-space:nowrap;flex-shrink:0
+}
+.d-btn:hover{background:#edf2f7;border-color:#cbd5e0;color:#1a1a2e}
+.d-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.8}
+.d-btn-primary{
+  background:#2ecc71;border-color:#2ecc71;color:#fff;font-weight:600
+}
+.d-btn-primary:hover{background:#27ae60;border-color:#27ae60}
+.d-btn-danger{color:#e53e3e;border-color:#fcdcdc}
+.d-btn-danger:hover{background:#fef2f2;border-color:#e53e3e;color:#c53030}
+body.dark-nb .d-btn-danger{color:#ff8a8a;border-color:#5a2a2a}
+body.dark-nb .d-btn-danger:hover{background:#3d1414;border-color:#ff5c5c;color:#ff8a8a}
+
+/* Notebook auth prompt */
+#nb-auth{
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  flex:1;padding:2rem;gap:1.5rem
+}
+.na-card{
+  background:#fff;border:1.5px solid #e8eaed;border-radius:12px;
+  padding:2rem;width:100%;max-width:360px;box-shadow:0 2px 16px rgba(0,0,0,0.06);
+  position:relative
+}
+.na-close{
+  position:absolute;top:12px;right:12px;background:none;border:none;cursor:pointer;
+  color:#9aa0ab;display:flex;align-items:center;justify-content:center;
+  padding:4px;border-radius:6px;transition:background 0.12s,color 0.12s;z-index:6
+}
+.na-close:hover{background:#f5f7fa;color:#4a5568}
+.na-close svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+body.dark-nb .na-close:hover{background:#2a2f3a;color:#e8eaed}
+.na-title{font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:4px}
+.na-subtitle{font-size:13px;color:#6b7280;margin-bottom:1.5rem}
+.na-input-wrap{position:relative;margin-bottom:1rem}
+.na-input{
+  width:100%;background:#f8f9fa;border:1.5px solid #e8eaed;border-radius:8px;
+  padding:10px 40px 10px 12px;color:#1a1a2e;font-family:'Inter',sans-serif;
+  font-size:14px;outline:none;transition:border 0.15s
+}
+.na-input:focus{border-color:#2ecc71;background:#fff}
+.na-input::placeholder{color:#9aa0ab}
+.na-eye{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:#9aa0ab;
+  display:flex;align-items:center;padding:2px
+}
+.na-eye svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.na-eye:hover{color:#4a5568}
+.na-auth-btn{
+  width:100%;background:#2ecc71;border:none;border-radius:8px;
+  padding:11px;color:#fff;font-family:'Inter',sans-serif;
+  font-size:14px;font-weight:600;cursor:pointer;transition:background 0.15s
+}
+.na-auth-btn:hover{background:#27ae60}
+.na-auth-btn:active{transform:scale(0.99)}
+.na-error{
+  font-size:12px;color:#e53e3e;text-align:center;display:none;
+  margin-top:0.5rem
+}
+.na-attempts{font-size:11px;color:#9aa0ab;text-align:center;margin-top:0.5rem}
+
+.na-card{overflow:hidden}
+.na-lockout{
+  display:none;position:absolute;inset:0;border-radius:12px;
+  background:#fff;flex-direction:column;
+  align-items:center;justify-content:center;gap:6px;
+  text-align:center;padding:1.5rem;z-index:5
+}
+.na-lockout.show{display:flex}
+.na-lockout-icon{width:30px;height:30px;stroke:#e53e3e;fill:none;stroke-width:1.6;margin-bottom:4px}
+.na-lockout-title{font-size:14px;font-weight:700;color:#1a1a2e}
+.na-lockout-timer{
+  font-size:30px;font-weight:700;color:#e53e3e;letter-spacing:1px;
+  font-family:'Fira Code',monospace;margin:2px 0
+}
+.na-lockout-sub{font-size:12px;color:#6b7280}
+body.dark-nb .na-lockout{background:#1f232b}
+body.dark-nb .na-lockout-title{color:#f1f3f6}
+body.dark-nb .na-lockout-sub{color:#aab2c0}
+
+/* ══════════════════════════════════════════
+   SECURE VIEW
+══════════════════════════════════════════ */
+:root{
+  --bg:#000000;--bg2:#0a130d;--bg3:#0f2017;--bg4:#15301f;--bg5:#1c4128;
+  --border:#23ff7c;--border2:#5dffa3;--border3:#a6ffd1;
+  --text:#ffffff;--text2:#eafff2;--text3:#c2ffe0;--text4:#7dffbe;
+  --accent:#39ff8c;--accent2:#00ff7f;--accent-dim:rgba(57,255,140,0.30);
+  --accent-dimmer:rgba(57,255,140,0.14);
+  --red:#ff4d6d;--red-bg:#2a0010;--red-dim:rgba(255,77,109,0.22);
+  --amber:#ffe14d;--amber-bg:#2a2200;
+  --blue:#3ddcff;--blue-bg:#001f2e;
+  --cyan:#5dfff5;--cyan-bg:#001f1d;
+  --purple:#d27dff;--purple-bg:#22083a;
+  --glow:0 0 8px rgba(57,255,140,0.55);
+  --font-mono:'Fira Code',monospace;
+  --font-ui:'Inter',sans-serif;
+  --radius:4px;--radius-lg:6px;
+}
+#app{
+  display:none;flex-direction:column;height:100vh;overflow:hidden;
+  font-weight:500;
+  background:var(--bg);color:var(--text2);font-family:var(--font-mono)
+}
+
+/* CRT scanline effect */
+#app::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.02) 2px,rgba(255,255,255,0.02) 4px);
+  pointer-events:none;z-index:9999
+}
+
+/* Scrollbar */
+#app ::-webkit-scrollbar{width:4px;height:4px}
+#app ::-webkit-scrollbar-track{background:var(--bg)}
+#app ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+#app ::-webkit-scrollbar-thumb:hover{background:var(--border3)}
+
+/* TOPBAR */
+.topbar{
+  background:var(--bg2);border-bottom:1.5px solid var(--border);
+  padding:0 1rem;height:46px;display:flex;align-items:center;
+  justify-content:space-between;flex-shrink:0;gap:8px;min-width:0
+}
+.tb-left{display:flex;align-items:center;gap:10px;min-width:0;overflow:hidden}
+.tb-brand{
+  font-family:var(--font-mono);font-size:13px;color:var(--accent2);
+  letter-spacing:2px;display:flex;align-items:center;gap:7px;white-space:nowrap;flex-shrink:0;
+  text-shadow:var(--glow)
+}
+.tb-brand-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 8px var(--accent);animation:pulse 2.5s ease-in-out infinite;flex-shrink:0
+}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 8px var(--accent)}50%{opacity:0.5;box-shadow:0 0 4px var(--accent)}}
+.tb-session{
+  font-size:9px;color:var(--text4);font-family:var(--font-mono);
+  letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.tb-right{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.tb-idle{font-size:9px;color:var(--text4);font-family:var(--font-mono);letter-spacing:1px;white-space:nowrap;margin-right:4px}
+
+/* LAYOUT */
+.main-layout{display:grid;grid-template-columns:210px 1fr;flex:1;min-height:0;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{
+  background:var(--bg2);border-right:1.5px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;min-width:0
+}
+.sb-section{padding:0.5rem 0;flex-shrink:0}
+.sb-label{
+  font-size:9px;color:var(--text4);letter-spacing:2px;
+  padding:0 12px 5px;font-family:var(--font-mono);font-weight:500;text-transform:uppercase
+}
+.cat-btn{
+  display:flex;align-items:center;gap:8px;width:100%;
+  background:none;border:none;border-left:2px solid transparent;
+  padding:7px 12px;color:var(--text3);font-size:11px;
+  font-family:var(--font-mono);cursor:pointer;transition:all 0.12s;
+  text-align:left;line-height:1;font-weight:500;min-width:0
+}
+.cat-btn:hover{color:var(--text2);background:var(--bg3);border-left-color:var(--border3)}
+.cat-btn.active{color:var(--accent);background:var(--accent-dimmer);border-left-color:var(--accent);font-weight:600;text-shadow:var(--glow)}
+.cat-btn svg{width:13px;height:13px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.5}
+.cat-btn-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.cat-count{margin-left:auto;font-size:9px;color:var(--text4);font-family:var(--font-mono);flex-shrink:0}
+.cat-btn.active .cat-count{color:var(--accent2)}
+.sb-div{border-top:1.5px solid var(--border);margin:3px 12px}
+.sb-actions{
+  padding:0.5rem;border-top:1.5px solid var(--border);
+  margin-top:auto;display:flex;flex-direction:column;gap:5px;flex-shrink:0
+}
+.btn-add{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  width:100%;background:transparent;color:var(--accent);
+  border:1.5px solid var(--accent2);border-radius:var(--radius);
+  padding:7px;font-size:11px;font-family:var(--font-mono);cursor:pointer;
+  transition:all 0.15s;letter-spacing:0.5px;font-weight:600;white-space:nowrap
+}
+.btn-add:hover{background:var(--accent-dim);border-color:var(--accent);box-shadow:var(--glow)}
+.btn-add svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+.sb-io{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+
+/* CONTENT */
+.content{display:flex;overflow:hidden;flex:1;min-height:0}
+.entries-pane{
+  display:flex;flex-direction:column;width:270px;
+  flex-shrink:0;border-right:1.5px solid var(--border);overflow:hidden
+}
+.entries-header{
+  padding:0.6rem 0.75rem;border-bottom:1.5px solid var(--border);
+  display:flex;align-items:center;gap:6px;flex-shrink:0
+}
+.search-wrap{flex:1;position:relative;min-width:0}
+.search-input{
+  width:100%;background:var(--bg3);border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:5px 8px 5px 26px;color:var(--text2);
+  font-family:var(--font-mono);font-size:11px;outline:none;
+  transition:border 0.15s;font-weight:400
+}
+.search-input:focus{border-color:var(--border3);box-shadow:var(--glow)}
+.search-input::placeholder{color:var(--text4)}
+.search-icon{position:absolute;left:7px;top:50%;transform:translateY(-50%);pointer-events:none}
+.entries-list{flex:1;overflow-y:auto;padding:5px}
+.entry-card{
+  background:transparent;border:1.5px solid transparent;
+  border-radius:var(--radius);padding:9px 10px;
+  cursor:pointer;transition:all 0.12s;margin-bottom:2px
+}
+.entry-card:hover{background:var(--bg3);border-color:var(--border)}
+.entry-card.active{background:var(--accent-dimmer);border-color:var(--border2)}
+.ec-header{display:flex;align-items:center;gap:7px;margin-bottom:3px;min-width:0}
+.ec-icon{
+  width:20px;height:20px;border-radius:3px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0
+}
+.ec-icon svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:1.5}
+.ec-title{
+  font-size:11px;font-family:var(--font-mono);letter-spacing:0.3px;
+  color:var(--text2);flex:1;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;min-width:0;font-weight:600
+}
+.entry-card.active .ec-title{color:var(--accent);text-shadow:var(--glow)}
+.ec-cat{font-size:9px;color:var(--text4);letter-spacing:0.5px;font-family:var(--font-mono);white-space:nowrap;flex-shrink:0}
+.ec-meta{
+  font-size:10px;color:var(--text3);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;font-weight:400
+}
+.ec-date{font-size:9px;color:var(--text4);margin-top:3px;font-family:var(--font-mono)}
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:0.6rem;padding:2rem 0.75rem;
+  color:var(--text4);text-align:center
+}
+.empty-state svg{width:28px;height:28px;stroke:var(--text4);fill:none;stroke-width:1;opacity:0.4}
+.empty-state p{font-size:10px;font-family:var(--font-mono);letter-spacing:0.5px;line-height:1.7}
+
+/* DETAIL PANE */
+.detail-pane{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);min-width:0}
+.detail-placeholder{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;flex:1;gap:1rem;color:var(--text4)
+}
+.detail-placeholder pre{
+  font-size:11px;color:var(--text4);line-height:1.9;
+  opacity:0.35;font-family:var(--font-mono)
+}
+.detail-header{
+  padding:0.6rem 1rem;border-bottom:1.5px solid var(--border);
+  display:flex;align-items:center;gap:8px;flex-shrink:0;min-width:0
+}
+.detail-title{
+  font-family:var(--font-mono);font-size:14px;letter-spacing:0.5px;
+  color:var(--text);flex:1;min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;font-weight:600
+}
+.detail-actions{display:flex;gap:4px;flex-shrink:0}
+.detail-body{flex:1;overflow-y:auto;padding:1rem}
+.field-group{margin-bottom:1rem}
+.field-label{
+  font-size:9px;color:var(--text4);letter-spacing:2px;
+  font-family:var(--font-mono);margin-bottom:5px;
+  display:flex;align-items:center;gap:6px;font-weight:500;text-transform:uppercase
+}
+.field-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.field-val{
+  background:var(--bg2);border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:7px 9px;font-family:var(--font-mono);
+  font-size:12px;color:var(--text2);display:flex;align-items:center;gap:7px;
+  word-break:break-all;font-weight:400
+}
+.field-val-txt{flex:1;min-width:0;word-break:break-all;white-space:pre-wrap;line-height:1.6}
+.fv-controls{display:flex;gap:3px;flex-shrink:0}
+.detail-notes{
+  background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:9px 11px;font-size:12px;color:var(--text2);line-height:1.8;
+  white-space:pre-wrap;word-break:break-word;font-family:var(--font-mono);font-weight:400
+}
+.detail-ts{
+  font-size:9px;color:var(--text4);text-align:center;padding:0.75rem 0 0;
+  font-family:var(--font-mono);letter-spacing:0.5px;
+  border-top:1.5px solid var(--border);margin-top:0.75rem
+}
+
+/* BUTTONS */
+.btn-icon{
+  background:transparent;border:1.5px solid var(--border);color:var(--text3);
+  border-radius:var(--radius);width:27px;height:27px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all 0.12s;flex-shrink:0
+}
+.btn-icon svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.5}
+.btn-icon:hover{background:var(--bg3);border-color:var(--border2);color:var(--text2)}
+.btn-icon.danger:hover{border-color:var(--red);color:var(--red);background:var(--red-dim)}
+.btn-icon.accent:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.mini-icon-btn{
+  background:transparent;border:none;color:var(--text3);cursor:pointer;
+  padding:3px;border-radius:3px;display:flex;align-items:center;transition:color 0.12s
+}
+.mini-icon-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.5}
+.mini-icon-btn:hover{color:var(--text2)}
+.mini-icon-btn.ok{color:var(--accent)}
+.btn-sm{
+  background:transparent;border:1.5px solid var(--border);color:var(--text3);
+  border-radius:var(--radius);padding:5px 10px;font-size:11px;
+  font-family:var(--font-mono);cursor:pointer;transition:all 0.12s;
+  display:flex;align-items:center;gap:5px;letter-spacing:0.3px;
+  white-space:nowrap;font-weight:500;flex-shrink:0
+}
+.btn-sm svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.5;flex-shrink:0}
+.btn-sm:hover{background:var(--bg3);border-color:var(--border2);color:var(--text2)}
+.btn-sm.accent-btn{border-color:var(--accent2);color:var(--accent2)}
+.btn-sm.accent-btn:hover{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.btn-sm.danger-btn{border-color:var(--red);color:var(--red)}
+.btn-sm.danger-btn:hover{background:var(--red-dim);border-color:var(--red)}
+.btn-sm:disabled{opacity:0.4;cursor:not-allowed;pointer-events:none}
+
+/* MODAL */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);
+  z-index:200;align-items:center;justify-content:center;padding:1rem
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--bg2);border:1.5px solid var(--border2);
+  border-radius:var(--radius-lg);width:100%;max-width:520px;
+  max-height:90vh;overflow-y:auto;display:flex;flex-direction:column
+}
+.modal-header{
+  padding:0.85rem 1.1rem;border-bottom:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0
+}
+.modal-title{font-family:var(--font-mono);font-size:13px;color:var(--accent2);letter-spacing:1.5px;font-weight:600}
+.modal-body{padding:1.1rem;display:flex;flex-direction:column;gap:0.85rem}
+.modal-footer{
+  padding:0.85rem 1.1rem;border-top:1.5px solid var(--border);
+  display:flex;justify-content:flex-end;gap:7px;flex-shrink:0;flex-wrap:wrap
+}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:9px;color:var(--text4);letter-spacing:2px;font-family:var(--font-mono);font-weight:500;text-transform:uppercase}
+.form-input{
+  background:var(--bg3);border:1.5px solid var(--border);
+  border-radius:var(--radius);padding:7px 10px;color:var(--text2);
+  font-size:12px;font-family:var(--font-mono);outline:none;
+  transition:border 0.15s;width:100%;font-weight:400
+}
+.form-input:focus{border-color:var(--border3);box-shadow:var(--glow)}
+.form-input::placeholder{color:var(--text4)}
+.form-textarea{resize:vertical;min-height:65px;line-height:1.7}
+.form-select{
+  appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%2323ff7c' d='M5 7L0 2h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;padding-right:24px
+}
+.pw-wrap{position:relative}
+.pw-tog{
+  position:absolute;right:7px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;padding:2px;color:var(--text3);
+  display:flex;align-items:center;transition:color 0.12s
+}
+.pw-tog:hover{color:var(--text2)}
+.pw-tog svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.5}
+.gen-btn{
+  font-size:10px;color:var(--accent2);background:none;border:none;
+  cursor:pointer;font-family:var(--font-mono);letter-spacing:0.5px;
+  padding:0;text-align:left;font-weight:500
+}
+.gen-btn:hover{color:var(--accent)}
+.section-divider{border:none;border-top:1.5px solid var(--border);margin:0.4rem 0}
+
+/* SETTINGS */
+#settings-modal .modal{max-width:580px}
+.settings-tab{
+  display:flex;gap:0;border-bottom:1.5px solid var(--border);
+  padding:0 1.1rem;flex-shrink:0;overflow-x:auto;scrollbar-width:none
+}
+.settings-tab::-webkit-scrollbar{display:none}
+.stab{
+  background:none;border:none;border-bottom:2px solid transparent;
+  color:var(--text3);font-family:var(--font-mono);font-size:11px;
+  letter-spacing:0.5px;padding:7px 12px;cursor:pointer;
+  transition:all 0.15s;margin-bottom:-1.5px;white-space:nowrap;font-weight:500
+}
+.stab:hover{color:var(--text2)}
+.stab.active{border-bottom-color:var(--accent);color:var(--accent2)}
+.stab-pane{display:none;flex-direction:column;gap:0.9rem}
+.stab-pane.active{display:flex}
+.setting-row{
+  display:flex;align-items:flex-start;gap:10px;justify-content:space-between;
+  padding:9px 0;border-bottom:1.5px solid var(--border);flex-wrap:wrap
+}
+.setting-row:last-child{border:none}
+.setting-info{flex:1;min-width:140px}
+.setting-label{font-size:11px;color:var(--text2);font-family:var(--font-mono);letter-spacing:0.5px;font-weight:600}
+.setting-desc{font-size:10px;color:var(--text4);margin-top:2px;line-height:1.5}
+.cat-manage-row{
+  display:flex;align-items:flex-start;gap:7px;
+  padding:7px 0;border-bottom:1.5px solid var(--border);flex-wrap:wrap
+}
+.cat-manage-row:last-child{border:none}
+.cat-manage-icon{width:26px;height:26px;border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.cat-manage-icon svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.5}
+.cat-manage-info{flex:1;min-width:0}
+.cat-manage-name{font-size:11px;color:var(--text2);font-family:var(--font-mono);letter-spacing:0.5px;font-weight:600}
+.field-chip{
+  display:inline-flex;align-items:center;gap:3px;
+  background:var(--bg4);border:1.5px solid var(--border);border-radius:3px;
+  padding:2px 6px;font-size:10px;color:var(--text3);margin:2px;font-family:var(--font-mono)
+}
+.field-chip button{background:none;border:none;cursor:pointer;color:var(--text4);padding:0;display:flex;align-items:center}
+.field-chip button svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2}
+.field-chip button:hover svg{stroke:var(--red)}
+.add-field-row{display:flex;gap:5px;align-items:center;margin-top:7px;flex-wrap:wrap}
+.add-field-row .form-input{flex:1;min-width:80px}
+.add-field-row .form-select{width:90px;flex-shrink:0}
+
+/* CONFIRM */
+#confirm-modal .modal{max-width:360px}
+#confirm-modal p{font-size:12px;color:var(--text2);line-height:1.7}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:1.25rem;right:1.25rem;
+  border-radius:var(--radius);padding:8px 14px;font-size:11px;
+  z-index:9998;display:none;font-family:var(--font-mono);
+  letter-spacing:0.5px;max-width:calc(100vw - 2.5rem);
+  opacity:0;transition:opacity 0.2s,transform 0.2s;
+  transform:translateY(6px)
+}
+#toast.show{opacity:1;transform:translateY(0);display:block}
+/* In notebook context */
+body.nb-mode #toast{
+  background:#fff;border:1.5px solid #e8eaed;color:#374151;
+  box-shadow:0 4px 12px rgba(0,0,0,0.1)
+}
+body.nb-mode #toast.ok{border-color:#2ecc71;color:#1a9e52}
+body.nb-mode #toast.err{border-color:#e53e3e;color:#c53030}
+/* In secure view context */
+#app #toast,body:not(.nb-mode) #toast{
+  background:var(--bg3,#0f2017);border:1.5px solid var(--border2,#5dffa3);
+  color:var(--text2,#a8e6b4)
+}
+
+/* CAT COLORS */
+.cat-color-pw{background:#3a1f5c;color:var(--purple)}
+.cat-color-card{background:#00283d;color:var(--blue)}
+.cat-color-note{background:#332600;color:var(--amber)}
+.cat-color-id{background:#00231f;color:var(--cyan)}
+.cat-color-fp{background:#2a0010;color:var(--red)}
+.cat-color-key{background:#0f3320;color:var(--accent)}
+.cat-color-custom{background:#3a1f5c;color:var(--purple)}
+
+/* STATUS BAR */
+.statusbar{
+  background:var(--bg2);border-top:1.5px solid var(--border);
+  padding:0 1rem;height:22px;display:flex;align-items:center;
+  justify-content:space-between;flex-shrink:0;gap:8px;overflow:hidden
+}
+.sb-item{
+  font-size:9px;color:var(--text4);font-family:var(--font-mono);
+  letter-spacing:0.5px;display:flex;align-items:center;gap:5px;white-space:nowrap
+}
+.sb-sep{color:var(--border2);font-size:10px}
+
+/* PASSWORD STRENGTH */
+.pw-strength{margin-top:4px}
+.pw-strength-bar{height:3px;border-radius:2px;background:var(--bg3);overflow:hidden}
+.pw-strength-fill{height:100%;width:0%;transition:width 0.3s,background 0.3s}
+.pw-strength-label{font-size:9px;color:var(--text4);font-family:var(--font-mono);letter-spacing:0.5px;margin-top:3px}
+
+/* SETUP OVERLAY */
+.setup-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.6);
+  z-index:500;display:none;align-items:center;justify-content:center;padding:1rem;
+  backdrop-filter:blur(2px)
+}
+.setup-overlay.open{display:flex}
+.setup-box{
+  background:#fff;border:1.5px solid #e8eaed;border-radius:12px;
+  width:min(420px,100%);overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,0,0,0.12)
+}
+.setup-header{
+  padding:1.25rem 1.5rem;border-bottom:1px solid #e8eaed;
+  background:linear-gradient(135deg,#f8fff9,#fff)
+}
+.setup-title{font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:2px}
+.setup-desc-sub{font-size:13px;color:#6b7280}
+.setup-body{padding:1.5rem;display:flex;flex-direction:column;gap:1rem}
+.setup-field-label{font-size:12px;color:#374151;font-weight:600;margin-bottom:4px}
+.setup-input-wrap{position:relative}
+.setup-input{
+  width:100%;background:#f8f9fa;border:1.5px solid #e8eaed;border-radius:8px;
+  padding:10px 40px 10px 12px;color:#1a1a2e;font-family:'Inter',sans-serif;
+  font-size:14px;outline:none;transition:border 0.15s
+}
+.setup-input:focus{border-color:#2ecc71;background:#fff}
+.setup-input::placeholder{color:#9aa0ab}
+.setup-pw-tog{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:#9aa0ab;padding:2px;display:flex
+}
+.setup-pw-tog svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.setup-strength-bar{height:4px;border-radius:2px;background:#e8eaed;overflow:hidden;margin-top:6px}
+.setup-strength-fill{height:100%;width:0%;border-radius:2px;transition:width 0.3s,background 0.3s}
+.setup-strength-label{font-size:11px;color:#9aa0ab;margin-top:3px}
+.setup-footer{
+  padding:1rem 1.5rem;border-top:1px solid #e8eaed;
+  display:flex;justify-content:flex-end;gap:8px;background:#fafbfc
+}
+.setup-btn{
+  border-radius:8px;padding:9px 18px;font-family:'Inter',sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;
+  display:flex;align-items:center;gap:6px;border:none
+}
+.setup-btn-secondary{background:#f5f7fa;color:#4a5568;border:1.5px solid #e8eaed}
+.setup-btn-secondary:hover{background:#edf2f7}
+.setup-btn-primary{background:#2ecc71;color:#fff}
+.setup-btn-primary:hover{background:#27ae60}
+
+/* ══════════════════════════════════════════
+   NOTEBOOK DARK MODE
+══════════════════════════════════════════ */
+body.dark-nb #notebook{background:#1a1d24}
+body.dark-nb .d-topbar{background:#1f232b;border-bottom-color:#2d323d}
+body.dark-nb .d-brand{color:#f1f3f6}
+body.dark-nb .d-brand-sub{color:#7d8694}
+body.dark-nb .d-sidebar{background:#1f232b;border-right-color:#2d323d}
+body.dark-nb .d-sidebar-label{color:#7d8694}
+body.dark-nb .d-nb-btn{color:#aab2c0}
+body.dark-nb .d-nb-btn:hover{background:#2a2f3a;color:#f1f3f6}
+body.dark-nb .d-nb-btn.active{background:#16382a;color:#4ade80}
+body.dark-nb .d-nb-count{background:#2a2f3a;color:#7d8694}
+body.dark-nb .d-nb-btn.active .d-nb-count{background:#1f4a36;color:#4ade80}
+body.dark-nb .d-sidebar-footer{border-top-color:#2d323d}
+body.dark-nb .d-sidebar-status{color:#7d8694}
+body.dark-nb .d-searchbar{border-bottom-color:#2d323d}
+body.dark-nb .d-search{background:#2a2f3a;border-color:#3a4150;color:#f1f3f6}
+body.dark-nb .d-search:focus{border-color:#4ade80;background:#1f232b}
+body.dark-nb .d-search::placeholder{color:#7d8694}
+body.dark-nb .d-search-icon{color:#7d8694}
+body.dark-nb .d-note-card:hover{background:#2a2f3a;border-color:#3a4150}
+body.dark-nb .d-nc-title{color:#f1f3f6}
+body.dark-nb .d-nc-preview{color:#aab2c0}
+body.dark-nb .d-nc-date{color:#7d8694}
+body.dark-nb .d-editor-bar{border-bottom-color:#2d323d}
+body.dark-nb .d-title-input{color:#f1f3f6}
+body.dark-nb .d-title-input::placeholder{color:#7d8694}
+body.dark-nb .d-textarea{color:#dfe3ea}
+body.dark-nb .d-textarea::placeholder{color:#7d8694}
+body.dark-nb .d-editor-statusbar{border-top-color:#2d323d}
+body.dark-nb .d-editor-stat{color:#7d8694}
+body.dark-nb .d-btn{background:#2a2f3a;border-color:#3a4150;color:#aab2c0}
+body.dark-nb .d-btn:hover{background:#343a47;border-color:#4a5263;color:#f1f3f6}
+body.dark-nb .d-btn-primary{background:#16a34a;border-color:#16a34a;color:#fff}
+body.dark-nb .d-btn-primary:hover{background:#15803d;border-color:#15803d}
+body.dark-nb .na-card{background:#1f232b;border-color:#2d323d}
+body.dark-nb .na-title{color:#f1f3f6}
+body.dark-nb .na-subtitle{color:#aab2c0}
+body.dark-nb .na-input{background:#2a2f3a;border-color:#3a4150;color:#f1f3f6}
+body.dark-nb .na-input:focus{border-color:#4ade80;background:#1f232b}
+body.dark-nb .na-input::placeholder{color:#7d8694}
+body.dark-nb .na-eye{color:#7d8694}
+body.dark-nb .na-eye:hover{color:#f1f3f6}
+body.dark-nb .na-auth-btn{background:#16a34a}
+body.dark-nb .na-auth-btn:hover{background:#15803d}
+body.dark-nb .na-attempts{color:#7d8694}
+body.dark-nb .tag-journal{background:#1e2a4a;color:#8ab4ff}
+body.dark-nb .tag-work{background:#3a2a10;color:#ffb74d}
+body.dark-nb .tag-ideas{background:#2e1f47;color:#c4a8ff}
+body.dark-nb .tag-personal{background:#16382a;color:#4ade80}
+body.dark-nb #theme-icon{stroke:#aab2c0}
+body:not(.dark-nb) #theme-icon{stroke:#4a5568}
+body.dark-nb .setup-box{background:#1f232b;border-color:#2d323d}
+body.dark-nb .setup-header{background:#1f232b;border-bottom-color:#2d323d}
+body.dark-nb .setup-title{color:#f1f3f6}
+body.dark-nb .setup-desc-sub{color:#aab2c0}
+body.dark-nb .setup-field-label{color:#dfe3ea}
+body.dark-nb .setup-input{background:#2a2f3a;border-color:#3a4150;color:#f1f3f6}
+body.dark-nb .setup-input:focus{border-color:#4ade80;background:#1f232b}
+body.dark-nb .setup-input::placeholder{color:#7d8694}
+body.dark-nb .setup-pw-tog{color:#7d8694}
+body.dark-nb .setup-strength-bar{background:#2a2f3a}
+body.dark-nb .setup-strength-label{color:#7d8694}
+body.dark-nb .setup-footer{background:#1a1d24;border-top-color:#2d323d}
+body.dark-nb .setup-btn-secondary{background:#2a2f3a;color:#dfe3ea;border-color:#3a4150}
+body.dark-nb .setup-btn-secondary:hover{background:#343a47}
+body.dark-nb.nb-mode #toast{background:#2a2f3a;border-color:#3a4150;color:#dfe3ea}
+
+/* NOTEBOOK CATEGORY SETTINGS MODAL */
+.nb-modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);
+  z-index:600;align-items:center;justify-content:center;padding:1rem
+}
+.nb-modal-overlay.open{display:flex}
+.nb-modal{
+  background:#fff;border:1.5px solid #e8eaed;border-radius:10px;
+  width:min(380px,100%);box-shadow:0 4px 24px rgba(0,0,0,0.1);overflow:hidden
+}
+.nb-modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0.85rem 1rem;border-bottom:1px solid #e8eaed
+}
+.nb-modal-title{font-size:14px;font-weight:600;color:#1a1a2e}
+.nb-modal-body{padding:1rem;display:flex;flex-direction:column}
+.nb-cat-row{
+  display:flex;align-items:center;gap:8px;padding:6px 8px;
+  border-radius:6px;background:#f5f7fa;justify-content:space-between
+}
+.nb-cat-name{font-size:12px;font-weight:500;color:#374151}
+.nb-cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.nb-cat-del{
+  background:none;border:none;cursor:pointer;color:#9aa0ab;
+  padding:2px 5px;border-radius:4px;font-size:13px;line-height:1;transition:all 0.12s
+}
+.nb-cat-del:hover{background:#fef2f2;color:#e53e3e}
+body.dark-nb .nb-modal{background:#1f232b;border-color:#2d323d}
+body.dark-nb .nb-modal-header{border-bottom-color:#2d323d}
+body.dark-nb .nb-modal-title{color:#f1f3f6}
+body.dark-nb .nb-cat-row{background:#2a2f3a}
+body.dark-nb .nb-cat-name{color:#dfe3ea}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .main-layout{grid-template-columns:180px 1fr}
+  .entries-pane{width:230px}
+  .d-body{grid-template-columns:190px 1fr}
+}
+@media(max-width:700px){
+  .main-layout{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .entries-pane{width:100%;border-right:none;border-bottom:1.5px solid var(--border)}
+  .content{flex-direction:column}
+  .d-body{grid-template-columns:1fr}
+  .d-sidebar{display:none}
+  .tb-session{display:none}
+}
+@media(max-width:480px){
+  .entries-pane{width:100%}
+  .detail-pane{flex:1}
+}
+</style>
+</head>
+<body class="nb-mode">
+
+<!-- ══════════════════════════════════════════
+     NOTEBOOK
+══════════════════════════════════════════ -->
+<div id="notebook">
+  <!-- Topbar -->
+  <div class="d-topbar">
+    <div class="d-brand">
+      <div class="d-brand-dot"></div>
+      NoteSpace
+      <span class="d-brand-sub">personal notes</span>
+    </div>
+    <div class="d-topbar-actions">
+      <button class="d-btn" onclick="toggleTheme()" id="theme-toggle-btn" title="toggle theme">
+        <svg viewBox="0 0 24 24" id="theme-icon"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </button>
+      <button class="d-btn d-btn-primary" onclick="newNote()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New note
+      </button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="d-body" style="flex:1;min-height:0">
+    <!-- Sidebar -->
+    <div class="d-sidebar">
+      <div style="padding:0.75rem;flex:1;overflow-y:auto">
+        <div class="d-sidebar-label" style="padding:0;margin-bottom:6px">Notebooks</div>
+        <div id="nb-sidebar-cats"><!-- rendered by renderNbSidebar() --></div>
+      </div>
+      <div class="d-sidebar-footer" style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+        <div class="d-sidebar-status" id="nb-sidebar-status">0 notes<br>Last sync: just now</div>
+        <button class="d-btn" onclick="openNbSettings()" title="manage categories" style="padding:5px 7px;flex-shrink:0">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main area — list or editor -->
+    <div class="d-main">
+      <!-- List view -->
+      <div id="d-list-view" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+        <div class="d-searchbar">
+          <div class="d-search-wrap">
+            <svg class="d-search-icon" width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="d-search" placeholder="Search notes..." type="text" id="d-search-input" oninput="filterNotes(this.value)">
+          </div>
+        </div>
+        <div class="d-note-list" id="d-note-list">
+          <!-- Rendered dynamically by renderNoteList() -->
+        </div>
+      </div>
+
+      <!-- Editor view -->
+      <div id="d-editor-view" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+        <div class="d-editor-bar">
+          <button class="d-btn" onclick="backToList()">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            Back
+          </button>
+          <input class="d-title-input" id="d-note-title" placeholder="Note title…" style="flex:1;min-width:0;background:transparent;border:none;font-family:'Inter',sans-serif;font-size:16px;font-weight:600;outline:none">
+          <select id="d-note-cat" class="d-btn" style="font-size:11px;padding:5px 8px;border-radius:6px;cursor:pointer;max-width:100px;flex-shrink:0" title="category"></select>
+          <div class="d-editor-actions">
+            <button class="d-btn d-btn-danger" id="d-delete-btn" onclick="deleteNote()" title="delete note" style="display:none">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              Delete
+            </button>
+            <button class="d-btn" onclick="saveNote()">
+              <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Save
+            </button>
+          </div>
+        </div>
+        <textarea class="d-textarea" id="d-note-body" placeholder="Start writing…"></textarea>
+        <div class="d-editor-statusbar">
+          <span class="d-editor-stat" id="d-wordcount">0 words</span>
+          <span class="d-editor-stat">·</span>
+          <span class="d-editor-stat" id="d-charcount">0 characters</span>
+        </div>
+      </div>
+
+      <!-- Auth view -->
+      <div id="nb-auth" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex:1">
+        <div class="na-card">
+          <button class="na-close" onclick="hideAuthView()" title="close">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <div class="na-title">Welcome back</div>
+          <div class="na-subtitle">Enter your password to continue</div>
+          <div class="na-input-wrap">
+            <input class="na-input" type="password" id="na-pw" placeholder="Password…"
+              onkeydown="if(event.key==='Enter')attemptAuth()"
+              oninput="document.getElementById('na-error').style.display='none'">
+            <button class="na-eye" onclick="toggleAuthEye()" id="na-eye-btn">
+              <svg viewBox="0 0 24 24" id="na-eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="na-error" id="na-error">Incorrect password. Try again.</div>
+          <div class="na-attempts" id="na-attempts"></div>
+          <button class="na-auth-btn" onclick="attemptAuth()" style="margin-top:1rem">Continue</button>
+
+          <div class="na-lockout" id="na-lockout">
+            <svg class="na-lockout-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            <div class="na-lockout-title">Too many attempts</div>
+            <div class="na-lockout-timer" id="na-lockout-timer">0:00</div>
+            <div class="na-lockout-sub">Please wait for the timer to finish</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FIRST TIME SETUP MODAL
+══════════════════════════════════════════ -->
+<div class="setup-overlay" id="setup-overlay">
+  <div class="setup-box">
+    <div class="setup-header">
+      <div class="setup-title">Set up your workspace</div>
+      <div class="setup-desc-sub">Create an access password to secure your workspace.</div>
+    </div>
+    <div class="setup-body">
+      <div>
+        <div class="setup-field-label">Master password</div>
+        <div class="setup-input-wrap">
+          <input class="setup-input" type="password" id="setup-pw1" placeholder="At least 12 characters…" oninput="checkSetupStrength()">
+          <button class="setup-pw-tog" type="button" onclick="toggleSetupEye(1)">
+            <svg viewBox="0 0 24 24" id="setup-eye1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="setup-strength-bar"><div class="setup-strength-fill" id="setup-str-fill"></div></div>
+        <div class="setup-strength-label" id="setup-str-label">Enter a strong password</div>
+      </div>
+      <div>
+        <div class="setup-field-label">Confirm password</div>
+        <div class="setup-input-wrap">
+          <input class="setup-input" type="password" id="setup-pw2" placeholder="Repeat password…" onkeydown="if(event.key==='Enter')activateSecureView()">
+          <button class="setup-pw-tog" type="button" onclick="toggleSetupEye(2)">
+            <svg viewBox="0 0 24 24" id="setup-eye2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#6b7280;line-height:1.6;background:#f8f9fa;border-radius:6px;padding:10px 12px;border-left:3px solid #2ecc71">
+        Your data is encrypted locally with AES-256-GCM. The password is never stored or transmitted anywhere.
+      </div>
+    </div>
+    <div class="setup-footer">
+      <button class="setup-btn setup-btn-secondary" onclick="dismissSetup()">Cancel</button>
+      <button class="setup-btn setup-btn-primary" onclick="activateSecureView()">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Activate
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN SECURE VIEW
+══════════════════════════════════════════ -->
+<div id="app">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-brand">
+        <div class="tb-brand-dot"></div>
+        NS//SECURE
+      </div>
+      <div class="tb-session" id="tb-session">session active</div>
+    </div>
+    <div class="tb-right">
+      <span class="tb-idle" id="tb-idle"></span>
+      <button class="btn-icon" title="settings" onclick="openSettings()">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+      <button class="btn-icon danger" title="lock" onclick="closeSecureView()">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="main-layout" style="overflow:hidden">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sb-section">
+        <div class="sb-label">Library</div>
+        <button class="cat-btn active" onclick="selectCat('all',this)" data-cat="all">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          <span class="cat-btn-label">all entries</span>
+          <span class="cat-count" id="cnt-all">0</span>
+        </button>
+        <button class="cat-btn" onclick="selectCat('trash',this)" data-cat="trash">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+          <span class="cat-btn-label">trash</span>
+          <span class="cat-count" id="cnt-trash">0</span>
+        </button>
+      </div>
+      <div class="sb-div"></div>
+      <div class="sb-section" style="flex:1;overflow-y:auto;min-height:0">
+        <div class="sb-label">Categories</div>
+        <div id="cat-list"></div>
+      </div>
+      <div class="sb-actions">
+        <button class="btn-add" onclick="openAddModal()">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          new entry
+        </button>
+        <div class="sb-io">
+          <button class="btn-sm" style="justify-content:center" onclick="exportData()" title="export backup">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            export
+          </button>
+          <button class="btn-sm" style="justify-content:center" onclick="openImport()" title="import backup">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            import
+          </button>
+        </div>
+        <input type="file" id="import-file" style="display:none" onchange="importData(this)">
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Entries Pane -->
+      <div class="entries-pane">
+        <div class="entries-header">
+          <div class="search-wrap">
+            <span class="search-icon">
+              <svg width="11" height="11" viewBox="0 0 24 24" stroke="var(--text4)" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input class="search-input" type="text" id="search-input" placeholder="search entries…" oninput="renderEntries()">
+          </div>
+        </div>
+        <div class="entries-list" id="entries-list"></div>
+      </div>
+
+      <!-- Detail Pane -->
+      <div class="detail-pane" id="detail-pane">
+        <div class="detail-placeholder" id="detail-placeholder">
+          <pre>
+ ┌─────────────────────┐
+ │  select an entry    │
+ │  to view details    │
+ └─────────────────────┘</pre>
+        </div>
+        <div id="detail-content" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+          <div class="detail-header">
+            <div class="detail-title" id="d-title"></div>
+            <div class="detail-actions">
+              <button class="btn-icon accent" title="edit" onclick="openEditModal()">
+                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="btn-icon danger" title="delete" onclick="deleteEntry()">
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+              </button>
+              <button class="btn-icon" title="close" onclick="closeDetail()">
+                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="detail-body" id="d-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div class="statusbar">
+    <div style="display:flex;gap:10px;align-items:center;overflow:hidden">
+      <span class="sb-item">
+        <svg width="7" height="7" viewBox="0 0 10 10" fill="var(--accent)"><circle cx="5" cy="5" r="5"/></svg>
+        AES-256-GCM
+      </span>
+      <span class="sb-sep">·</span>
+      <span class="sb-item">PBKDF2 · 600k iter</span>
+      <span class="sb-sep">·</span>
+      <span class="sb-item" id="sb-count">0 entries</span>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <span class="sb-item" id="sb-cat">all categories</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════ -->
+
+<!-- Notebook Category Settings Modal -->
+<div class="nb-modal-overlay" id="nb-settings-modal" onclick="if(event.target===this)closeNbSettings()">
+  <div class="nb-modal">
+    <div class="nb-modal-header">
+      <span class="nb-modal-title">Manage categories</span>
+      <button class="d-btn" onclick="closeNbSettings()" style="padding:4px 8px;font-size:11px">✕</button>
+    </div>
+    <div class="nb-modal-body">
+      <div id="nb-cat-list" style="display:flex;flex-direction:column;gap:4px;margin-bottom:1rem"></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input id="nb-new-cat-input" class="d-search" type="text" placeholder="New category name…"
+          style="flex:1;padding:7px 10px;font-size:12px"
+          onkeydown="if(event.key==='Enter')addNbCategory()">
+        <button class="d-btn d-btn-primary" onclick="addNbCategory()" style="white-space:nowrap;font-size:12px;padding:6px 12px">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Entry Modal -->
+<div class="modal-overlay" id="entry-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">// new entry</div>
+      <button class="btn-icon" onclick="closeModal('entry-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-input form-select" id="f-cat" onchange="onCatChange()"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Title *</label>
+        <input class="form-input" type="text" id="f-title" placeholder="entry title…">
+      </div>
+      <div id="f-dynamic"></div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="form-input form-textarea" id="f-notes" placeholder="additional notes…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('entry-modal')">cancel</button>
+      <button class="btn-sm accent-btn" onclick="saveEntry()">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        save entry
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <div class="modal-title">// settings</div>
+      <button class="btn-icon" onclick="closeModal('settings-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="settings-tab">
+      <button class="stab active" onclick="switchSettingsTab('general',this)">general</button>
+      <button class="stab" onclick="switchSettingsTab('categories',this)">categories</button>
+      <button class="stab" onclick="switchSettingsTab('security',this)">security</button>
+      <button class="stab" onclick="switchSettingsTab('backup',this)">backup</button>
+      <button class="stab" onclick="switchSettingsTab('danger',this)">danger zone</button>
+    </div>
+    <div class="modal-body">
+      <!-- General -->
+      <div class="stab-pane active" id="stab-general">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">auto-lock timeout</div>
+            <div class="setting-desc">lock after N minutes of inactivity</div>
+          </div>
+          <select class="form-input form-select" style="width:110px;flex-shrink:0" id="s-timeout" onchange="saveSetting('timeout',this.value)">
+            <option value="2">2 min</option>
+            <option value="5" selected>5 min</option>
+            <option value="10">10 min</option>
+            <option value="30">30 min</option>
+            <option value="60">1 hour</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">export filename</div>
+            <div class="setting-desc">backup file disguise name</div>
+          </div>
+          <input class="form-input" style="width:160px;flex-shrink:0" id="s-exportname" placeholder="cache_8f3a21.dat" onchange="saveSetting('exportName',this.value)">
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">clipboard clear</div>
+            <div class="setting-desc">auto-clear clipboard after copy</div>
+          </div>
+          <select class="form-input form-select" style="width:110px;flex-shrink:0" id="s-clipclear" onchange="saveSetting('clipClear',this.value)">
+            <option value="5">5 sec</option>
+            <option value="10" selected>10 sec</option>
+            <option value="30">30 sec</option>
+            <option value="0">never</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">trash retention</div>
+            <div class="setting-desc">auto-purge deleted entries/notes after N days</div>
+          </div>
+          <select class="form-input form-select" style="width:110px;flex-shrink:0" id="s-trashdays" onchange="saveSetting('trashDays',this.value)">
+            <option value="7">7 days</option>
+            <option value="14">14 days</option>
+            <option value="30" selected>30 days</option>
+            <option value="90">90 days</option>
+            <option value="36500">never</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div class="stab-pane" id="stab-categories">
+        <div style="font-size:10px;color:var(--text4);font-family:var(--font-mono)">// manage categories and fields</div>
+        <div id="cat-settings-list"></div>
+        <hr class="section-divider">
+        <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:6px">// add new category</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <input class="form-input" style="flex:1;min-width:120px" id="new-cat-name" placeholder="category name…">
+          <select class="form-input form-select" style="width:120px;flex-shrink:0" id="new-cat-color">
+            <option value="pw">purple</option>
+            <option value="card">blue</option>
+            <option value="note">amber</option>
+            <option value="id">cyan</option>
+            <option value="fp">red</option>
+            <option value="key">green</option>
+            <option value="custom">violet</option>
+          </select>
+          <button class="btn-sm accent-btn" onclick="addCategory()" style="flex-shrink:0">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            add
+          </button>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="stab-pane" id="stab-security">
+        <div class="setting-row" style="flex-direction:column;align-items:flex-start">
+          <div class="setting-label">change password</div>
+          <div class="setting-desc">update encryption passphrase (min 12 characters)</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div class="pw-wrap">
+            <input class="form-input" type="password" id="s-curpw" placeholder="current password…">
+            <button class="pw-tog" type="button" onclick="togglePw('s-curpw',this)"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+          <div class="pw-wrap">
+            <input class="form-input" type="password" id="s-newpw1" placeholder="new password (min 12)…" oninput="checkChangeStrength()">
+            <button class="pw-tog" type="button" onclick="togglePw('s-newpw1',this)"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+          <div class="pw-strength">
+            <div class="pw-strength-bar"><div class="pw-strength-fill" id="change-strength-fill"></div></div>
+            <div class="pw-strength-label" id="change-strength-label">// enter new password</div>
+          </div>
+          <div class="pw-wrap">
+            <input class="form-input" type="password" id="s-newpw2" placeholder="confirm new password…">
+            <button class="pw-tog" type="button" onclick="togglePw('s-newpw2',this)"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+          <button class="btn-sm accent-btn" style="width:fit-content" onclick="changePassword()">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            update password
+          </button>
+        </div>
+      </div>
+
+      <!-- Backup -->
+      <div class="stab-pane" id="stab-backup">
+        <div style="font-size:10px;color:var(--text4);font-family:var(--font-mono);margin-bottom:8px">// local file backup</div>
+        <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:6px">
+          <div class="setting-info">
+            <div class="setting-label">auto-save to a real file on disk</div>
+            <div class="setting-desc">writes an encrypted copy outside this browser's storage on every save. survives clearing browser data. Chrome/Edge only.</div>
+          </div>
+          <div id="fs-backup-status" style="font-size:11px;color:var(--text3)">checking…</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn-sm accent-btn" onclick="connectLocalBackupFile()">link backup file</button>
+            <button class="btn-sm" onclick="disconnectBackupFile()">unlink</button>
+          </div>
+        </div>
+        <hr class="section-divider">
+        <div style="font-size:10px;color:var(--text4);font-family:var(--font-mono);margin-bottom:8px">// cloud sync (Firebase — optional)</div>
+        <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:6px">
+          <div class="setting-desc" style="margin-bottom:2px">requires your own free Firebase project. only the already-encrypted blob is sent — never plaintext. paste the 3 values from your Firebase project settings.</div>
+          <input class="form-input" id="cloud-apikey" placeholder="apiKey" style="width:100%">
+          <input class="form-input" id="cloud-projectid" placeholder="projectId" style="width:100%">
+          <input class="form-input" id="cloud-appid" placeholder="appId" style="width:100%">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+            <button class="btn-sm accent-btn" onclick="enableCloudSync()">enable</button>
+            <button class="btn-sm" onclick="disableCloudSync()">disable</button>
+            <button class="btn-sm" onclick="pullFromCloud()">restore from cloud</button>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">status: <span id="cloud-sync-enabled-status">disabled</span> · <span id="cloud-sync-status">never synced</span></div>
+          <div style="font-size:11px;color:var(--text3)">sync key (needed to link a 2nd device — keep this private):</div>
+          <div style="display:flex;gap:6px;width:100%">
+            <input class="form-input" id="cloud-syncid-display" readonly style="flex:1;font-size:11px;font-family:var(--font-mono)" value="">
+            <button class="btn-sm" onclick="copySyncId()" style="flex-shrink:0">copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="stab-pane" id="stab-danger">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">wipe entries</div>
+            <div class="setting-desc">delete all entries permanently. categories preserved.</div>
+          </div>
+          <button class="btn-sm danger-btn" onclick="wipeData()" style="flex-shrink:0">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+            wipe
+          </button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">full reset</div>
+            <div class="setting-desc">destroy everything — password, entries, config. irreversible.</div>
+          </div>
+          <button class="btn-sm danger-btn" onclick="fullReset()" style="flex-shrink:0">
+            <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+            reset
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('settings-modal')">close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <div class="modal-title" id="confirm-title">// confirm</div>
+      <button class="btn-icon" onclick="closeModal('confirm-modal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-msg"></p>
+      <input type="text" id="confirm-type-input" class="form-input" placeholder="type DELETE to confirm" style="display:none;margin-top:10px" oninput="_checkTypedConfirm()" autocomplete="off">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('confirm-modal')">cancel</button>
+      <button class="btn-sm danger-btn" id="confirm-ok">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ══════════════════════════════════════════
+// CRYPTO — AES-256-GCM + PBKDF2 (600k iter)
+// ══════════════════════════════════════════
+const ITER = 600000, KL = 256, SL = 16, IL = 12;
+
+async function deriveKey(pw, salt) {
+  const km = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: ITER, hash: 'SHA-256' },
+    km,
+    { name: 'AES-GCM', length: KL },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+
+async function enc(plaintext, pw) {
+  const s = crypto.getRandomValues(new Uint8Array(SL));
+  const iv = crypto.getRandomValues(new Uint8Array(IL));
+  const k = await deriveKey(pw, s);
+  const ct = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    k,
+    new TextEncoder().encode(plaintext)
+  );
+  const buf = new Uint8Array(SL + IL + ct.byteLength);
+  buf.set(s); buf.set(iv, SL); buf.set(new Uint8Array(ct), SL + IL);
+  // Convert to base64 safely (handles large buffers)
+  let bin = '';
+  buf.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin);
+}
+
+async function dec(ciphertext, pw) {
+  const bin = atob(ciphertext);
+  const buf = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+  const k = await deriveKey(pw, buf.slice(0, SL));
+  const pt = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: buf.slice(SL, SL + IL) },
+    k,
+    buf.slice(SL + IL)
+  );
+  return new TextDecoder().decode(pt);
+}
+
+const _AH = 'a63a37461f8aaf4cfb4883c273f65ea4cc4400cddf12faa4ada64e2b4d026345';
+
+async function _hashStr(s) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── shared helpers for per-install secrets (random, generated on first use,
+//    never hardcoded in source) ──
+function _bytesToHex(buf) {
+  return Array.from(buf).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+function _hexToBytes(hex) {
+  const out = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.substr(i*2, 2), 16);
+  return out;
+}
+function _randomHex(numBytes) {
+  return _bytesToHex(crypto.getRandomValues(new Uint8Array(numBytes)));
+}
+
+// Slow, salted hash for the activation phrase (PBKDF2, same cost as the
+// master password). Salt + hash are generated per-install and stored in
+// localStorage the first time the phrase is recognized — see the migration
+// logic inside _makeNbInputHandler().
+const LS_ACT = 'app_act_v1';
+async function _deriveActHash(phrase, saltHex) {
+  const salt = _hexToBytes(saltHex);
+  const km = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(phrase), 'PBKDF2', false, ['deriveBits']
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations: ITER, hash: 'SHA-256' }, km, 256
+  );
+  return _bytesToHex(new Uint8Array(bits));
+}
+
+// ══════════════════════════════════════════
+// CONSTANTS & STATE
+// ══════════════════════════════════════════
+const LS_DATA = 'app_cache_v3';
+const LS_CFGE = 'app_prefs_v3';
+const LS_META = 'app_state_v3';
+
+const DEFAULT_CATS = [
+  { id: 'pw',   name: 'passwords',        color: 'pw',
+    fields: [
+      { id: 'username', label: 'USERNAME',    pw: false },
+      { id: 'password', label: 'PASSWORD',    pw: true  },
+      { id: 'url',      label: 'URL',         pw: false },
+      { id: 'twofa',    label: '2FA SECRET',  pw: true  }
+    ]
+  },
+  { id: 'card', name: 'cards',            color: 'card',
+    fields: [
+      { id: 'cardHolder', label: 'CARDHOLDER',  pw: false },
+      { id: 'cardNum',    label: 'CARD NUMBER', pw: true  },
+      { id: 'expiry',     label: 'EXPIRY',      pw: false },
+      { id: 'cvv',        label: 'CVV',         pw: true  },
+      { id: 'pin',        label: 'PIN',         pw: true  },
+      { id: 'bank',       label: 'BANK',        pw: false }
+    ]
+  },
+  { id: 'note', name: 'secure notes',     color: 'note', fields: [] },
+  { id: 'id',   name: 'identity',         color: 'id',
+    fields: [
+      { id: 'fullName', label: 'FULL NAME',    pw: false },
+      { id: 'email',    label: 'EMAIL',        pw: false },
+      { id: 'phone',    label: 'PHONE',        pw: false },
+      { id: 'nid',      label: 'NID/PASSPORT', pw: true  },
+      { id: 'dob',      label: 'DATE OF BIRTH',pw: false },
+      { id: 'address',  label: 'ADDRESS',      pw: false, ta: true }
+    ]
+  },
+  { id: 'fp',   name: 'digital footprint',color: 'fp',
+    fields: [
+      { id: 'username', label: 'USERNAME',     pw: false },
+      { id: 'password', label: 'PASSWORD',     pw: true  },
+      { id: 'url',      label: 'PLATFORM URL', pw: false },
+      { id: 'twofa',    label: '2FA SECRET',   pw: true  }
+    ]
+  },
+  { id: 'key',  name: 'api keys',          color: 'key',
+    fields: [
+      { id: 'service',  label: 'SERVICE',  pw: false },
+      { id: 'apiKey',   label: 'API KEY',  pw: true  },
+      { id: 'secret',   label: 'SECRET',   pw: true  },
+      { id: 'endpoint', label: 'ENDPOINT', pw: false }
+    ]
+  },
+];
+
+let _pw   = null;
+let store      = { entries: [], trash: [] };
+let cfg        = {};
+let selectedId = null;
+let currentCat = 'all';
+let editingId  = null;
+let idleTimer  = null;
+let idleLeft   = 300;
+let failedAttempts = 0;
+let lockoutUntil   = 0;
+
+// In-memory field value map (never put secrets in onclick or DOM attributes)
+const fieldValueMap = new Map();
+
+// Notebook state — persisted notes (the visible notebook interface)
+const LS_NOTES = 'app_notes_v1';
+const DEFAULT_NOTES = {
+  grocery: { title: 'Grocery list', body: 'Rice\nEggs\nBread\nMilk\nVegetables for the week\nOil\nOnion\nGarlic\nYogurt', tag: 'personal', date: Date.now() - 86400000 * 2 },
+  meeting: { title: 'Meeting notes — June', body: 'Discussed Q3 roadmap\nAction items:\n- Update API docs\n- Review open PRs\n- Sync with design team\nNext meeting: June 20', tag: 'work', date: Date.now() - 86400000 * 4 },
+  ideas:   { title: 'Project ideas', body: '1. Habit tracker app\n2. Recipe organizer\n3. Learn Rust basics\n4. Read "Deep Work"\n5. Set up home server', tag: 'ideas', date: Date.now() - 86400000 * 6 },
+};
+let nbNotes = {};
+let nbTrash = {};
+const LS_NB_TRASH = 'app_notes_trash_v1';
+let currentNoteId = null;
+let currentNbCat  = 'all';
+let nbCategories  = ['journal', 'work', 'ideas', 'personal']; // default, overwritten by loadNbCategories()
+const LS_NB_CATS  = 'app_nb_cats_v1'; // plaintext — category names aren't sensitive
+
+// Per-install random key for notebook encryption (generated on first use,
+// stored in localStorage — not derivable from source code).
+const LS_NB_SEED = 'app_nb_seed_v1';
+
+// Legacy seed (fixed, derivable from source) — kept only to decrypt notes
+// written before this update; new writes use the random seed above.
+const _NB_KEY_SEED_LEGACY = 'ns_decoy_enc_v1:' + location.origin;
+
+function _getNbSeed() {
+  let hex = localStorage.getItem(LS_NB_SEED);
+  if (!hex) {
+    hex = _randomHex(32);
+    localStorage.setItem(LS_NB_SEED, hex);
+  }
+  return hex;
+}
+
+let _nbKey = null;
+async function _getNbKey() {
+  if (_nbKey) return _nbKey;
+  const raw = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(_getNbSeed()), 'PBKDF2', false, ['deriveKey']
+  );
+  _nbKey = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: new TextEncoder().encode('nb_salt_v1'), iterations: 10000, hash: 'SHA-256' },
+    raw,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+  return _nbKey;
+}
+
+let _nbKeyLegacy = null;
+async function _getNbKeyLegacy() {
+  if (_nbKeyLegacy) return _nbKeyLegacy;
+  const raw = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(_NB_KEY_SEED_LEGACY), 'PBKDF2', false, ['deriveKey']
+  );
+  _nbKeyLegacy = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: new TextEncoder().encode('nb_salt_v1'), iterations: 10000, hash: 'SHA-256' },
+    raw,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+  return _nbKeyLegacy;
+}
+
+async function _encNotes(plain) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const k = await _getNbKey();
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, new TextEncoder().encode(plain));
+  const buf = new Uint8Array(12 + ct.byteLength);
+  buf.set(iv); buf.set(new Uint8Array(ct), 12);
+  let bin = ''; buf.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin);
+}
+
+// Set to true by _decNotes() when a payload only decrypted under the legacy
+// (pre-migration) key, so loadNotes() knows to re-save under the new key.
+let _nbUsedLegacyKey = false;
+
+async function _decNotes(cipher) {
+  const bin = atob(cipher);
+  const buf = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+  const iv = buf.slice(0, 12);
+  const data = buf.slice(12);
+  try {
+    const k = await _getNbKey();
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, k, data);
+    _nbUsedLegacyKey = false;
+    return new TextDecoder().decode(pt);
+  } catch {
+    const k2 = await _getNbKeyLegacy();
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, k2, data);
+    _nbUsedLegacyKey = true;
+    return new TextDecoder().decode(pt);
+  }
+}
+
+async function loadNotes() {
+  try {
+    let recovered = false;
+    const tryDecode = async (raw) => {
+      const plain = await _decNotes(raw);
+      const parsed = JSON.parse(plain);
+      if (!parsed || typeof parsed !== 'object') throw new Error('invalid');
+      return parsed;
+    };
+    const raw = localStorage.getItem(LS_NOTES);
+    if (raw) {
+      try {
+        nbNotes = await tryDecode(raw);
+        if (_nbUsedLegacyKey) await saveNotes(); // migrate to new per-install key
+      } catch {
+        // Primary blob unreadable — try rolling backups before giving up
+        for (const bakKey of [LS_NOTES + '_bak1', LS_NOTES + '_bak2']) {
+          const bakRaw = localStorage.getItem(bakKey);
+          if (!bakRaw) continue;
+          try { nbNotes = await tryDecode(bakRaw); recovered = true; break; } catch {}
+        }
+        if (recovered) {
+          await saveNotes();
+        } else {
+          // Fallback: try plain JSON (migration from old unencrypted format)
+          try { nbNotes = JSON.parse(raw); } catch { nbNotes = JSON.parse(JSON.stringify(DEFAULT_NOTES)); }
+          await saveNotes(); // re-save encrypted
+        }
+      }
+    } else {
+      nbNotes = JSON.parse(JSON.stringify(DEFAULT_NOTES));
+      await saveNotes();
+    }
+    if (recovered) showNbToast('Notes recovered from backup', 'warn');
+  } catch { nbNotes = JSON.parse(JSON.stringify(DEFAULT_NOTES)); }
+  await loadNbTrash();
+  purgeNbTrash();
+}
+
+async function saveNotes() {
+  const cipher = await _encNotes(JSON.stringify(nbNotes));
+  rotatingSet(LS_NOTES, cipher);
+  const status = document.querySelector('.d-sidebar-status');
+  if (status) status.innerHTML = Object.keys(nbNotes).length + ' notes<br>Last sync: just now';
+  await writeLocalBackupFile();
+  scheduleCloudSync();
+}
+
+// ── NOTEBOOK TRASH (soft-delete) ──────────────────────
+async function loadNbTrash() {
+  try {
+    const raw = localStorage.getItem(LS_NB_TRASH);
+    if (!raw) { nbTrash = {}; return; }
+    const plain = await _decNotes(raw);
+    nbTrash = JSON.parse(plain) || {};
+  } catch { nbTrash = {}; }
+}
+
+async function saveNbTrash() {
+  const cipher = await _encNotes(JSON.stringify(nbTrash));
+  rotatingSet(LS_NB_TRASH, cipher);
+}
+
+// Auto-purges notes that have been in trash longer than cfg.trashDays.
+// Safe to call before login (uses a fixed 30-day default since cfg isn't
+// loaded yet at boot) and again after login once cfg is available.
+function purgeNbTrash() {
+  const days = (cfg && cfg.trashDays) || 30;
+  const cutoff = Date.now() - days * 86400000;
+  let changed = false;
+  Object.keys(nbTrash).forEach(id => {
+    if ((nbTrash[id].deletedAt || 0) < cutoff) { delete nbTrash[id]; changed = true; }
+  });
+  if (changed) saveNbTrash();
+}
+
+// NOTE_TAG_CLASSES replaced by nbCategories
+function notePreview(body) {
+  const t = (body || '').replace(/\s+/g, ' ').trim();
+  return t.length > 90 ? t.slice(0, 90) + '…' : t;
+}
+function noteFmtDate(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    + ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+function renderNoteList(filter) {
+  const q = (filter || '').trim().toLowerCase();
+  const list = document.getElementById('d-note-list');
+  if (!list) return;
+
+  if (currentNbCat === 'trash') {
+    const tIds = Object.keys(nbTrash)
+      .filter(id => {
+        const n = nbTrash[id];
+        if (!q) return true;
+        return (n.title || '').toLowerCase().includes(q) || (n.body || '').toLowerCase().includes(q);
+      })
+      .sort((a, b) => (nbTrash[b].deletedAt || 0) - (nbTrash[a].deletedAt || 0));
+    if (!tIds.length) {
+      list.innerHTML = `<div style="padding:2rem 1rem;text-align:center;color:#9aa0ab;font-size:12px;font-family:'Inter',sans-serif">Trash is empty</div>`;
+      return;
+    }
+    list.innerHTML = `<div style="padding:6px 4px;display:flex;justify-content:flex-end">
+        <button class="d-btn d-btn-danger" style="font-size:11px" onclick="emptyNbTrash()">empty trash</button>
+      </div>` + tIds.map(id => {
+      const n = nbTrash[id];
+      const days = Math.max(0, (cfg && cfg.trashDays) || 30);
+      return `<div class="d-note-card" style="cursor:default">
+        <div class="d-nc-title">${esc(n.title || 'Untitled')}</div>
+        <div class="d-nc-preview">${esc(notePreview(n.body))}</div>
+        <div class="d-nc-date">deleted ${noteFmtDate(n.deletedAt || Date.now())} · auto-purges after ${days}d</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button class="d-btn" style="font-size:11px;flex:1;justify-content:center" onclick="restoreNote('${id}')">restore</button>
+          <button class="d-btn d-btn-danger" style="font-size:11px;flex:1;justify-content:center" onclick="permanentlyDeleteNote('${id}')">delete forever</button>
+        </div>
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  const ids = Object.keys(nbNotes)
+    .filter(id => {
+      const n = nbNotes[id];
+      if (currentNbCat !== 'all' && n.tag !== currentNbCat) return false;
+      if (!q) return true;
+      return (n.title || '').toLowerCase().includes(q) || (n.body || '').toLowerCase().includes(q);
+    })
+    .sort((a, b) => (nbNotes[b].date || 0) - (nbNotes[a].date || 0));
+  if (!ids.length) {
+    list.innerHTML = `<div style="padding:2rem 1rem;text-align:center;color:#9aa0ab;font-size:12px;font-family:'Inter',sans-serif">No notes found</div>`;
+    return;
+  }
+  list.innerHTML = ids.map(id => {
+    const n = nbNotes[id];
+    const tag = nbCategories.includes(n.tag) ? n.tag : nbCategories[0] || 'personal';
+    return `<div class="d-note-card" onclick="openNote('${id}')">
+      <span class="d-nc-tag" style="${nbCatStyle(tag)}">${esc(tag)}</span>
+      <div class="d-nc-title">${esc(n.title || 'Untitled')}</div>
+      <div class="d-nc-preview">${esc(notePreview(n.body))}</div>
+      <div class="d-nc-date">${noteFmtDate(n.date || Date.now())}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── NOTEBOOK TRASH actions ──────────────────────
+async function restoreNote(id) {
+  const n = nbTrash[id];
+  if (!n) return;
+  const { deletedAt, ...clean } = n;
+  nbNotes[id] = clean;
+  delete nbTrash[id];
+  await saveNotes();
+  await saveNbTrash();
+  renderNbSidebar();
+  renderNoteList(document.getElementById('d-search-input')?.value || '');
+  showNbToast('Note restored', 'ok');
+}
+
+function permanentlyDeleteNote(id) {
+  const n = nbTrash[id];
+  const title = n?.title || 'this note';
+  showConfirmTyped('// delete forever', `"${title}" will be permanently destroyed. type DELETE to confirm — there is no recovery after this.`, async () => {
+    delete nbTrash[id];
+    await saveNbTrash();
+    renderNbSidebar();
+    renderNoteList(document.getElementById('d-search-input')?.value || '');
+    showNbToast('Note permanently deleted', 'warn');
+  });
+}
+
+function emptyNbTrash() {
+  if (!Object.keys(nbTrash).length) return;
+  showConfirmTyped('// empty trash', `all ${Object.keys(nbTrash).length} trashed note(s) will be permanently destroyed. type DELETE to confirm.`, async () => {
+    nbTrash = {};
+    await saveNbTrash();
+    renderNbSidebar();
+    renderNoteList();
+    showNbToast('Trash emptied', 'warn');
+  });
+}
+
+// Generate a consistent pastel color from category name
+function nbCatColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xfffff;
+  return `hsl(${h % 360},55%,88%)`;
+}
+function nbCatTextColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xfffff;
+  return `hsl(${h % 360},45%,35%)`;
+}
+function nbCatStyle(name) {
+  return `background:${nbCatColor(name)};color:${nbCatTextColor(name)}`;
+}
+
+// ══════════════════════════════════════════
+// CONFIG (encrypted)
+// ══════════════════════════════════════════
+function loadMeta() {
+  try { return JSON.parse(localStorage.getItem(LS_META) || '{}'); } catch { return {}; }
+}
+function saveMeta(meta) {
+  localStorage.setItem(LS_META, JSON.stringify(meta));
+}
+
+// HMAC-SHA256 helpers for lockout integrity
+const LS_LOCK = 'app_sess_v1';
+const LS_LOCK_SEED = 'app_lock_seed_v1';
+
+// Legacy seed (fixed, derivable from source) — kept only so existing
+// lockout records signed before this update still verify once, then get
+// migrated to a random per-install seed below.
+const _LOCK_SEED_LEGACY = new TextEncoder().encode('ns_lock_integrity_v1:' + location.origin);
+
+function _getLockSeed() {
+  let hex = localStorage.getItem(LS_LOCK_SEED);
+  if (!hex) {
+    hex = _randomHex(32);
+    localStorage.setItem(LS_LOCK_SEED, hex);
+  }
+  return _hexToBytes(hex);
+}
+
+async function _hmacSignWith(data, seedBytes) {
+  const key = await crypto.subtle.importKey(
+    'raw', seedBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data));
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function _hmacSign(data) {
+  return _hmacSignWith(data, _getLockSeed());
+}
+
+async function _hmacVerify(data, sig) {
+  if (await _hmacSignWith(data, _getLockSeed()) === sig) return true;
+  // Migration path: accept a record signed under the old fixed seed once.
+  return _hmacSignWith(data, _LOCK_SEED_LEGACY).then(s => s === sig);
+}
+
+async function saveLockoutState() {
+  const payload = JSON.stringify({ fa: failedAttempts, lu: lockoutUntil });
+  const sig = await _hmacSign(payload);
+  localStorage.setItem(LS_LOCK, JSON.stringify({ d: payload, s: sig }));
+}
+
+async function loadLockoutState() {
+  try {
+    const raw = localStorage.getItem(LS_LOCK);
+    if (!raw) { failedAttempts = 0; lockoutUntil = 0; return; }
+    const { d, s } = JSON.parse(raw);
+    const valid = await _hmacVerify(d, s);
+    if (!valid) {
+      // Tampered — treat as max lockout to punish bypass attempt
+      failedAttempts = 10;
+      lockoutUntil = Date.now() + 300000;
+      await saveLockoutState();
+      return;
+    }
+    const parsed = JSON.parse(d);
+    failedAttempts = parsed.fa || 0;
+    lockoutUntil   = parsed.lu || 0;
+    if (lockoutUntil && Date.now() >= lockoutUntil && failedAttempts < 3) {
+      lockoutUntil = 0;
+    }
+  } catch {
+    failedAttempts = 0;
+    lockoutUntil = 0;
+  }
+}
+async function loadCfg(pw) {
+  try {
+    const enc_cfg = localStorage.getItem(LS_CFGE);
+    if (enc_cfg) {
+      const plain = await dec(enc_cfg, pw);
+      cfg = JSON.parse(plain);
+    }
+  } catch { cfg = {}; }
+  if (!cfg.cats)       cfg.cats = JSON.parse(JSON.stringify(DEFAULT_CATS));
+  if (!cfg.timeout)    cfg.timeout = 5;
+  if (!cfg.exportName) cfg.exportName = 'cache_8f3a21.dat';
+  if (cfg.clipClear === undefined) cfg.clipClear = 10;
+  if (!cfg.trashDays)  cfg.trashDays = 30;
+}
+async function saveCfg() {
+  if (!_pw) return;
+  const enc_cfg = await enc(JSON.stringify(cfg), _pw);
+  localStorage.setItem(LS_CFGE, enc_cfg);
+}
+async function saveSetting(k, v) {
+  cfg[k] = isNaN(v) ? v : Number(v);
+  await saveCfg();
+  if (k === 'timeout') { _lastActivity = Date.now(); idleLeft = cfg.timeout * 60; updateIdleDisplay(); }
+  showToast('// setting saved', 'ok');
+}
+
+// ══════════════════════════════════════════
+// DATA SAVE / LOAD
+// ══════════════════════════════════════════
+// ══════════════════════════════════════════
+// SAFE STORAGE — quota handling + rolling backups
+// ══════════════════════════════════════════
+// Wraps localStorage.setItem so a full quota never throws silently —
+// the user always gets a visible warning instead of a lost write.
+function safeSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (err) {
+    if (err && (err.name === 'QuotaExceededError' || err.code === 22)) {
+      showToast('// storage full — export a backup NOW, then free space', 'err');
+    } else {
+      showToast('// save failed — ' + (err?.message || 'unknown error'), 'err');
+    }
+    return false;
+  }
+}
+
+// Before overwriting `key`, shifts the previous value into `key_bak1` and
+// the old `key_bak1` into `key_bak2`. Gives 2 rolling generations of
+// recovery if a write gets corrupted mid-save (crash, power loss, etc).
+function rotatingSet(key, value) {
+  try {
+    const prevBak1 = localStorage.getItem(key + '_bak1');
+    if (prevBak1 !== null) localStorage.setItem(key + '_bak2', prevBak1);
+    const current = localStorage.getItem(key);
+    if (current !== null) localStorage.setItem(key + '_bak1', current);
+  } catch { /* backup rotation is best-effort — never block the real save */ }
+  return safeSet(key, value);
+}
+
+// Tries the primary key, then bak1, then bak2 — returns the first value
+// that the supplied validator accepts (validator should parse/decrypt and
+// return true on success).
+async function readWithFallback(key, validator) {
+  const candidates = [key, key + '_bak1', key + '_bak2'];
+  for (let i = 0; i < candidates.length; i++) {
+    const raw = localStorage.getItem(candidates[i]);
+    if (!raw) continue;
+    if (await validator(raw)) {
+      if (i > 0) showToast('// primary save was corrupt — recovered from backup', 'warn');
+      return true;
+    }
+  }
+  return false;
+}
+
+// ══════════════════════════════════════════
+// LOCAL FILE BACKUP — File System Access API
+// Writes a real file on disk (outside browser storage) on every save.
+// Only supported in Chromium browsers (Chrome/Edge). The file handle is
+// persisted in IndexedDB so it can be reused after a reload — but browsers
+// require a user gesture to re-grant permission, so a manual "reconnect"
+// click is sometimes needed after restarting the browser.
+// ══════════════════════════════════════════
+const _IDB_NAME = 'nsv_fs_handles';
+const _IDB_STORE = 'handles';
+
+function _idbOpen() {
+  return new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) { reject(new Error('no indexeddb')); return; }
+    const req = indexedDB.open(_IDB_NAME, 1);
+    req.onupgradeneeded = () => { req.result.createObjectStore(_IDB_STORE); };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function idbSet(key, value) {
+  const db = await _idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(_IDB_STORE, 'readwrite');
+    tx.objectStore(_IDB_STORE).put(value, key);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function idbGet(key) {
+  const db = await _idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(_IDB_STORE, 'readonly');
+    const req = tx.objectStore(_IDB_STORE).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+let _fsHandle = null;
+let _fsHandleNeedsReconnect = false;
+let _fsWriteInFlight = false;
+
+function fsAccessSupported() {
+  return typeof window.showSaveFilePicker === 'function';
+}
+
+async function connectLocalBackupFile() {
+  if (!fsAccessSupported()) {
+    showToast('// not supported in this browser — use Chrome or Edge', 'err');
+    return;
+  }
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: (cfg.exportName || 'cache_8f3a21.dat').replace(/\.dat$/, '_live.dat'),
+      types: [{ description: 'Backup file', accept: { 'application/octet-stream': ['.dat'] } }]
+    });
+    _fsHandle = handle;
+    _fsHandleNeedsReconnect = false;
+    try { await idbSet('backupFile', handle); } catch { /* IndexedDB unsupported — handle still works this session */ }
+    await writeLocalBackupFile();
+    showToast('// local backup file linked — auto-saving on every change', 'ok');
+  } catch (err) {
+    if (err && err.name !== 'AbortError') showToast('// could not link file — ' + (err.message || 'unknown error'), 'err');
+  }
+  renderBackupFileStatus();
+}
+
+// Tries to silently restore a previously-linked file handle on boot.
+// If the browser hasn't auto-granted permission, marks it for a manual
+// reconnect click (required — permission re-grants need a user gesture).
+async function tryReconnectBackupFile() {
+  if (!fsAccessSupported()) return;
+  try {
+    const handle = await idbGet('backupFile');
+    if (!handle) return;
+    _fsHandle = handle;
+    const perm = await handle.queryPermission({ mode: 'readwrite' });
+    _fsHandleNeedsReconnect = perm !== 'granted';
+  } catch { /* IndexedDB empty/unsupported, or handle no longer valid — ignore */ }
+  renderBackupFileStatus();
+}
+
+// Must run from a user gesture (button click) — browsers block silent
+// permission re-grants.
+async function reconnectBackupFilePermission() {
+  if (!_fsHandle) return;
+  try {
+    const perm = await _fsHandle.requestPermission({ mode: 'readwrite' });
+    if (perm === 'granted') {
+      _fsHandleNeedsReconnect = false;
+      await writeLocalBackupFile();
+      showToast('// backup file reconnected', 'ok');
+    } else {
+      showToast('// permission denied', 'err');
+    }
+  } catch (err) { showToast('// reconnect failed — ' + (err.message || 'unknown error'), 'err'); }
+  renderBackupFileStatus();
+}
+
+async function disconnectBackupFile() {
+  _fsHandle = null;
+  _fsHandleNeedsReconnect = false;
+  try { await idbSet('backupFile', null); } catch {}
+  renderBackupFileStatus();
+  showToast('// local backup file unlinked', 'warn');
+}
+
+async function writeLocalBackupFile() {
+  if (!_fsHandle || _fsHandleNeedsReconnect || _fsWriteInFlight) return;
+  _fsWriteInFlight = true;
+  try {
+    const payload = JSON.stringify({
+      v: 1,
+      exportedAt: Date.now(),
+      vaultData: localStorage.getItem(LS_DATA) || '',
+      notesData: localStorage.getItem(LS_NOTES) || ''
+    });
+    const writable = await _fsHandle.createWritable();
+    await writable.write(payload);
+    await writable.close();
+  } catch {
+    // Permission revoked, file moved, disk full, etc — stop retrying until
+    // the user reconnects, rather than spamming a toast on every save.
+    _fsHandleNeedsReconnect = true;
+    showToast('// local backup file write failed — reconnect it in settings', 'err');
+  } finally {
+    _fsWriteInFlight = false;
+    renderBackupFileStatus();
+  }
+}
+
+function renderBackupFileStatus() {
+  const el = document.getElementById('fs-backup-status');
+  if (!el) return;
+  if (!fsAccessSupported()) {
+    el.textContent = 'Not supported in this browser (use Chrome or Edge)';
+  } else if (!_fsHandle) {
+    el.textContent = 'Not linked — backup only lives in this browser';
+  } else if (_fsHandleNeedsReconnect) {
+    el.innerHTML = 'Link needs to be reconnected — <a href="#" onclick="reconnectBackupFilePermission();return false">reconnect</a>';
+  } else {
+    el.textContent = 'Linked — auto-saving on every change';
+  }
+}
+
+// ══════════════════════════════════════════
+// CLOUD SYNC — Firebase (optional, off by default)
+// Requires the user's own free Firebase project. Only the already-AES-256
+// encrypted ciphertext is ever sent — Firebase never sees plaintext.
+// Security model: the syncId acts as a high-entropy (192-bit) secret —
+// treat it like a password. Recommended Firestore rule:
+//   match /vaults/{id} { allow get, write: if true; allow list: if false; }
+// (exact-id reads only, no listing/enumeration — same secrecy-by-entropy
+// model the rest of this app already uses for the decoy seed.)
+// ══════════════════════════════════════════
+let _fbApp = null, _fbDb = null, _fbFs = null;
+let _cloudModulePromise = null;
+let _cloudSyncTimer = null;
+
+function cloudSyncEnabled() {
+  return !!(cfg.cloud && cfg.cloud.enabled && cfg.cloud.apiKey && cfg.cloud.projectId && cfg.cloud.appId && cfg.cloud.syncId);
+}
+
+async function _loadFirebaseModules() {
+  if (_cloudModulePromise) return _cloudModulePromise;
+  _cloudModulePromise = (async () => {
+    const appMod = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const fsMod = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+    return { appMod, fsMod };
+  })();
+  return _cloudModulePromise;
+}
+
+async function _ensureFirebase() {
+  if (_fbDb) return _fbDb;
+  const { appMod, fsMod } = await _loadFirebaseModules();
+  _fbApp = appMod.initializeApp({
+    apiKey: cfg.cloud.apiKey,
+    projectId: cfg.cloud.projectId,
+    appId: cfg.cloud.appId
+  }, 'nsv-' + cfg.cloud.syncId.slice(0, 8));
+  _fbDb = fsMod.getFirestore(_fbApp);
+  _fbFs = fsMod;
+  return _fbDb;
+}
+
+function scheduleCloudSync() {
+  if (!cloudSyncEnabled()) return;
+  clearTimeout(_cloudSyncTimer);
+  _cloudSyncTimer = setTimeout(() => {
+    _doCloudPush().catch(err => showToast('// cloud sync failed — ' + (err?.message || 'network error'), 'err'));
+  }, 1500);
+}
+
+async function _doCloudPush() {
+  const db = await _ensureFirebase();
+  const ref = _fbFs.doc(db, 'vaults', cfg.cloud.syncId);
+  await _fbFs.setDoc(ref, {
+    vaultData: localStorage.getItem(LS_DATA) || '',
+    notesData: localStorage.getItem(LS_NOTES) || '',
+    updatedAt: Date.now()
+  });
+  const el = document.getElementById('cloud-sync-status');
+  if (el) el.textContent = 'last synced ' + new Date().toLocaleTimeString();
+}
+
+async function pullFromCloud() {
+  if (!cloudSyncEnabled()) { showToast('// cloud sync not configured', 'err'); return; }
+  try {
+    const db = await _ensureFirebase();
+    const ref = _fbFs.doc(db, 'vaults', cfg.cloud.syncId);
+    const snap = await _fbFs.getDoc(ref);
+    if (!snap.exists()) { showToast('// no cloud backup found yet', 'err'); return; }
+    const data = snap.data();
+    showConfirmTyped('// restore from cloud', 'this REPLACES the local vault and notes with the cloud copy. type DELETE to confirm.', async () => {
+      if (data.vaultData) rotatingSet(LS_DATA, data.vaultData);
+      if (data.notesData) rotatingSet(LS_NOTES, data.notesData);
+      showToast('// cloud restore complete — reloading', 'ok');
+      setTimeout(() => location.reload(), 1000);
+    });
+  } catch (err) { showToast('// cloud fetch failed — ' + (err.message || 'unknown error'), 'err'); }
+}
+
+function generateSyncId() {
+  const arr = crypto.getRandomValues(new Uint8Array(24));
+  return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function enableCloudSync() {
+  const apiKey = document.getElementById('cloud-apikey').value.trim();
+  const projectId = document.getElementById('cloud-projectid').value.trim();
+  const appId = document.getElementById('cloud-appid').value.trim();
+  if (!apiKey || !projectId || !appId) { showToast('// fill in all 3 Firebase fields', 'err'); return; }
+  if (!cfg.cloud) cfg.cloud = {};
+  cfg.cloud.apiKey = apiKey;
+  cfg.cloud.projectId = projectId;
+  cfg.cloud.appId = appId;
+  if (!cfg.cloud.syncId) cfg.cloud.syncId = generateSyncId();
+  cfg.cloud.enabled = true;
+  await saveCfg();
+  renderCloudSettings();
+  showToast('// cloud sync enabled', 'ok');
+  scheduleCloudSync();
+}
+
+function disableCloudSync() {
+  if (!cfg.cloud) return;
+  cfg.cloud.enabled = false;
+  saveCfg();
+  renderCloudSettings();
+  showToast('// cloud sync disabled (your config is kept)', 'warn');
+}
+
+function copySyncId() {
+  const el = document.getElementById('cloud-syncid-display');
+  if (!el || !el.value) { showToast('// nothing to copy yet — enable cloud sync first', 'err'); return; }
+  navigator.clipboard.writeText(el.value).then(() => showToast('// sync key copied', 'ok'))
+    .catch(() => showToast('// copy failed', 'err'));
+}
+
+function renderCloudSettings() {
+  const apiEl = document.getElementById('cloud-apikey');
+  const projEl = document.getElementById('cloud-projectid');
+  const appEl = document.getElementById('cloud-appid');
+  const statusEl = document.getElementById('cloud-sync-enabled-status');
+  const syncIdEl = document.getElementById('cloud-syncid-display');
+  if (apiEl) apiEl.value = cfg.cloud?.apiKey || '';
+  if (projEl) projEl.value = cfg.cloud?.projectId || '';
+  if (appEl) appEl.value = cfg.cloud?.appId || '';
+  if (statusEl) statusEl.textContent = cfg.cloud?.enabled ? 'enabled' : 'disabled';
+  if (syncIdEl) syncIdEl.value = cfg.cloud?.syncId || '';
+}
+
+async function saveData() {
+  const encrypted = await enc(JSON.stringify(store), _pw);
+  rotatingSet(LS_DATA, encrypted);
+  await writeLocalBackupFile();
+  scheduleCloudSync();
+}
+
+async function loadData(pw) {
+  let ok = false;
+  await readWithFallback(LS_DATA, async (raw) => {
+    try {
+      const plain = await dec(raw, pw);
+      const parsed = JSON.parse(plain);
+      if (!parsed || !Array.isArray(parsed.entries)) throw new Error('invalid data');
+      if (!Array.isArray(parsed.trash)) parsed.trash = [];
+      store = parsed;
+      ok = true;
+      return true;
+    } catch { return false; }
+  });
+  return ok;
+}
+
+// ══════════════════════════════════════════
+// NOTEBOOK LOGIC
+// ══════════════════════════════════════════
+let _nbInputHandler = null;
+
+// Core save logic shared by the manual Save button and autosave.
+//
+// SECURITY NOTE: the decoy notebook's textarea doubles as the hidden
+// activation field (type the real password/phrase + '#' + Enter to unlock
+// the real vault — see _makeNbInputHandler). That means whatever is typed
+// here, even mid-credential, briefly sits in this same textarea. Autosave
+// must NEVER write a probable credential attempt into a note — the decoy
+// layer is encrypted with a seed stored in plain localStorage (no password
+// required to decrypt it), so leaking the real password into a decoy note
+// would let anyone who reads localStorage recover the master password and
+// fully defeat the vault's encryption. _looksLikeCredentialAttempt() below
+// is a conservative shape check (single token, no whitespace, password-like
+// length) — content matching it is only persisted on an explicit, manual
+// Save click, never via autosave or the close/hide flush.
+function _looksLikeCredentialAttempt(title, body) {
+  if (title) return false; // a real title makes this almost certainly a genuine note
+  const t = body.trim();
+  return t.length >= 6 && t.length <= 130 && !/\s/.test(t);
+}
+
+async function _persistCurrentNote(isAutosave) {
+  const titleEl = document.getElementById('d-note-title');
+  const bodyEl = document.getElementById('d-note-body');
+  if (!titleEl || !bodyEl) return null;
+  const title = titleEl.value.trim();
+  const body = bodyEl.value;
+  if (!title && !body.trim()) return null; // nothing to save
+  if (isAutosave && _looksLikeCredentialAttempt(title, body)) return null; // see note above
+  const catSel = document.getElementById('d-note-cat');
+  const tag = catSel ? catSel.value : (nbCategories[0] || 'personal');
+  const id = currentNoteId || ('n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
+  nbNotes[id] = {
+    title: title || 'Untitled',
+    body,
+    tag,
+    date: Date.now()
+  };
+  currentNoteId = id;
+  await saveNotes();
+  return id;
+}
+
+let _autosaveTimer = null;
+let _autosavePending = false;
+
+function scheduleAutosave() {
+  _autosavePending = true;
+  clearTimeout(_autosaveTimer);
+  _autosaveTimer = setTimeout(async () => {
+    if (!_autosavePending) return;
+    await _persistCurrentNote(true);
+    _autosavePending = false;
+    const delBtn = document.getElementById('d-delete-btn');
+    if (delBtn && currentNoteId) delBtn.style.display = 'flex';
+    renderNbSidebar();
+  }, 1200);
+}
+
+// Forces an immediate (non-debounced) save — used when the tab is about to
+// be hidden/closed so a pending edit is never lost waiting on the timer.
+async function flushAutosave() {
+  if (!_autosavePending) return;
+  clearTimeout(_autosaveTimer);
+  await _persistCurrentNote(true);
+  _autosavePending = false;
+}
+
+function _isNoteEditorOpen() {
+  const ed = document.getElementById('d-editor-view');
+  return !!ed && ed.style.display !== 'none';
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && _isNoteEditorOpen()) flushAutosave();
+});
+window.addEventListener('pagehide', () => {
+  if (_isNoteEditorOpen()) flushAutosave();
+});
+
+function _attachNbHandlers(body) {
+  if (_nbInputHandler) body.removeEventListener('keydown', _nbInputHandler);
+  _nbInputHandler = _makeNbInputHandler();
+  body.addEventListener('keydown', _nbInputHandler);
+  // Wordcount + autosave on input (separate from auth keydown handler)
+  body.oninput = () => { updateWordCount(body.value); scheduleAutosave(); };
+  const titleEl = document.getElementById('d-note-title');
+  if (titleEl) titleEl.oninput = () => scheduleAutosave();
+}
+
+function newNote() {
+  currentNoteId = null;
+  document.getElementById('d-list-view').style.display = 'none';
+  const ed = document.getElementById('d-editor-view');
+  ed.style.display = 'flex';
+  document.getElementById('d-note-title').value = '';
+  const body = document.getElementById('d-note-body');
+  body.value = '';
+  updateWordCount('');
+  populateNoteCatDropdown(currentNbCat !== 'all' ? currentNbCat : nbCategories[0]);
+  const delBtn = document.getElementById('d-delete-btn');
+  if (delBtn) delBtn.style.display = 'none';
+  _attachNbHandlers(body);
+  setTimeout(() => document.getElementById('d-note-title').focus(), 50);
+}
+
+function populateNoteCatDropdown(selectedTag) {
+  const sel = document.getElementById('d-note-cat');
+  if (!sel) return;
+  sel.innerHTML = nbCategories.map(c =>
+    `<option value="${esc(c)}"${c === selectedTag ? ' selected' : ''}>${esc(c)}</option>`
+  ).join('');
+}
+
+function _makeNbInputHandler() {
+  // Returns a keydown handler — fires on every key, acts only on Enter
+  return async function(e) {
+    if (e.key !== 'Enter') return;
+
+    const ta = document.getElementById('d-note-body');
+    const val = ta.value;
+
+    // Look for a '#' anywhere in the current value.
+    // The credential is everything before the last '#'.
+    const hashIdx = val.lastIndexOf('#');
+    if (hashIdx === -1) return; // no '#' present — normal note, ignore
+
+    const candidate = val.slice(0, hashIdx).trim();
+    if (!candidate || candidate.length === 0 || candidate.length > 128) return;
+
+    // Lockout check — silent, text stays untouched
+    await loadLockoutState();
+    if (Date.now() < lockoutUntil) return;
+
+    // 1) Activation phrase check — salted PBKDF2 (same cost as the master
+    //    password). If no salted record exists yet, fall back to the legacy
+    //    plain-SHA256 hash once and migrate to the new format on match.
+    let activated = false;
+    const actRec = localStorage.getItem(LS_ACT);
+    if (actRec) {
+      try {
+        const { salt, hash } = JSON.parse(actRec);
+        if (await _deriveActHash(candidate, salt) === hash) activated = true;
+      } catch { /* ignore malformed record */ }
+    } else {
+      const h = await _hashStr(candidate);
+      if (h === _AH) {
+        const salt = _randomHex(16);
+        const hash = await _deriveActHash(candidate, salt);
+        localStorage.setItem(LS_ACT, JSON.stringify({ salt, hash }));
+        activated = true;
+      }
+    }
+    if (activated) {
+      ta.removeEventListener('keydown', _nbInputHandler);
+      _nbInputHandler = null;
+      // Clear only the trigger portion (#), keep any preceding note content
+      // In practice the textarea was used solely for the credential so clear it
+      ta.value = '';
+      updateWordCount('');
+      _onActivate();
+      return;
+    }
+
+    // 2) Direct credential check (only if workspace is set up)
+    if (candidate.length >= 12) {
+      const meta = loadMeta();
+      if (meta.syncDone && localStorage.getItem(LS_DATA)) {
+        const ok = await loadData(candidate);
+        if (ok) {
+          _pw = candidate;
+          failedAttempts = 0;
+          lockoutUntil = 0;
+          await saveLockoutState();
+          await loadCfg(candidate);
+          ta.removeEventListener('keydown', _nbInputHandler);
+          _nbInputHandler = null;
+          ta.value = '';
+          updateWordCount('');
+          openSecureView();
+          return;
+        }
+        // Wrong credential — silent, text stays, lockout counted
+        failedAttempts++;
+        if (failedAttempts >= 3) {
+          const delay = Math.min(Math.pow(2, failedAttempts - 2) * 1000, 300000);
+          lockoutUntil = Date.now() + delay;
+        }
+        await saveLockoutState();
+      }
+    }
+    // No match — do nothing, note continues normally
+  };
+}
+
+function updateWordCount(val) {
+  const words = val.trim() ? val.trim().split(/\s+/).length : 0;
+  const chars = val.length;
+  const wc = document.getElementById('d-wordcount');
+  const cc = document.getElementById('d-charcount');
+  if (wc) wc.textContent = words + ' word' + (words !== 1 ? 's' : '');
+  if (cc) cc.textContent = chars + ' character' + (chars !== 1 ? 's' : '');
+}
+
+async function _onActivate() {
+  const stored = localStorage.getItem(LS_DATA);
+  const meta = loadMeta();
+  if (!stored || !meta.syncDone) {
+    // First time — show setup modal
+    document.getElementById('setup-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('setup-pw1').focus(), 100);
+  } else {
+    // Show auth view
+    showAuthView();
+  }
+}
+
+function openNote(id) {
+  const n = nbNotes[id];
+  if (!n) return;
+  currentNoteId = id;
+  document.getElementById('d-list-view').style.display = 'none';
+  const ed = document.getElementById('d-editor-view');
+  ed.style.display = 'flex';
+  document.getElementById('d-note-title').value = n.title;
+  const body = document.getElementById('d-note-body');
+  body.value = n.body;
+  updateWordCount(n.body);
+  populateNoteCatDropdown(n.tag);
+  const delBtn = document.getElementById('d-delete-btn');
+  if (delBtn) delBtn.style.display = 'flex';
+  _attachNbHandlers(body);
+  _autosavePending = false;
+}
+
+function backToList() {
+  document.getElementById('d-editor-view').style.display = 'none';
+  document.getElementById('d-list-view').style.display = 'flex';
+  const body = document.getElementById('d-note-body');
+  if (_nbInputHandler) {
+    body.removeEventListener('keydown', _nbInputHandler);
+    _nbInputHandler = null;
+  }
+  clearTimeout(_autosaveTimer);
+  _autosavePending = false;
+  currentNoteId = null;
+  renderNoteList(document.getElementById('d-search-input')?.value || '');
+}
+
+async function saveNote() {
+  clearTimeout(_autosaveTimer);
+  _autosavePending = false;
+  const id = await _persistCurrentNote();
+  if (!id) { showNbToast('Nothing to save', 'err'); return; }
+  renderNbSidebar();
+  showNbToast('Note saved', 'ok');
+  backToList();
+}
+
+function deleteNote() {
+  clearTimeout(_autosaveTimer);
+  _autosavePending = false;
+  if (!currentNoteId) { backToList(); return; }
+  const n = nbNotes[currentNoteId];
+  const title = n?.title || 'this note';
+  showConfirm('// delete note', `move "${title}" to trash? you can restore it later.`, async () => {
+    nbTrash[currentNoteId] = { ...nbNotes[currentNoteId], deletedAt: Date.now() };
+    delete nbNotes[currentNoteId];
+    await saveNotes();
+    await saveNbTrash();
+    renderNbSidebar();
+    showNbToast('Note moved to trash', 'warn');
+    backToList();
+  });
+}
+
+function selectNotebook(btn, nb) {
+  currentNbCat = nb;
+  document.querySelectorAll('.d-nb-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderNoteList(document.getElementById('d-search-input')?.value || '');
+}
+
+function renderNbSidebar() {
+  const counts = {};
+  Object.values(nbNotes).forEach(n => { counts[n.tag] = (counts[n.tag] || 0) + 1; });
+  const total = Object.keys(nbNotes).length;
+  const trashCount = Object.keys(nbTrash).length;
+
+  const catBtns = nbCategories.map(cat => {
+    const icon = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${nbCatTextColor(cat)};flex-shrink:0"></span>`;
+    return `<button class="d-nb-btn${currentNbCat === cat ? ' active' : ''}" onclick="selectNotebook(this,'${esc(cat)}')">
+      ${icon}
+      ${esc(cat)}
+      <span class="d-nb-count">${counts[cat] || 0}</span>
+    </button>`;
+  }).join('');
+
+  document.getElementById('nb-sidebar-cats').innerHTML =
+    `<button class="d-nb-btn${currentNbCat === 'all' ? ' active' : ''}" onclick="selectNotebook(this,'all')">
+      <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+      All notes
+      <span class="d-nb-count">${total}</span>
+    </button>` + catBtns +
+    `<button class="d-nb-btn${currentNbCat === 'trash' ? ' active' : ''}" onclick="selectNotebook(this,'trash')" style="margin-top:6px">
+      <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+      Trash
+      <span class="d-nb-count">${trashCount}</span>
+    </button>`;
+
+  const status = document.getElementById('nb-sidebar-status');
+  if (status) status.innerHTML = total + ' note' + (total !== 1 ? 's' : '') + '<br>Last sync: just now';
+}
+
+// ── NB CATEGORY PERSISTENCE ──────────────────────────
+function loadNbCategories() {
+  try {
+    const raw = localStorage.getItem(LS_NB_CATS);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        nbCategories = parsed.filter(c => typeof c === 'string' && c.trim());
+        return;
+      }
+    }
+  } catch {}
+  // Default
+  nbCategories = ['journal', 'work', 'ideas', 'personal'];
+  saveNbCategories();
+}
+
+function saveNbCategories() {
+  localStorage.setItem(LS_NB_CATS, JSON.stringify(nbCategories));
+}
+
+// ── NB SETTINGS MODAL ────────────────────────────────
+function openNbSettings() {
+  renderNbCatList();
+  document.getElementById('nb-settings-modal').classList.add('open');
+  setTimeout(() => document.getElementById('nb-new-cat-input').focus(), 80);
+}
+
+function closeNbSettings() {
+  document.getElementById('nb-settings-modal').classList.remove('open');
+  document.getElementById('nb-new-cat-input').value = '';
+}
+
+function renderNbCatList() {
+  const container = document.getElementById('nb-cat-list');
+  if (!container) return;
+  if (!nbCategories.length) {
+    container.innerHTML = '<div style="font-size:12px;color:#9aa0ab;text-align:center;padding:0.5rem">No categories yet</div>';
+    return;
+  }
+  container.innerHTML = nbCategories.map((cat, i) => `
+    <div class="nb-cat-row">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="nb-cat-dot" style="background:${nbCatTextColor(cat)}"></div>
+        <span class="nb-cat-name">${esc(cat)}</span>
+      </div>
+      <button class="nb-cat-del" onclick="deleteNbCategory(${i})" title="delete">✕</button>
+    </div>
+  `).join('');
+}
+
+function addNbCategory() {
+  const inp = document.getElementById('nb-new-cat-input');
+  const name = inp.value.trim().toLowerCase();
+  if (!name) return;
+  if (nbCategories.includes(name)) { inp.select(); return; }
+  nbCategories.push(name);
+  saveNbCategories();
+  inp.value = '';
+  renderNbCatList();
+  renderNbSidebar();
+  populateNoteCatDropdown(name);
+}
+
+function deleteNbCategory(idx) {
+  const cat = nbCategories[idx];
+  // Count notes using this category
+  const count = Object.values(nbNotes).filter(n => n.tag === cat).length;
+  const msg = count > 0
+    ? `Delete "${cat}"? ${count} note${count !== 1 ? 's' : ''} will move to "${nbCategories.find((c,i) => i !== idx) || 'journal'}".`
+    : `Delete category "${cat}"?`;
+  if (!confirm(msg)) return;
+  // Reassign notes to first remaining category
+  const fallback = nbCategories.find((c, i) => i !== idx) || 'journal';
+  Object.keys(nbNotes).forEach(id => {
+    if (nbNotes[id].tag === cat) nbNotes[id].tag = fallback;
+  });
+  nbCategories.splice(idx, 1);
+  saveNbCategories();
+  saveNotes();
+  if (currentNbCat === cat) currentNbCat = 'all';
+  renderNbCatList();
+  renderNbSidebar();
+  renderNoteList();
+}
+
+function filterNotes(q) {
+  renderNoteList(q);
+}
+
+function showNbToast(msg, type = '') {
+  _showToastRaw(msg, type);
+}
+
+// ══════════════════════════════════════════
+// AUTH VIEW
+// ══════════════════════════════════════════
+async function showAuthView() {
+  document.getElementById('d-list-view').style.display = 'none';
+  document.getElementById('d-editor-view').style.display = 'none';
+  const uv = document.getElementById('nb-auth');
+  uv.style.display = 'flex';
+  document.getElementById('na-pw').value = '';
+  document.getElementById('na-error').style.display = 'none';
+  await loadLockoutState();
+  updateAttemptDisplay();
+  if (Date.now() < lockoutUntil) {
+    showLockoutOverlay();
+  } else {
+    hideLockoutOverlay(false);
+    setTimeout(() => document.getElementById('na-pw').focus(), 50);
+  }
+}
+
+function hideAuthView() {
+  document.getElementById('nb-auth').style.display = 'none';
+  document.getElementById('na-pw').value = '';
+  document.getElementById('na-error').style.display = 'none';
+  if (_lockoutInterval) { clearInterval(_lockoutInterval); _lockoutInterval = null; }
+  document.getElementById('d-list-view').style.display = 'flex';
+}
+
+function updateAttemptDisplay() {
+  const el = document.getElementById('na-attempts');
+  if (!el) return;
+  if (failedAttempts > 0) {
+    el.textContent = failedAttempts + ' failed attempt' + (failedAttempts !== 1 ? 's' : '');
+  } else {
+    el.textContent = '';
+  }
+}
+
+// ── Lockout countdown overlay ──
+// While lockoutUntil is in the future: the password field + Continue button
+// are disabled and a full-card overlay shows a live countdown. No password
+// is read or checked while this is active, even if attemptAuth() is called
+// directly.
+let _lockoutInterval = null;
+
+function _fmtLockoutTime(ms) {
+  const totalSecs = Math.max(0, Math.ceil(ms / 1000));
+  const m = Math.floor(totalSecs / 60);
+  const s = totalSecs % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+function showLockoutOverlay() {
+  const ov = document.getElementById('na-lockout');
+  const timerEl = document.getElementById('na-lockout-timer');
+  document.getElementById('na-pw').disabled = true;
+  document.querySelector('.na-auth-btn').disabled = true;
+  document.getElementById('na-error').style.display = 'none';
+  ov.classList.add('show');
+
+  if (_lockoutInterval) clearInterval(_lockoutInterval);
+  const tick = () => {
+    const remaining = lockoutUntil - Date.now();
+    if (remaining <= 0) { hideLockoutOverlay(true); return; }
+    timerEl.textContent = _fmtLockoutTime(remaining);
+  };
+  tick();
+  _lockoutInterval = setInterval(tick, 250);
+}
+
+function hideLockoutOverlay(reset) {
+  if (_lockoutInterval) { clearInterval(_lockoutInterval); _lockoutInterval = null; }
+  document.getElementById('na-lockout').classList.remove('show');
+  document.getElementById('na-pw').disabled = false;
+  document.querySelector('.na-auth-btn').disabled = false;
+  if (reset) {
+    lockoutUntil = 0;
+    saveLockoutState();
+    document.getElementById('na-pw').value = '';
+    document.getElementById('na-pw').focus();
+  }
+}
+
+async function attemptAuth() {
+  // Lockout check — enforced regardless of how this function was triggered.
+  // No password is read or passed to loadData() while a lockout is active.
+  await loadLockoutState();
+  if (Date.now() < lockoutUntil) {
+    showLockoutOverlay();
+    return;
+  }
+  const pw = document.getElementById('na-pw').value;
+  if (!pw) return;
+  const btn = document.querySelector('.na-auth-btn');
+  btn.textContent = 'Please wait…';
+  btn.disabled = true;
+  const ok = await loadData(pw);
+  btn.textContent = 'Continue';
+  btn.disabled = false;
+  if (ok) {
+    _pw = pw;
+    failedAttempts = 0;
+    lockoutUntil = 0;
+    await saveLockoutState();
+    await loadCfg(pw);
+    document.getElementById('na-pw').value = '';
+    hideAuthView();
+    openSecureView();
+  } else {
+    failedAttempts++;
+    // Exponential lockout: 2^attempts seconds, max 5 min
+    if (failedAttempts >= 3) {
+      const delay = Math.min(Math.pow(2, failedAttempts - 2) * 1000, 300000);
+      lockoutUntil = Date.now() + delay;
+    }
+    await saveLockoutState();
+    document.getElementById('na-pw').value = '';
+    if (Date.now() < lockoutUntil) {
+      updateAttemptDisplay();
+      showLockoutOverlay();
+    } else {
+      document.getElementById('na-error').style.display = 'block';
+      document.getElementById('na-error').textContent = 'Incorrect password. Try again.';
+      updateAttemptDisplay();
+      document.getElementById('na-pw').focus();
+    }
+  }
+}
+
+function toggleAuthEye() {
+  const inp = document.getElementById('na-pw');
+  const icon = document.getElementById('na-eye-icon');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22"/>';
+  } else {
+    inp.type = 'password';
+    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
+// ══════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════
+function pwStrength(pw) {
+  let s = 0;
+  if (pw.length >= 8)  s++;
+  if (pw.length >= 12) s++;
+  if (pw.length >= 16) s++;
+  if (/[A-Z]/.test(pw)) s++;
+  if (/[a-z]/.test(pw)) s++;
+  if (/[0-9]/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  return s; // 0–7
+}
+
+function updateStrengthUI(pw, fillId, labelId, isSetup) {
+  const s = pwStrength(pw);
+  const fill = document.getElementById(fillId);
+  const label = document.getElementById(labelId);
+  if (!fill || !label) return;
+  const pct = Math.round((s / 7) * 100);
+  fill.style.width = pct + '%';
+  if (s <= 2)      { fill.style.background = '#e53e3e'; label.textContent = isSetup ? 'Weak password' : '// weak'; }
+  else if (s <= 4) { fill.style.background = '#dd6b20'; label.textContent = isSetup ? 'Fair — use more variety' : '// fair'; }
+  else if (s <= 5) { fill.style.background = '#38a169'; label.textContent = isSetup ? 'Good password' : '// good'; }
+  else             { fill.style.background = '#2ecc71'; label.textContent = isSetup ? 'Strong password' : '// strong'; }
+}
+
+function checkSetupStrength() {
+  updateStrengthUI(document.getElementById('setup-pw1').value, 'setup-str-fill', 'setup-str-label', true);
+}
+function checkChangeStrength() {
+  updateStrengthUI(document.getElementById('s-newpw1').value, 'change-strength-fill', 'change-strength-label', false);
+}
+
+function toggleSetupEye(n) {
+  const inp = document.getElementById('setup-pw' + n);
+  const icon = document.getElementById('setup-eye' + n);
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22"/>';
+  } else {
+    inp.type = 'password';
+    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
+async function activateSecureView() {
+  const p1 = document.getElementById('setup-pw1').value;
+  const p2 = document.getElementById('setup-pw2').value;
+  if (!p1 || p1.length < 12) { showNbToast('Minimum 12 characters required', 'err'); return; }
+  if (pwStrength(p1) < 3)    { showNbToast('Password too weak — add variety', 'err'); return; }
+  if (p1 !== p2)              { showNbToast('Passwords do not match', 'err'); return; }
+  const btn = document.querySelector('.setup-btn-primary');
+  btn.textContent = 'Setting up…';
+  btn.disabled = true;
+  _pw = p1;
+  store = { entries: [], trash: [] };
+  cfg = JSON.parse(JSON.stringify({ cats: JSON.parse(JSON.stringify(DEFAULT_CATS)), timeout: 5, exportName: 'cache_8f3a21.dat', clipClear: 10, trashDays: 30 }));
+  await saveData();
+  await saveCfg();
+  saveMeta({ syncDone: true });
+  document.getElementById('setup-pw1').value = '';
+  document.getElementById('setup-pw2').value = '';
+  document.getElementById('setup-overlay').classList.remove('open');
+  btn.textContent = 'Activate';
+  btn.disabled = false;
+  openSecureView();
+  showToast('// workspace activated', 'ok');
+}
+
+function dismissSetup() {
+  document.getElementById('setup-overlay').classList.remove('open');
+  document.getElementById('setup-pw1').value = '';
+  document.getElementById('setup-pw2').value = '';
+}
+
+// ══════════════════════════════════════════
+// APP ENTER / LOCK
+// ══════════════════════════════════════════
+function openSecureView() {
+  document.body.classList.remove('nb-mode');
+  document.getElementById('notebook').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  loadSettings();
+  purgeTrash();
+  renderAll();
+  startIdle();
+  tryReconnectBackupFile();
+  if (cloudSyncEnabled()) scheduleCloudSync();
+  const meta = loadMeta();
+  const now = new Date();
+  document.getElementById('tb-session').textContent =
+    'session · ' + now.toTimeString().slice(0, 5);
+}
+
+function closeSecureView() {
+  // Clear sensitive state
+  _pw = null;
+  store = { entries: [], trash: [] };
+  selectedId = null;
+  editingId = null;
+  fieldValueMap.clear();
+  clearIdle();
+  // Return to notebook view
+  document.body.classList.add('nb-mode');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('notebook').style.display = 'flex';
+  hideAuthView();
+  renderNoteList();
+}
+
+// ══════════════════════════════════════════
+// IDLE / AUTO-LOCK
+// ══════════════════════════════════════════
+// Auto-lock is based on wall-clock time (_lastActivity), not on counting
+// setInterval ticks. Background/inactive tabs are throttled by the browser
+// (intervals may pause or fire late), and switching back to this tab used
+// to call resetIdle() and silently restart the full timeout — defeating
+// auto-lock if the user worked in another tab past the limit. Now,
+// returning to the tab only re-checks elapsed wall-clock time; it never
+// extends the session.
+const _idleEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+let _lastActivity = Date.now();
+
+function startIdle() {
+  _lastActivity = Date.now();
+  clearIdle();
+  _tickIdle();
+  idleTimer = setInterval(_tickIdle, 1000);
+  _idleEvents.forEach(e => document.addEventListener(e, resetIdle, { passive: true }));
+  document.addEventListener('visibilitychange', _onVisibilityChange);
+}
+
+function _tickIdle() {
+  const limitMs = (cfg.timeout || 5) * 60 * 1000;
+  const elapsed = Date.now() - _lastActivity;
+  idleLeft = Math.max(0, Math.ceil((limitMs - elapsed) / 1000));
+  updateIdleDisplay();
+  if (elapsed >= limitMs) closeSecureView();
+}
+
+function _onVisibilityChange() {
+  // Re-check elapsed time when returning to the tab (or when it's hidden) —
+  // does NOT reset the timer, so time spent on other tabs still counts.
+  _tickIdle();
+}
+
+function resetIdle() {
+  _lastActivity = Date.now();
+  idleLeft = (cfg.timeout || 5) * 60;
+  updateIdleDisplay();
+}
+
+function clearIdle() {
+  if (idleTimer) { clearInterval(idleTimer); idleTimer = null; }
+  _idleEvents.forEach(e => document.removeEventListener(e, resetIdle));
+  document.removeEventListener('visibilitychange', _onVisibilityChange);
+}
+
+function updateIdleDisplay() {
+  const m = Math.floor(idleLeft / 60), s = idleLeft % 60;
+  const el = document.getElementById('tb-idle');
+  if (el) el.textContent = `// lock ${m}:${s < 10 ? '0' : ''}${s}`;
+}
+
+// ══════════════════════════════════════════
+// RENDER SIDEBAR
+// ══════════════════════════════════════════
+function catColorClass(c) { return 'cat-color-' + c; }
+
+function getCatSvg(catId) {
+  const svgs = {
+    pw:     '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>',
+    card:   '<rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>',
+    note:   '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+    id:     '<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    fp:     '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>',
+    key:    '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>',
+    custom: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  };
+  return svgs[catId] || svgs.custom;
+}
+
+function renderSidebar() {
+  const list = document.getElementById('cat-list');
+  const counts = {};
+  store.entries.forEach(e => { counts[e.cat] = (counts[e.cat] || 0) + 1; });
+  document.getElementById('cnt-all').textContent = store.entries.length;
+  const cntTrash = document.getElementById('cnt-trash');
+  if (cntTrash) cntTrash.textContent = (store.trash || []).length;
+  list.innerHTML = cfg.cats.map(c => `
+    <button class="cat-btn${currentCat === c.id ? ' active' : ''}" onclick="selectCat('${esc(c.id)}',this)" data-cat="${esc(c.id)}">
+      <svg viewBox="0 0 24 24">${getCatSvg(c.id)}</svg>
+      <span class="cat-btn-label">${esc(c.name)}</span>
+      <span class="cat-count">${counts[c.id] || 0}</span>
+    </button>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
+// RENDER ENTRIES
+// ══════════════════════════════════════════
+function renderAll() { renderSidebar(); renderEntries(); }
+
+function renderEntries() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+
+  if (currentCat === 'trash') {
+    const list = document.getElementById('entries-list');
+    const trash = (store.trash || []).filter(e => {
+      if (!q) return true;
+      return (e.title || '').toLowerCase().includes(q) || (e.notes || '').toLowerCase().includes(q);
+    }).sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+    const countEl = document.getElementById('sb-count');
+    if (countEl) countEl.textContent = trash.length + ' in trash';
+    if (!trash.length) {
+      list.innerHTML = `<div class="empty-state">
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+        <p>// trash is empty</p>
+      </div>`;
+      return;
+    }
+    const days = Math.max(0, (cfg && cfg.trashDays) || 30);
+    list.innerHTML = `<div style="padding:4px 2px 8px;display:flex;justify-content:flex-end">
+        <button class="d-btn d-btn-danger" style="font-size:11px" onclick="emptyTrash()">empty trash</button>
+      </div>` + trash.map(e => `
+      <div class="entry-card" style="cursor:default">
+        <div class="ec-header">
+          <div class="ec-title">${esc(e.title)}</div>
+        </div>
+        <div class="ec-date">// deleted ${fmtDate(e.deletedAt)} · auto-purges after ${days}d</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button class="btn-sm" style="flex:1;justify-content:center" onclick="restoreEntry('${esc(e.id)}')">restore</button>
+          <button class="btn-sm danger-btn" style="flex:1;justify-content:center" onclick="permanentlyDeleteEntry('${esc(e.id)}')">delete forever</button>
+        </div>
+      </div>`).join('');
+    return;
+  }
+
+  const entries = store.entries.filter(e => {
+    if (currentCat !== 'all' && e.cat !== currentCat) return false;
+    if (!q) return true;
+    return (e.title || '').toLowerCase().includes(q)
+        || (e.notes || '').toLowerCase().includes(q)
+        || (e.username || '').toLowerCase().includes(q)
+        || (e.url || '').toLowerCase().includes(q)
+        || (e.service || '').toLowerCase().includes(q)
+        || (e.email || '').toLowerCase().includes(q);
+  });
+  const countEl = document.getElementById('sb-count');
+  if (countEl) countEl.textContent = entries.length + ' entr' + (entries.length === 1 ? 'y' : 'ies');
+  const list = document.getElementById('entries-list');
+  if (!entries.length) {
+    list.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+      <p>${q ? '// no results found' : '// no entries\n// add one to begin'}</p>
+    </div>`;
+    return;
+  }
+  list.innerHTML = entries.map(e => {
+    const cat = cfg.cats.find(c => c.id === e.cat);
+    const colorCls = catColorClass(cat?.color || 'custom');
+    const meta = e.username || e.url || e.service || e.email || '';
+    return `<div class="entry-card${e.id === selectedId ? ' active' : ''}" onclick="selectEntry('${esc(e.id)}')">
+      <div class="ec-header">
+        <div class="ec-icon ${colorCls}"><svg viewBox="0 0 24 24">${getCatSvg(e.cat)}</svg></div>
+        <div class="ec-title">${esc(e.title)}</div>
+        <div class="ec-cat">${esc(cat?.name || e.cat)}</div>
+      </div>
+      ${meta ? `<div class="ec-meta">${esc(meta)}</div>` : ''}
+      <div class="ec-date">// ${fmtDate(e.created)}</div>
+    </div>`;
+  }).join('');
+}
+
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return d.toISOString().slice(0, 10) + ' ' + d.toTimeString().slice(0, 5);
+}
+
+function esc(s = '') {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ══════════════════════════════════════════
+// SELECT / DETAIL
+// ══════════════════════════════════════════
+function selectEntry(id) {
+  selectedId = id;
+  const e = store.entries.find(x => x.id === id);
+  if (!e) return;
+  renderEntries();
+  renderDetail(e);
+}
+
+function renderDetail(e) {
+  const cat = cfg.cats.find(c => c.id === e.cat);
+  document.getElementById('d-title').textContent = e.title;
+  document.getElementById('detail-placeholder').style.display = 'none';
+  const dc = document.getElementById('detail-content');
+  dc.style.display = 'flex';
+  const body = document.getElementById('d-body');
+  fieldValueMap.clear();
+  let html = '';
+  (cat?.fields || []).forEach(f => {
+    const val = e[f.id];
+    if (val === undefined || val === null || val === '') return;
+    const mid = 'm' + uid();
+    fieldValueMap.set(mid, val);
+    if (f.ta) {
+      // Textarea field — display as notes-style
+      html += `<div class="field-group">
+        <div class="field-label">${esc(f.label)}</div>
+        <div class="field-val">
+          <div class="field-val-txt">${esc(val)}</div>
+          <div class="fv-controls">
+            <button class="mini-icon-btn" title="copy" data-mid="${mid}" onclick="copyFV('${mid}',this)">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>`;
+    } else if (f.pw) {
+      html += `<div class="field-group">
+        <div class="field-label">${esc(f.label)}</div>
+        <div class="field-val masked" id="wrap-${mid}">
+          <div class="field-val-txt" id="fvt-${mid}">••••••••••</div>
+          <div class="fv-controls">
+            <button class="mini-icon-btn" title="reveal" onclick="toggleFV('${mid}')">
+              <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <button class="mini-icon-btn" title="copy" data-mid="${mid}" onclick="copyFV('${mid}',this)">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>`;
+    } else {
+      html += `<div class="field-group">
+        <div class="field-label">${esc(f.label)}</div>
+        <div class="field-val">
+          <div class="field-val-txt">${esc(val)}</div>
+          <div class="fv-controls">
+            <button class="mini-icon-btn" title="copy" data-mid="${mid}" onclick="copyFV('${mid}',this)">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>`;
+    }
+  });
+  if (e.notes) {
+    html += `<div class="field-group"><div class="field-label">NOTES</div><div class="detail-notes">${esc(e.notes)}</div></div>`;
+  }
+  html += `<div class="detail-ts">// created ${fmtDate(e.created)}</div>`;
+  body.innerHTML = html;
+}
+
+function toggleFV(mid) {
+  const w = document.getElementById('wrap-' + mid);
+  const t = document.getElementById('fvt-' + mid);
+  const val = fieldValueMap.get(mid) || '';
+  if (w.classList.contains('masked')) {
+    w.classList.remove('masked');
+    t.textContent = val;
+    // Auto re-mask after 30s
+    setTimeout(() => {
+      if (!w.classList.contains('masked')) {
+        w.classList.add('masked');
+        t.textContent = '••••••••••';
+      }
+    }, 30000);
+  } else {
+    w.classList.add('masked');
+    t.textContent = '••••••••••';
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.top = '-9999px';
+  ta.style.left = '-9999px';
+  ta.setAttribute('readonly', '');
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch { ok = false; }
+  document.body.removeChild(ta);
+  return ok;
+}
+
+async function copyToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // fall through to fallback
+    }
+  }
+  return fallbackCopy(text);
+}
+
+async function copyFV(mid, btn) {
+  const val = fieldValueMap.get(mid) || '';
+  const ok = await copyToClipboard(val);
+  if (ok) {
+    btn.classList.add('ok');
+    showToast('// copied', 'ok');
+    const delay = (cfg.clipClear !== undefined ? cfg.clipClear : 10) * 1000;
+    if (delay > 0) setTimeout(() => copyToClipboard('').catch(() => {}), delay);
+    setTimeout(() => btn.classList.remove('ok'), 2000);
+  } else {
+    showToast('// copy failed', 'err');
+  }
+}
+
+function closeDetail() {
+  selectedId = null;
+  fieldValueMap.clear();
+  document.getElementById('detail-placeholder').style.display = 'flex';
+  document.getElementById('detail-content').style.display = 'none';
+  renderEntries();
+}
+
+// ══════════════════════════════════════════
+// CATEGORY SELECT
+// ══════════════════════════════════════════
+function selectCat(cat, btn) {
+  currentCat = cat;
+  selectedId = null;
+  fieldValueMap.clear();
+  closeDetail();
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  if (btn) {
+    btn.classList.add('active');
+  } else {
+    const b = document.querySelector(`.cat-btn[data-cat="${esc(cat)}"]`);
+    if (b) b.classList.add('active');
+  }
+  const catEl = document.getElementById('sb-cat');
+  if (catEl) catEl.textContent = cat === 'all' ? 'all categories' : (cfg.cats.find(c => c.id === cat)?.name || cat);
+  renderEntries();
+}
+
+// ══════════════════════════════════════════
+// ADD / EDIT MODAL
+// ══════════════════════════════════════════
+function populateCatSelect(selVal) {
+  const sel = document.getElementById('f-cat');
+  sel.innerHTML = cfg.cats.map(c =>
+    `<option value="${esc(c.id)}"${c.id === selVal ? ' selected' : ''}>${esc(c.name)}</option>`
+  ).join('');
+}
+
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = '// new entry';
+  populateCatSelect(currentCat === 'all' ? (cfg.cats[0]?.id || '') : currentCat);
+  document.getElementById('f-title').value = '';
+  document.getElementById('f-notes').value = '';
+  buildDynamicFields({});
+  document.getElementById('entry-modal').classList.add('open');
+  setTimeout(() => document.getElementById('f-title').focus(), 50);
+}
+
+function openEditModal() {
+  const e = store.entries.find(x => x.id === selectedId);
+  if (!e) return;
+  editingId = e.id;
+  document.getElementById('modal-title').textContent = '// edit entry';
+  populateCatSelect(e.cat);
+  document.getElementById('f-title').value = e.title;
+  document.getElementById('f-notes').value = e.notes || '';
+  buildDynamicFields(e);
+  document.getElementById('entry-modal').classList.add('open');
+}
+
+function onCatChange() { buildDynamicFields({}); }
+
+function buildDynamicFields(data) {
+  const catId = document.getElementById('f-cat').value;
+  const cat = cfg.cats.find(c => c.id === catId);
+  const fields = cat?.fields || [];
+  let html = '';
+  fields.forEach(f => {
+    const rawVal = data[f.id] || '';
+    if (f.ta) {
+      html += `<div class="form-group">
+        <label class="form-label">${esc(f.label)}</label>
+        <textarea class="form-input form-textarea" id="ff-${esc(f.id)}"></textarea>
+      </div>`;
+    } else if (f.pw) {
+      html += `<div class="form-group">
+        <label class="form-label">${esc(f.label)}</label>
+        <div class="pw-wrap">
+          <input class="form-input" type="password" id="ff-${esc(f.id)}">
+          <button class="pw-tog" type="button" onclick="togglePw('ff-${esc(f.id)}',this)">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        ${(f.id === 'password' || f.id === 'apiKey' || f.id === 'secret') ?
+          `<button class="gen-btn" type="button" onclick="genPw('ff-${esc(f.id)}')">// generate strong password</button>` : ''}
+      </div>`;
+    } else {
+      html += `<div class="form-group">
+        <label class="form-label">${esc(f.label)}</label>
+        <input class="form-input" type="text" id="ff-${esc(f.id)}">
+      </div>`;
+    }
+  });
+  document.getElementById('f-dynamic').innerHTML = html;
+  // Set values via JS (not HTML attributes) to avoid encoding issues
+  fields.forEach(f => {
+    const el = document.getElementById('ff-' + f.id);
+    if (el) el.value = data[f.id] || '';
+  });
+}
+
+// ── Unbiased password generator (rejection sampling) ──
+function genPw(targetId) {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}';
+  const len = chars.length;
+  const limit = 256 - (256 % len); // rejection threshold for uniform distribution
+  let pw = '';
+  while (pw.length < 24) {
+    const byte = crypto.getRandomValues(new Uint8Array(1))[0];
+    if (byte < limit) pw += chars[byte % len];
+  }
+  const el = document.getElementById(targetId);
+  if (el) { el.value = pw; el.type = 'text'; }
+}
+
+async function saveEntry() {
+  const title = document.getElementById('f-title').value.trim();
+  if (!title) { showToast('// title required', 'err'); return; }
+  const catId = document.getElementById('f-cat').value;
+  const cat = cfg.cats.find(c => c.id === catId);
+  const origCreated = editingId
+    ? (store.entries.find(e => e.id === editingId)?.created || Date.now())
+    : Date.now();
+  const data = {
+    id: editingId || uid(),
+    cat: catId,
+    title,
+    notes: document.getElementById('f-notes').value,
+    created: origCreated,
+    modified: Date.now()
+  };
+  (cat?.fields || []).forEach(f => {
+    const el = document.getElementById('ff-' + f.id);
+    if (el) data[f.id] = el.value;
+  });
+  if (editingId) {
+    const idx = store.entries.findIndex(e => e.id === editingId);
+    if (idx > -1) store.entries[idx] = data;
+    editingId = null;
+  } else {
+    store.entries.unshift(data);
+  }
+  await saveData();
+  closeModal('entry-modal');
+  renderAll();
+  selectedId = data.id;
+  selectEntry(data.id);
+  showToast('// entry saved', 'ok');
+}
+
+function uid() {
+  const arr = crypto.getRandomValues(new Uint8Array(8));
+  return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ══════════════════════════════════════════
+// DELETE / TRASH
+// ══════════════════════════════════════════
+function deleteEntry() {
+  const e = store.entries.find(x => x.id === selectedId);
+  if (!e) return;
+  showConfirm('// delete entry', `move "${e.title}" to trash? you can restore it later.`, async () => {
+    store.entries = store.entries.filter(x => x.id !== selectedId);
+    if (!Array.isArray(store.trash)) store.trash = [];
+    store.trash.unshift({ ...e, deletedAt: Date.now() });
+    await saveData();
+    closeDetail();
+    renderAll();
+    showToast('// entry moved to trash', 'warn');
+  });
+}
+
+async function restoreEntry(id) {
+  const idx = (store.trash || []).findIndex(x => x.id === id);
+  if (idx === -1) return;
+  const e = { ...store.trash[idx] };
+  delete e.deletedAt;
+  store.trash.splice(idx, 1);
+  store.entries.unshift(e);
+  await saveData();
+  renderAll();
+  showToast('// entry restored', 'ok');
+}
+
+function permanentlyDeleteEntry(id) {
+  const e = (store.trash || []).find(x => x.id === id);
+  if (!e) return;
+  showConfirmTyped('// delete forever', `"${e.title}" will be permanently destroyed. type DELETE to confirm — there is no recovery after this.`, async () => {
+    store.trash = store.trash.filter(x => x.id !== id);
+    await saveData();
+    renderAll();
+    showToast('// entry permanently deleted', 'warn');
+  });
+}
+
+function emptyTrash() {
+  if (!(store.trash || []).length) return;
+  showConfirmTyped('// empty trash', `all ${store.trash.length} trashed entr${store.trash.length === 1 ? 'y' : 'ies'} will be permanently destroyed. type DELETE to confirm.`, async () => {
+    store.trash = [];
+    await saveData();
+    renderAll();
+    showToast('// trash emptied', 'warn');
+  });
+}
+
+// Auto-purges entries that have been in trash longer than cfg.trashDays.
+function purgeTrash() {
+  if (!Array.isArray(store.trash) || !store.trash.length) return;
+  const days = (cfg && cfg.trashDays) || 30;
+  const cutoff = Date.now() - days * 86400000;
+  const before = store.trash.length;
+  store.trash = store.trash.filter(e => (e.deletedAt || 0) >= cutoff);
+  if (store.trash.length !== before) saveData();
+}
+
+// ══════════════════════════════════════════
+// EXPORT / IMPORT
+// ══════════════════════════════════════════
+async function exportData() {
+  const raw = localStorage.getItem(LS_DATA) || '';
+  if (!raw) { showToast('// nothing to export', 'err'); return; }
+  const blob = new Blob([raw], { type: 'application/octet-stream' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = cfg.exportName || 'cache_8f3a21.dat';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); document.body.removeChild(a); }, 1000);
+  showToast('// backup exported', 'ok');
+}
+
+function openImport() { document.getElementById('import-file').click(); }
+
+async function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const text = await file.text();
+  input.value = '';
+  showConfirmTyped('// import backup', '⚠ this REPLACES ALL current entries and trash. export a backup first if unsure. type DELETE to confirm.', async () => {
+    try {
+      const plain = await dec(text, _pw);
+      const parsed = JSON.parse(plain);
+      if (!parsed || !Array.isArray(parsed.entries)) throw new Error('invalid');
+      if (!Array.isArray(parsed.trash)) parsed.trash = [];
+      store = parsed;
+      rotatingSet(LS_DATA, text);
+      await writeLocalBackupFile();
+      scheduleCloudSync();
+      renderAll();
+      showToast('// import successful', 'ok');
+    } catch { showToast('// import failed — wrong file or password', 'err'); }
+  });
+}
+
+// ══════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════
+function loadSettings() {
+  const t = document.getElementById('s-timeout');     if (t) t.value = cfg.timeout || 5;
+  const en = document.getElementById('s-exportname'); if (en) en.value = cfg.exportName || 'cache_8f3a21.dat';
+  const cc = document.getElementById('s-clipclear');  if (cc) cc.value = cfg.clipClear !== undefined ? cfg.clipClear : 10;
+  const td = document.getElementById('s-trashdays');  if (td) td.value = cfg.trashDays || 30;
+  renderBackupFileStatus();
+  renderCloudSettings();
+}
+
+function openSettings() {
+  loadSettings();
+  renderCatSettings();
+  // Always default to general tab when opening
+  switchSettingsTab('general', document.querySelector('.stab'));
+  document.getElementById('settings-modal').classList.add('open');
+}
+
+function switchSettingsTab(tab, btn) {
+  document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.stab-pane').forEach(p => p.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('stab-' + tab).classList.add('active');
+}
+
+// ── CATEGORY MANAGEMENT ──
+function renderCatSettings() {
+  const list = document.getElementById('cat-settings-list');
+  list.innerHTML = cfg.cats.map((c, ci) => `
+    <div class="cat-manage-row">
+      <div class="cat-manage-icon cat-color-${c.color}"><svg viewBox="0 0 24 24">${getCatSvg(c.id)}</svg></div>
+      <div class="cat-manage-info">
+        <div class="cat-manage-name">${esc(c.name)}</div>
+        <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:0">
+          ${(c.fields || []).map((f, fi) =>
+            `<div class="field-chip">${esc(f.label)}
+              <button onclick="removeCatField(${ci},${fi})" title="remove field">
+                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>`
+          ).join('')}
+        </div>
+        <div class="add-field-row">
+          <input class="form-input" placeholder="field label…" id="nf-label-${ci}" style="font-size:11px;padding:4px 7px">
+          <select class="form-input form-select" id="nf-type-${ci}" style="font-size:11px;padding:4px 7px;width:85px">
+            <option value="text">text</option>
+            <option value="pw">password</option>
+            <option value="ta">textarea</option>
+          </select>
+          <button class="btn-sm accent-btn" onclick="addCatField(${ci})" style="padding:4px 7px;flex-shrink:0">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            add
+          </button>
+        </div>
+      </div>
+      ${ci >= 6
+        ? `<button class="btn-icon danger" title="delete category" onclick="deleteCategory(${ci})" style="flex-shrink:0;margin-top:2px">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+           </button>`
+        : '<div style="width:27px;flex-shrink:0"></div>'}
+    </div>
+  `).join('');
+}
+
+async function addCatField(ci) {
+  const label = document.getElementById(`nf-label-${ci}`).value.trim();
+  if (!label) { showToast('// field label required', 'err'); return; }
+  const type = document.getElementById(`nf-type-${ci}`).value;
+  const id = label.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + ci;
+  cfg.cats[ci].fields.push({ id, label: label.toUpperCase(), pw: type === 'pw', ta: type === 'ta' });
+  await saveCfg();
+  renderCatSettings();
+  showToast('// field added', 'ok');
+}
+
+async function removeCatField(ci, fi) {
+  cfg.cats[ci].fields.splice(fi, 1);
+  await saveCfg();
+  renderCatSettings();
+}
+
+async function addCategory() {
+  const name = document.getElementById('new-cat-name').value.trim();
+  if (!name) { showToast('// category name required', 'err'); return; }
+  const color = document.getElementById('new-cat-color').value;
+  const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now().toString(36);
+  cfg.cats.push({ id, name: name.toLowerCase(), color, fields: [] });
+  await saveCfg();
+  renderSidebar();
+  renderCatSettings();
+  document.getElementById('new-cat-name').value = '';
+  showToast('// category added', 'ok');
+}
+
+async function deleteCategory(ci) {
+  const cat = cfg.cats[ci];
+  showConfirm('// delete category', `delete "${cat.name}"? entries in this category will not be deleted.`, async () => {
+    cfg.cats.splice(ci, 1);
+    await saveCfg();
+    renderSidebar();
+    renderCatSettings();
+    showToast('// category deleted', 'warn');
+  });
+}
+
+// ── PASSWORD CHANGE ──
+async function changePassword() {
+  const cur = document.getElementById('s-curpw').value;
+  const n1  = document.getElementById('s-newpw1').value;
+  const n2  = document.getElementById('s-newpw2').value;
+  if (cur !== _pw)   { showToast('// current password wrong', 'err'); return; }
+  if (!n1 || n1.length < 12) { showToast('// min 12 characters required', 'err'); return; }
+  if (pwStrength(n1) < 3) { showToast('// password too weak', 'err'); return; }
+  if (n1 !== n2)          { showToast('// passwords do not match', 'err'); return; }
+  _pw = n1;
+  await saveData();
+  await saveCfg();
+  document.getElementById('s-curpw').value  = '';
+  document.getElementById('s-newpw1').value = '';
+  document.getElementById('s-newpw2').value = '';
+  const fill = document.getElementById('change-strength-fill');
+  if (fill) fill.style.width = '0%';
+  const lbl = document.getElementById('change-strength-label');
+  if (lbl) lbl.textContent = '// enter new password';
+  showToast('// password updated', 'ok');
+}
+
+// ── WIPE / RESET ──
+async function wipeData() {
+  showConfirmTyped('// wipe entries', 'all entries AND trash will be permanently deleted (this skips the trash safety net). config and categories are preserved. type DELETE to confirm.', async () => {
+    store = { entries: [], trash: [] };
+    await saveData();
+    fieldValueMap.clear();
+    closeDetail();
+    renderAll();
+    showToast('// data wiped', 'warn');
+  });
+}
+
+function fullReset() {
+  showConfirmTyped('// full reset', '⚠ this destroys EVERYTHING — password, all entries, all config, all local backups. there is no recovery. type DELETE to confirm.', () => {
+    [LS_DATA, LS_CFGE, LS_META, LS_LOCK].forEach(k => {
+      localStorage.removeItem(k);
+      localStorage.removeItem(k + '_bak1');
+      localStorage.removeItem(k + '_bak2');
+    });
+    location.reload();
+  });
+}
+
+// ══════════════════════════════════════════
+// MODAL / TOGGLE / TOAST HELPERS
+// ══════════════════════════════════════════
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function togglePw(id, btn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.type = el.type === 'password' ? 'text' : 'password';
+  const isText = el.type === 'text';
+  btn.querySelector('svg').innerHTML = isText
+    ? '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22"/>'
+    : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+}
+
+function showConfirm(title, msg, onOk) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-msg').textContent = msg;
+  const typeInput = document.getElementById('confirm-type-input');
+  typeInput.style.display = 'none';
+  typeInput.value = '';
+  const btn = document.getElementById('confirm-ok');
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.disabled = false;
+  newBtn.onclick = () => { closeModal('confirm-modal'); onOk(); };
+  document.getElementById('confirm-modal').classList.add('open');
+}
+
+// Same as showConfirm but requires the user to type the word DELETE before
+// the confirm button activates — an extra friction layer for irreversible
+// actions (permanent delete, empty trash, full reset).
+function showConfirmTyped(title, msg, onOk) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-msg').textContent = msg;
+  const typeInput = document.getElementById('confirm-type-input');
+  typeInput.style.display = 'block';
+  typeInput.value = '';
+  const btn = document.getElementById('confirm-ok');
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.disabled = true;
+  newBtn.onclick = () => {
+    if (typeInput.value.trim().toUpperCase() !== 'DELETE') return;
+    closeModal('confirm-modal');
+    onOk();
+  };
+  document.getElementById('confirm-modal').classList.add('open');
+  setTimeout(() => typeInput.focus(), 50);
+}
+
+function _checkTypedConfirm() {
+  const typeInput = document.getElementById('confirm-type-input');
+  const btn = document.getElementById('confirm-ok');
+  if (!typeInput || !btn) return;
+  btn.disabled = typeInput.value.trim().toUpperCase() !== 'DELETE';
+}
+
+let _toastTimer = null;
+let _toastQueue = [];
+let _toastShowing = false;
+
+function showToast(msg, type = '') {
+  // Use secure view toast
+  _showToastRaw(msg, type);
+}
+
+function _showToastRaw(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = type ? type : '';
+  t.style.display = 'block';
+  // Force reflow for animation
+  t.offsetHeight;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => { t.style.display = 'none'; }, 200);
+  }, 2500);
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o =>
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); })
+);
+
+// ══════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════
+// ══════════════════════════════════════════
+// NOTEBOOK THEME (dark/light)
+// ══════════════════════════════════════════
+const LS_THEME = 'app_theme_v1';
+
+function applyTheme(theme) {
+  const icon = document.getElementById('theme-icon');
+  if (theme === 'dark') {
+    document.body.classList.add('dark-nb');
+    if (icon) icon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+  } else {
+    document.body.classList.remove('dark-nb');
+    if (icon) icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  }
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem(LS_THEME) || 'light';
+  applyTheme(saved);
+}
+
+function toggleTheme() {
+  const isDark = document.body.classList.contains('dark-nb');
+  const next = isDark ? 'light' : 'dark';
+  localStorage.setItem(LS_THEME, next);
+  applyTheme(next);
+}
+
+// ══════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════
+(async function boot() {
+  loadTheme();
+  loadNbCategories();
+  await loadNotes();
+  renderNbSidebar();
+  renderNoteList();
+})();
+</script>
+</body>
+</html>

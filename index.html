@@ -1,0 +1,2394 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0F0E0C" />
+  <meta name="description" content="Tashrif's personal HTML tool dashboard" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <title>Toolbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Dark theme (default) — warm true-black, milkish texture, no brown muddiness ── */
+    :root, [data-theme="dark"] {
+      --bg:         #0F0E0C;
+      --surface:    #161513;
+      --surface2:   #1E1C19;
+      --border:     #2C2A26;
+      --text:       #EDE9E2;
+      --text-muted: #948D82;
+      --accent:     #E8B65A;
+      --accent-rgb: 232,182,90;
+      --accent-text:#0F0E0C;
+      --green:      #7BB661;
+      --green-rgb:  123,182,97;
+      --red:        #E2685A;
+      --red-rgb:    226,104,90;
+      --purple:     #C792EA;
+      --purple-rgb: 199,146,234;
+      --orange:     #E0A458;
+      --orange-rgb: 224,164,88;
+      --muted-rgb:  148,141,130;
+      --shadow:     rgba(0,0,0,0.55);
+      --header-bg:  rgba(15,14,12,0.9);
+      --noise-opacity: 0.045;
+    }
+
+    /* ── Light theme — milkish creamy white ── */
+    [data-theme="light"] {
+      --bg:         #F7F2E9;
+      --surface:    #FFFCF6;
+      --surface2:   #F0E9DB;
+      --border:     #E1D6C0;
+      --text:       #322B22;
+      --text-muted: #7A7062;
+      --accent:     #B5803A;
+      --accent-rgb: 181,128,58;
+      --accent-text:#FFFFFF;
+      --green:      #4F8F3B;
+      --green-rgb:  79,143,59;
+      --red:        #C2453A;
+      --red-rgb:    194,69,58;
+      --purple:     #8A5DC2;
+      --purple-rgb: 138,93,194;
+      --orange:     #B5803A;
+      --orange-rgb: 181,128,58;
+      --muted-rgb:  122,112,98;
+      --shadow:     rgba(120,100,60,0.12);
+      --header-bg:  rgba(247,242,233,0.92);
+      --noise-opacity: 0.035;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden;
+      transition: background 0.25s, color 0.25s;
+      position: relative;
+    }
+    /* Subtle milkish noise texture overlay, theme-aware */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      opacity: var(--noise-opacity);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+    }
+    #dashboard-header, main, #tool-view, .modal-overlay { position: relative; z-index: 1; }
+
+    /* ── Header ── */
+    #dashboard-header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--header-bg);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px; height: 54px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .logo {
+      font-family: 'JetBrains Mono', monospace; font-weight: 700;
+      font-size: 0.95rem; color: var(--accent); white-space: nowrap;
+      letter-spacing: -0.01em;
+    }
+    .logo span { color: var(--text-muted); font-weight: 400; font-size: 0.82rem; }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+
+    .search-wrap { position: relative; }
+    .search-wrap svg {
+      position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); pointer-events: none;
+    }
+    #search {
+      width: 220px; background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 6px 10px 6px 30px; border-radius: 8px;
+      font-size: 0.82rem; outline: none; transition: border-color 0.18s, width 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    #search:focus { border-color: var(--accent); width: 260px; }
+    #search::placeholder { color: var(--text-muted); }
+
+    /* Header icon buttons */
+    .icon-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-muted); width: 34px; height: 34px; border-radius: 8px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; font-size: 1rem; flex-shrink: 0;
+    }
+    .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .icon-btn.danger:hover { border-color: var(--red); color: var(--red); }
+    .icon-btn.active-delete { background: rgba(var(--red-rgb),0.15); border-color: var(--red); color: var(--red); }
+    .icon-btn { position: relative; }
+    .icon-btn .count-dot {
+      position: absolute; top: -4px; right: -4px; min-width: 15px; height: 15px;
+      background: var(--accent); color: var(--accent-text); border-radius: 8px;
+      font-size: 0.6rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+      padding: 0 3px; line-height: 1;
+    }
+    .icon-btn.spinning svg { animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #addToolBtn {
+      background: rgba(var(--green-rgb),0.1); border: 1px solid rgba(var(--green-rgb),0.4);
+      color: var(--green); padding: 6px 12px; border-radius: 8px;
+      font-size: 0.8rem; cursor: pointer; white-space: nowrap;
+      transition: all 0.15s; font-family: 'Inter', sans-serif; font-weight: 500;
+    }
+    #addToolBtn:hover { background: rgba(var(--green-rgb),0.18); border-color: var(--green); }
+
+    #installBtn {
+      display: none; background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 6px 12px; border-radius: 8px;
+      font-size: 0.8rem; cursor: pointer; white-space: nowrap; transition: all 0.15s;
+    }
+    #installBtn:hover { border-color: var(--accent); color: var(--accent); }
+    #installBtn.visible { display: block; }
+
+    /* Delete mode banner */
+    #delete-banner {
+      display: none; background: rgba(var(--red-rgb),0.1); border-bottom: 1px solid rgba(var(--red-rgb),0.3);
+      padding: 7px 20px; font-size: 0.78rem; color: var(--red);
+      align-items: center; gap: 8px; justify-content: center;
+    }
+    #delete-banner.show { display: flex; }
+
+    /* ── Main ── */
+    main { padding: 20px; max-width: 1400px; margin: 0 auto; }
+
+    .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .filter-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-muted); padding: 5px 13px; border-radius: 20px;
+      font-size: 0.78rem; cursor: pointer; transition: all 0.15s; font-family: 'Inter', sans-serif;
+    }
+    .filter-btn:hover { color: var(--text); border-color: var(--text-muted); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-muted);
+      letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 14px;
+      padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 13px; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px; cursor: pointer;
+      transition: border-color 0.18s, transform 0.15s, box-shadow 0.2s;
+      display: flex; flex-direction: column; gap: 9px;
+      position: relative; overflow: hidden; user-select: none;
+      box-shadow: 0 1px 2px var(--shadow);
+    }
+    .card:hover {
+      border-color: var(--accent); transform: translateY(-3px);
+      box-shadow: 0 10px 24px var(--shadow), 0 0 0 1px rgba(var(--accent-rgb),0.15);
+    }
+    .card:active { transform: translateY(-1px); }
+
+    /* Pin indicator */
+    .card.pinned { border-color: rgba(var(--accent-rgb),0.45); }
+    .card-pin-badge {
+      position: absolute; top: 0; right: 0; width: 0; height: 0;
+      border-style: solid; border-width: 0 22px 22px 0;
+      border-color: transparent rgba(var(--accent-rgb),0.85) transparent transparent;
+      display: none;
+    }
+    .card.pinned .card-pin-badge { display: block; }
+
+    /* Quick action icons (edit/pin) shown on hover */
+    .card-quick-actions {
+      position: absolute; top: 10px; right: 10px; display: flex; gap: 4px;
+      opacity: 0; transition: opacity 0.15s; z-index: 2;
+    }
+    .card:hover .card-quick-actions { opacity: 1; }
+    body.delete-mode .card-quick-actions { display: none; }
+    .qa-btn {
+      width: 24px; height: 24px; border-radius: 6px; display: flex;
+      align-items: center; justify-content: center; font-size: 0.72rem;
+      background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted);
+      cursor: pointer; transition: all 0.13s;
+    }
+    .qa-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Delete mode card */
+    body.delete-mode .card { border-color: rgba(var(--red-rgb),0.3); }
+    body.delete-mode .card:hover { border-color: var(--red); box-shadow: 0 0 0 2px rgba(var(--red-rgb),0.2); transform: none; }
+
+    .card-icon { font-size: 1.5rem; line-height: 1; }
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .card-name { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+    .card-desc { font-size: 0.76rem; color: var(--text-muted); line-height: 1.5; }
+    .card-desc.empty { font-style: italic; opacity: 0.7; }
+    .card-meta { font-size: 0.66rem; color: var(--text-muted); opacity: 0.75; margin-top: -2px; }
+
+    .card-badge { font-size: 0.62rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; flex-shrink: 0; }
+    .card-badge.badge-none { background: rgba(var(--muted-rgb),0.12); color: var(--text-muted); font-style: italic; }
+    .card-badge.badge-cat  { background: rgba(var(--accent-rgb),0.15); color: var(--accent); }
+    .badge-new        { background: rgba(var(--green-rgb),0.18); color: var(--green); }
+
+    .card-arrow { position: absolute; bottom: 12px; right: 12px; color: var(--border); transition: color 0.15s, transform 0.15s; font-size: 0.78rem; }
+    .card:hover .card-arrow { color: var(--accent); transform: translate(2px,-2px); }
+    body.delete-mode .card-arrow { display: none; }
+
+    /* Delete X overlay */
+    .card-del {
+      display: none; position: absolute; inset: 0; border-radius: 12px;
+      background: rgba(var(--red-rgb),0.08); align-items: center; justify-content: center;
+      font-size: 1.6rem; color: var(--red);
+    }
+    body.delete-mode .card-del { display: flex; }
+
+    .empty-state { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    .empty-state .big { font-size: 2.2rem; margin-bottom: 10px; }
+    .empty-state p { font-size: 0.88rem; }
+
+    /* ── Full-screen Tool View ── */
+    #tool-view {
+      position: fixed; inset: 0; z-index: 200; background: var(--bg);
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+    }
+    #tool-view.open { transform: translateX(0); }
+
+    #back-btn {
+      position: absolute; top: 10px; left: 10px; z-index: 10;
+      background: rgba(13,17,23,0.8); backdrop-filter: blur(8px);
+      border: 1px solid var(--border); color: var(--text-muted);
+      width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+    }
+    [data-theme="light"] #back-btn { background: rgba(246,248,250,0.85); }
+    #back-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    #tool-frame-container { flex: 1; width: 100%; height: 100%; position: relative; }
+    #tool-frame-container iframe {
+      border: none; background: var(--bg); width: 100%; height: 100%; display: block;
+    }
+    #tool-frame-loading {
+      position: absolute; inset: 0; z-index: 5; background: var(--bg);
+      display: none; align-items: center; justify-content: center;
+    }
+    #tool-frame-loading.show { display: flex; }
+    .spinner {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 3px solid var(--border); border-top-color: var(--accent);
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* ── Modals shared ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+      z-index: 300; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 20px;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; width: 100%; max-height: 90vh; overflow-y: auto;
+      transform: scale(0.95) translateY(8px); transition: transform 0.2s;
+    }
+    .modal-overlay.open .modal-box { transform: scale(1) translateY(0); }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+    }
+    .modal-title { font-family: 'JetBrains Mono', monospace; font-size: 0.92rem; font-weight: 600; color: var(--accent); }
+    .modal-close {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-muted); width: 28px; height: 28px; border-radius: 7px;
+      cursor: pointer; font-size: 0.85rem; transition: all 0.13s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { border-color: var(--red); color: var(--red); }
+    .modal-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+    .modal-footer {
+      padding: 14px 20px; border-top: 1px solid var(--border);
+      display: flex; gap: 8px; justify-content: flex-end;
+    }
+
+    /* ── Add Tool Modal ── */
+    #add-modal { max-width: 540px; }
+
+    .steps { display: flex; }
+    .step {
+      flex: 1; padding: 8px 4px; text-align: center; font-size: 0.7rem;
+      color: var(--text-muted); border-bottom: 2px solid var(--border); transition: all 0.18s;
+    }
+    .step.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+    .step.done   { color: var(--green);  border-bottom-color: var(--green); }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+    .field input, .field select, .field textarea {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 8px 11px; border-radius: 8px;
+      font-size: 0.85rem; outline: none; transition: border-color 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .field textarea { resize: vertical; min-height: 130px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; line-height: 1.6; }
+    .field select option { background: var(--surface2); }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .field-hint { font-size: 0.7rem; color: var(--text-muted); opacity: 0.8; }
+
+    .code-tabs { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .code-tab {
+      flex: 1; padding: 8px 4px; font-size: 0.76rem; cursor: pointer; text-align: center;
+      background: var(--surface2); color: var(--text-muted); border: none; transition: all 0.13s;
+      font-family: 'Inter', sans-serif;
+    }
+    .code-tab.active { background: var(--surface); color: var(--accent); font-weight: 600; }
+    .code-tab:not(:last-child) { border-right: 1px solid var(--border); }
+
+    .upload-zone {
+      border: 2px dashed var(--border); border-radius: 8px; padding: 24px 16px;
+      text-align: center; cursor: pointer; transition: all 0.15s; background: var(--bg);
+      position: relative;
+    }
+    .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: rgba(var(--accent-rgb),0.04); }
+    .upload-zone .uz-icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .upload-zone p { font-size: 0.8rem; color: var(--text-muted); }
+    .upload-zone input {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+    .uploaded-name { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: var(--green); margin-top: 5px; }
+
+    .status-box {
+      display: none; padding: 10px 13px; border-radius: 8px; font-size: 0.8rem; line-height: 1.5;
+    }
+    .status-box.success { background: rgba(var(--green-rgb),0.1);  border: 1px solid rgba(var(--green-rgb),0.3);  color: var(--green);  display: block; }
+    .status-box.error   { background: rgba(var(--red-rgb),0.1);  border: 1px solid rgba(var(--red-rgb),0.3);  color: var(--red);    display: block; }
+    .status-box.info    { background: rgba(var(--accent-rgb),0.1); border: 1px solid rgba(var(--accent-rgb),0.3); color: var(--accent); display: block; }
+
+    .gen-box {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .gen-path { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: var(--green); word-break: break-all; flex: 1; }
+    .copy-btn {
+      background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted);
+      padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; cursor: pointer;
+      white-space: nowrap; transition: all 0.13s; font-family: 'Inter', sans-serif; flex-shrink: 0;
+    }
+    .copy-btn:hover { border-color: var(--green); color: var(--green); }
+
+    /* ── Settings Modal ── */
+    #settings-modal { max-width: 460px; }
+
+    .settings-section { display: flex; flex-direction: column; gap: 10px; }
+    .settings-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px; }
+
+    /* Theme row (legacy, no longer used for the toggle itself but kept for other rows) */
+    .theme-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px;
+    }
+    .theme-row-left { display: flex; flex-direction: column; gap: 2px; }
+    .theme-row-left strong { font-size: 0.85rem; }
+    .theme-row-left span { font-size: 0.74rem; color: var(--text-muted); }
+
+    /* Toggle switch (kept — reused for "show this category on home" rows etc.) */
+    .toggle { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; cursor: pointer; transition: all 0.2s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute; width: 16px; height: 16px; border-radius: 50%;
+      background: var(--text-muted); left: 3px; top: 3px; transition: all 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(18px); background: #fff; }
+
+    /* Theme icon button in header */
+    #themeToggleBtn svg { transition: transform 0.3s ease; }
+    #themeToggleBtn .icon-sun { display: none; }
+    #themeToggleBtn .icon-moon { display: block; }
+    [data-theme="light"] #themeToggleBtn .icon-sun { display: block; }
+    [data-theme="light"] #themeToggleBtn .icon-moon { display: none; }
+
+    /* Category list */
+    .cat-list { display: flex; flex-direction: column; gap: 6px; }
+    .cat-item {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 9px 12px; gap: 10px;
+    }
+    .cat-item-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--accent); }
+    .cat-name { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: 600; }
+    .cat-count { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
+    .cat-item-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .cat-home-label { font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; }
+    .cat-del-btn {
+      background: none; border: none; color: var(--text-muted); cursor: pointer;
+      font-size: 0.8rem; padding: 2px 6px; border-radius: 5px; transition: all 0.13s;
+    }
+    .cat-del-btn:hover { background: rgba(var(--red-rgb),0.12); color: var(--red); }
+    .cat-del-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .cat-add-row { display: flex; gap: 8px; }
+    .cat-add-row input {
+      flex: 1; background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 7px 10px; border-radius: 8px; font-size: 0.82rem;
+      outline: none; font-family: 'Inter', sans-serif; transition: border-color 0.15s;
+    }
+    .cat-add-row input:focus { border-color: var(--accent); }
+
+    /* ── Category assign panel (per-category tool assignment) ── */
+    .cat-assign-wrap { margin-top: 8px; }
+    .cat-assign-trigger {
+      width: 100%; background: var(--bg); border: 1px dashed var(--border);
+      color: var(--text-muted); padding: 6px 10px; border-radius: 7px;
+      font-size: 0.75rem; cursor: pointer; text-align: left;
+      transition: border-color 0.15s, color 0.15s; font-family: 'Inter', sans-serif;
+      display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    }
+    .cat-assign-trigger:hover { border-color: var(--accent); color: var(--accent); }
+    .cat-assign-panel {
+      display: none; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; margin-top: 4px; overflow: hidden;
+    }
+    .cat-assign-panel.open { display: block; }
+    .cat-assign-list { max-height: 160px; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 3px; }
+    .cat-assign-item {
+      display: flex; align-items: center; gap: 8px; padding: 5px 8px;
+      border-radius: 6px; cursor: pointer; transition: background 0.12s; font-size: 0.78rem;
+    }
+    .cat-assign-item:hover { background: var(--surface2); }
+    .cat-assign-item input[type="checkbox"] { accent-color: var(--accent); flex-shrink: 0; }
+    .cat-assign-footer { padding: 6px 8px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .uncat-only-label {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 0.7rem; color: var(--text-muted); cursor: pointer;
+      user-select: none; white-space: nowrap;
+    }
+    .uncat-only-label input[type="checkbox"] { accent-color: var(--accent); width: 12px; height: 12px; flex-shrink: 0; cursor: pointer; }
+    .uncat-only-label:hover { color: var(--text); }
+    .cat-assign-uncat-btn {
+      background: none; border: 1px solid var(--border); color: var(--text-muted);
+      padding: 4px 9px; border-radius: 6px; font-size: 0.7rem; cursor: pointer;
+      display: flex; align-items: center; gap: 5px; transition: all 0.13s;
+      font-family: 'Inter', sans-serif; white-space: nowrap;
+    }
+    .cat-assign-uncat-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .cat-assign-uncat-btn.active { background: rgba(var(--accent-rgb),0.12); border-color: var(--accent); color: var(--accent); }
+
+    /* ── Home Category dropdown ── */
+    .home-cat-dropdown-wrap { position: relative; }
+    .home-cat-trigger {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 8px 12px; border-radius: 8px;
+      font-size: 0.82rem; cursor: pointer; text-align: left;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      transition: border-color 0.15s; font-family: 'Inter', sans-serif;
+    }
+    .home-cat-trigger:hover { border-color: var(--accent); }
+    .home-cat-trigger span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .home-cat-panel {
+      display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px);
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      z-index: 50; overflow: hidden; box-shadow: 0 8px 24px var(--shadow);
+    }
+    .home-cat-panel.open { display: block; }
+    .home-cat-options { padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+    .home-cat-option {
+      display: flex; align-items: center; gap: 9px; padding: 7px 10px;
+      border-radius: 7px; cursor: pointer; font-size: 0.82rem; transition: background 0.12s;
+    }
+    .home-cat-option:hover { background: var(--surface2); }
+    .home-cat-option input[type="checkbox"] { accent-color: var(--accent); flex-shrink: 0; }
+    .home-cat-option-name { flex: 1; }
+    .home-cat-option-count { font-size: 0.7rem; color: var(--text-muted); }
+
+    /* Archive items */
+    .archive-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 12px;
+    }
+    .archive-item-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .archive-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .archive-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .archive-name { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: 600; color: var(--text); }
+    .archive-date { font-size: 0.68rem; color: var(--text-muted); }
+    .archive-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 18px; border-radius: 8px; font-size: 0.82rem;
+      cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 500;
+      transition: all 0.15s; border: 1px solid transparent;
+    }
+    .btn-ghost  { background: var(--surface2); border-color: var(--border); color: var(--text-muted); }
+    .btn-ghost:hover  { color: var(--text); border-color: var(--text-muted); }
+    .btn-primary { background: var(--accent); color: var(--accent-text); }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-green   { background: var(--green); color: #fff; }
+    .btn-green:hover  { opacity: 0.88; }
+    .btn-sm { padding: 6px 12px; font-size: 0.76rem; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Confirm Dialog ── */
+    #confirm-modal { max-width: 360px; }
+    .confirm-body { padding: 20px; text-align: center; display: flex; flex-direction: column; gap: 8px; }
+    .confirm-icon { font-size: 2rem; }
+    .confirm-msg { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
+    .confirm-name { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text); font-weight: 600; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 20px; left: 50%;
+      transform: translateX(-50%) translateY(70px);
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 9px 18px; border-radius: 8px;
+      font-size: 0.8rem; z-index: 500; transition: transform 0.28s;
+      pointer-events: none; white-space: nowrap; box-shadow: 0 4px 16px var(--shadow);
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── Responsive ── */
+    @media (max-width: 580px) {
+      main { padding: 14px; }
+      #dashboard-header { padding: 0 14px; gap: 8px; }
+      #search { width: 140px; }
+      #search:focus { width: 180px; }
+      .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+      .field-row { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    /* GitHub viewer mode: public visitors can browse and run tools, but not edit */
+  body.tb-viewer #addToolBtn, body.tb-viewer #deleteToggleBtn, body.tb-viewer #archiveBtn, body.tb-viewer #scanBtn,
+  body.tb-viewer .card-quick-actions, body.tb-viewer .card-del { display:none !important; }
+  body.tb-viewer #settings-modal .settings-section:not(#gh-section) { display:none !important; }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header id="dashboard-header">
+  <div class="logo">⚙ Toolbox <span>/ Tashrif</span></div>
+  <div class="header-right">
+    <div class="search-wrap">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="search" id="search" placeholder="Search tools…" autocomplete="off" />
+    </div>
+    <button id="addToolBtn" onclick="openAddModal()">＋ Add Tool</button>
+    <!-- Scan tools folder -->
+    <button class="icon-btn" id="scanBtn" onclick="scanToolsFolder()" title="Scan tools/ folder for new files">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/>
+      </svg>
+    </button>
+    <!-- Archive -->
+    <button class="icon-btn" id="archiveBtn" onclick="openArchive()" title="Archive">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>
+      </svg>
+    </button>
+    <!-- Delete mode toggle -->
+    <button class="icon-btn danger" id="deleteToggleBtn" onclick="toggleDeleteMode()" title="Delete mode">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+      </svg>
+    </button>
+    <!-- Theme toggle (moved out of Settings) -->
+    <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle dark / light mode">
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+      </svg>
+    </button>
+    <!-- Settings -->
+    <button class="icon-btn" onclick="openSettings()" title="Settings">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+    <button id="installBtn">⬇ Install</button>
+  </div>
+</header>
+
+<!-- Delete mode banner -->
+<div id="delete-banner">
+  🗑 <strong>Delete mode ON</strong> — click any card to delete it. Click the trash icon again to exit.
+</div>
+
+<!-- ── Dashboard Main ── -->
+<main>
+  <div class="filter-bar" id="filterBar"></div>
+  <div class="section-label" id="sectionLabel">All Tools</div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<!-- ── Full-screen Tool View ── -->
+<div id="tool-view">
+  <button id="back-btn" onclick="closeToolView()" aria-label="Back">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+  </button>
+  <div id="tool-frame-loading">
+    <div class="spinner"></div>
+  </div>
+  <div id="tool-frame-container"></div>
+</div>
+
+<!-- ── Add Tool Modal ── -->
+<div class="modal-overlay" id="add-overlay" onclick="handleOverlayClick(event,'add-overlay')">
+  <div class="modal-box" id="add-modal">
+    <div class="modal-header">
+      <div class="modal-title">＋ Add New Tool</div>
+      <button class="modal-close" onclick="closeAddModal()">✕</button>
+    </div>
+    <div class="steps" id="stepIndicator">
+      <div class="step active" id="step1-ind">1 · Details</div>
+      <div class="step" id="step2-ind">2 · Code / File</div>
+      <div class="step" id="step3-ind">3 · Done</div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="modal-body" id="step1">
+      <div class="field-row">
+        <div class="field">
+          <label>Tool Name *</label>
+          <input type="text" id="tool-name" placeholder="e.g. Base64 Encoder" oninput="updatePreview()" />
+        </div>
+        <div class="field">
+          <label>Icon (emoji) *</label>
+          <input type="text" id="tool-icon" placeholder="🛠️" maxlength="8" style="font-size:1.1rem" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Description *</label>
+        <input type="text" id="tool-desc" placeholder="Short description of what this tool does" />
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <select id="tool-cat">
+          <option value="">No category</option>
+        </select>
+        <div class="field-hint">Pick where this tool lives, or leave uncategorized. Manage categories from ⚙ Settings.</div>
+      </div>
+      <div class="status-box" id="step1-status"></div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="modal-body" id="step2" style="display:none">
+      <div class="code-tabs">
+        <button class="code-tab active" id="tab-paste" onclick="switchTab('paste')">📋 Paste HTML</button>
+        <button class="code-tab" id="tab-upload" onclick="switchTab('upload')">📁 Upload file</button>
+      </div>
+
+      <div id="pane-paste">
+        <div class="field">
+          <label>Paste your tool's complete HTML here:</label>
+          <textarea id="tool-code" placeholder="<!DOCTYPE html>&#10;<html>&#10;...&#10;</html>"></textarea>
+        </div>
+      </div>
+
+      <div id="pane-upload" style="display:none">
+        <div class="upload-zone" id="dropzone"
+             onclick="document.getElementById('fileInput').click()"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <div class="uz-icon">📂</div>
+          <p><strong>Click to select</strong> or drag & drop your <strong>.html</strong> file</p>
+          <div class="uploaded-name" id="uploadedName"></div>
+          <input type="file" id="fileInput" accept=".html,.htm" onchange="handleFileSelect(event)" />
+        </div>
+      </div>
+
+      <div class="status-box" id="step2-status"></div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="modal-body" id="step3" style="display:none">
+      <div class="status-box success" id="step3-msg"></div>
+      <div class="field">
+        <label>Generated TOOLS[] entry — copy into index.html to persist across deploys:</label>
+        <textarea id="gen-code" readonly style="min-height:110px;color:var(--green)"></textarea>
+      </div>
+      <div class="field">
+        <label>File saved at:</label>
+        <div class="gen-box">
+          <div class="gen-path" id="finalPath"></div>
+          <button class="copy-btn" onclick="copyText(document.getElementById('finalPath').textContent)">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer" id="add-footer"></div>
+  </div>
+</div>
+
+<!-- ── Settings Modal ── -->
+<div class="modal-overlay" id="settings-overlay" onclick="handleOverlayClick(event,'settings-overlay')">
+  <div class="modal-box" id="settings-modal">
+    <div class="modal-header">
+      <div class="modal-title">⚙ Settings</div>
+      <button class="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- ① Add Category -->
+      <div class="settings-section">
+        <div class="settings-label">Add Category</div>
+        <div class="cat-add-row">
+          <input type="text" id="newCatInput" placeholder="New category name…" maxlength="24"
+                 onkeydown="if(event.key==='Enter')addCategory()" />
+          <button class="btn btn-primary btn-sm" onclick="addCategory()">＋ Add</button>
+        </div>
+        <div class="field" style="margin-top:8px">
+          <label>Default icons (optional) — space or comma separated emojis</label>
+          <input type="text" id="newCatIconsInput" placeholder="e.g. 🛠️ 🔧 ⚙️" style="font-size:1rem;letter-spacing:0.1em" />
+          <div class="field-hint">Tools in this category without their own icon will randomly show one of these.</div>
+        </div>
+        <div class="status-box" id="cat-status"></div>
+      </div>
+
+      <!-- ② Category list — each with assign-tools dropdown -->
+      <div class="settings-section">
+        <div class="settings-label">Manage Categories</div>
+        <div class="field-hint" style="margin-top:-4px">Each category has a dropdown to assign uncategorized (or any) tools into it. You can pick multiple tools. Delete is only available when the category is empty.</div>
+        <div class="cat-list" id="catList"></div>
+      </div>
+
+      <!-- ③ Home Categories dropdown -->
+      <div class="settings-section">
+        <div class="settings-label">Home Categories</div>
+        <div class="field-hint" style="margin-top:-4px">When the app opens, tools belonging to <em>home categories</em> are shown first. Select one or more categories below.</div>
+        <div class="home-cat-dropdown-wrap" id="homeCatDropdownWrap">
+          <button class="home-cat-trigger" id="homeCatTrigger" onclick="toggleHomeCatDropdown()">
+            <span id="homeCatLabel">Select home categories…</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="home-cat-panel" id="homeCatPanel">
+            <div id="homeCatOptions"></div>
+          </div>
+        </div>
+        <div class="status-box" id="home-cat-status"></div>
+      </div>
+
+      <!-- ④ File System Save ── -->
+      <div class="settings-section">
+        <div class="settings-label">Save File <span style="font-size:0.65rem;color:var(--green);font-family:'Inter',sans-serif;font-weight:500;letter-spacing:0.06em;background:rgba(var(--green-rgb),0.12);padding:2px 6px;border-radius:4px;margin-left:4px">RECOMMENDED</span></div>
+        <div class="field-hint" style="margin-top:-4px">Pick a <strong>.json file on your computer</strong> as the permanent save location. Every action (add, edit, delete, category change) will auto-save there. On next launch the app reads from that file, so your data survives browser resets and incognito wipes.</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="fsPickSaveFile()">📂 Set save file…</button>
+          <span id="fs-status-dot" style="width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;transition:background 0.3s"></span>
+          <span id="fs-path-display" style="font-size:0.75rem;color:var(--text-muted)">No file set — data stored in browser only</span>
+        </div>
+        <div class="field-hint" style="margin-top:6px">⚠ Requires Chrome or Edge. Firefox/Safari do not support the File System Access API.</div>
+      </div>
+
+      <!-- ⓖ GitHub Sync -->
+      <div class="settings-section" id="gh-section">
+        <div class="settings-label">GitHub Sync (admin)</div>
+        <div id="gh-state" class="field-hint" style="margin-bottom:8px"></div>
+        <div class="field"><label>Repository (owner/repo)</label><input type="text" id="gh-repo" placeholder="yourname/toolbox" /></div>
+        <div class="field"><label>Personal access token</label>
+          <input type="password" id="gh-token" placeholder="github_pat_…" autocomplete="off" />
+          <div class="field-hint">Fine-grained token for this one repo only, permission <b>Contents: Read and write</b>. It is stored only in this browser and never uploaded.</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="ghConnect()">Connect</button>
+          <button class="btn btn-ghost btn-sm" onclick="ghSyncNow()">Sync now</button>
+          <button class="btn btn-ghost btn-sm" onclick="ghDisconnect()">Disconnect</button>
+        </div>
+        <div class="status-box" id="gh-status"></div>
+      </div>
+
+      <!-- ⑤ Data & Maintenance -->
+      <div class="settings-section">
+        <div class="settings-label">Data &amp; Maintenance</div>
+        <div class="theme-row" style="flex-direction:column;align-items:stretch;gap:10px">
+          <div id="statsLine" style="font-size:0.8rem;color:var(--text-muted)"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="exportBackup()">⬇ Export backup</button>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFileInput').click()">⬆ Import backup</button>
+            <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importBackup(event)" />
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="hardRefreshApp()" title="Clears app cache and reloads fresh, like relaunching">🔄 Hard refresh app</button>
+            <button class="btn btn-sm" style="background:rgba(var(--red-rgb),0.12);border:1px solid rgba(var(--red-rgb),0.35);color:var(--red)" onclick="hardResetApp()" title="Delete ALL data and start fresh">🗑 Hard reset</button>
+          </div>
+          <div class="status-box" id="data-status"></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeSettings()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Confirm Archive Modal ── -->
+<div class="modal-overlay" id="confirm-overlay">
+  <div class="modal-box" id="confirm-modal">
+    <div class="confirm-body">
+      <div class="confirm-icon">📦</div>
+      <div class="confirm-name" id="confirm-tool-name"></div>
+      <div class="confirm-msg">This will move the tool to <strong>Archive</strong>.<br>You can restore it anytime, or delete it permanently from there.</div>
+    </div>
+    <div class="modal-footer" style="justify-content:center">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-primary" style="background:var(--red)" onclick="confirmDelete()">Archive</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Archive Modal ── -->
+<div class="modal-overlay" id="archive-overlay" onclick="handleOverlayClick(event,'archive-overlay')">
+  <div class="modal-box" id="archive-modal">
+    <div class="modal-header">
+      <div class="modal-title">📦 Archive</div>
+      <button class="modal-close" onclick="closeArchive()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="status-box info" id="archive-empty-msg" style="display:none">Archive is empty.</div>
+      <div class="cat-list" id="archiveList"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="emptyArchiveBtn" onclick="confirmEmptyArchive()">Empty Archive</button>
+      <button class="btn btn-ghost" onclick="closeArchive()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Edit Tool Modal ── -->
+<div class="modal-overlay" id="edit-overlay" onclick="handleOverlayClick(event,'edit-overlay')">
+  <div class="modal-box" id="edit-modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title">✎ Edit Tool</div>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field">
+          <label>Tool Name *</label>
+          <input type="text" id="edit-name" />
+        </div>
+        <div class="field">
+          <label>Icon (emoji) *</label>
+          <input type="text" id="edit-icon" maxlength="8" style="font-size:1.1rem" placeholder="🛠️" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <input type="text" id="edit-desc" placeholder="Short description of what this tool does" />
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <select id="edit-cat">
+          <option value="">No category</option>
+        </select>
+      </div>
+      <div class="status-box" id="edit-status"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditTool()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  No preset tools or categories — everything below is
+//  created and curated entirely by the user at runtime.
+// ═══════════════════════════════════════════════════════
+const BUILTIN_TOOLS = [];
+const BUILTIN_CATS = [];
+
+// ═══════════════════════════════════════════════════════
+//  STATE — loaded from localStorage
+// ═══════════════════════════════════════════════════════
+let TOOLS = [];          // active (non-archived) tools
+let ARCHIVED = [];        // archived tools
+let CATEGORIES = [];      // [{ name, home }]  — home = show as a filter chip on the dashboard
+let DEFAULT_CATEGORY = ''; // category new/unclassified tools land in automatically
+let activeCategory = 'all';
+let searchQuery = '';
+let deleteMode = false;
+let pendingDeleteId = null;
+let pendingPermaDeleteId = null;
+let editingToolId = null;
+
+// ── Persistence ──
+function loadState() {
+  // Extra tools (in-app added / auto-detected)
+  try {
+    const extra = JSON.parse(localStorage.getItem('tb_extra_tools') || '[]');
+    TOOLS = [...BUILTIN_TOOLS, ...extra.filter(t => !BUILTIN_TOOLS.find(b => b.id === t.id))];
+  } catch { TOOLS = [...BUILTIN_TOOLS]; }
+
+  // Archived tools
+  try { ARCHIVED = JSON.parse(localStorage.getItem('tb_archived_tools') || '[]'); }
+  catch { ARCHIVED = []; }
+
+  // Categories — supports migrating from the old plain-string-array format
+  try {
+    const saved = JSON.parse(localStorage.getItem('tb_categories') || 'null');
+    if (Array.isArray(saved)) {
+      CATEGORIES = saved.map(c => {
+        const obj = typeof c === 'string' ? { name: c, home: true } : c;
+        if (!obj.defaultIcons) obj.defaultIcons = [];
+        return obj;
+      });
+    } else {
+      CATEGORIES = [];
+    }
+  } catch { CATEGORIES = []; }
+
+  // Default landing category for new / unclassified tools
+  DEFAULT_CATEGORY = localStorage.getItem('tb_default_category') || '';
+  // If that category no longer exists, fall back to none
+  if (DEFAULT_CATEGORY && !categoryNames().includes(DEFAULT_CATEGORY)) DEFAULT_CATEGORY = '';
+
+  // On launch: if home categories are set, show tools from those categories
+  // under a special '__home__' virtual filter. Otherwise land on 'all'.
+  const homeCatNames = CATEGORIES.filter(c => c.home).map(c => c.name);
+  activeCategory = homeCatNames.length ? '__home__' : 'all';
+
+  // Theme
+  const theme = localStorage.getItem('tb_theme') || 'dark';
+  applyTheme(theme, false);
+}
+
+// Forward declaration — real implementation injected by FS persistence block below
+function _afterSave() { /* overridden after FS init */ }
+
+function saveExtraTools() {
+  const builtinIds = BUILTIN_TOOLS.map(t => t.id);
+  const extra = TOOLS.filter(t => !builtinIds.includes(t.id));
+  try {
+    localStorage.setItem('tb_extra_tools', JSON.stringify(extra));
+  } catch (e) {
+    // localStorage quota exceeded — strip large code blobs and retry
+    console.warn('Toolbox: localStorage quota hit, stripping inline code blobs', e);
+    const stripped = extra.map(t => {
+      if (t.code && t.code.length > 50000) {
+        return { ...t, code: null, _codeLost: true };
+      }
+      return t;
+    });
+    try {
+      localStorage.setItem('tb_extra_tools', JSON.stringify(stripped));
+      showToast('⚠️ Storage limit hit — some large tools lost inline code. Re-add them.', 5000);
+    } catch (e2) {
+      showToast('✗ Could not save tools — localStorage full. Export backup first!', 6000);
+    }
+  }
+  _afterSave();
+}
+function saveArchived() { localStorage.setItem('tb_archived_tools', JSON.stringify(ARCHIVED)); _afterSave(); }
+function saveCategories() { localStorage.setItem('tb_categories', JSON.stringify(CATEGORIES)); _afterSave(); }
+function saveDefaultCategory() { localStorage.setItem('tb_default_category', DEFAULT_CATEGORY || ''); _afterSave(); }
+
+// ═══════════════════════════════════════════════════════
+//  FILE SYSTEM PERSISTENCE (File System Access API)
+//  User picks a .json save file path once; all saves go there.
+//  On load, if FS file exists and is newer, it wins over localStorage.
+// ═══════════════════════════════════════════════════════
+let _fsFileHandle = null;  // FileSystemFileHandle for the save file
+let _fsSaveInProgress = false;
+
+// Try to restore the file handle from IndexedDB (persists across sessions)
+const _fsDB = (() => {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open('tb_fs', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('handles');
+    req.onsuccess = e => res(e.target.result);
+    req.onerror = () => res(null);
+  });
+})();
+
+async function _fsGetHandle() {
+  if (_fsFileHandle) return _fsFileHandle;
+  try {
+    const db = await _fsDB;
+    if (!db) return null;
+    return await new Promise(res => {
+      const tx = db.transaction('handles','readonly');
+      const req = tx.objectStore('handles').get('save');
+      req.onsuccess = () => res(req.result || null);
+      req.onerror = () => res(null);
+    });
+  } catch { return null; }
+}
+
+async function _fsStoreHandle(handle) {
+  try {
+    const db = await _fsDB;
+    if (!db) return;
+    const tx = db.transaction('handles','readwrite');
+    tx.objectStore('handles').put(handle, 'save');
+  } catch {}
+}
+
+async function _fsVerifyPermission(handle) {
+  try {
+    const perm = await handle.queryPermission({ mode: 'readwrite' });
+    if (perm === 'granted') return true;
+    const req = await handle.requestPermission({ mode: 'readwrite' });
+    return req === 'granted';
+  } catch { return false; }
+}
+
+// Build the full state snapshot
+function _buildSnapshot() {
+  const builtinIds = BUILTIN_TOOLS.map(t => t.id);
+  return {
+    version: 3,
+    savedAt: Date.now(),
+    tools: TOOLS.filter(t => !builtinIds.includes(t.id)),
+    archived: ARCHIVED,
+    categories: CATEGORIES,
+    defaultCategory: DEFAULT_CATEGORY,
+    theme: localStorage.getItem('tb_theme') || 'dark'
+  };
+}
+
+// Write to FS file (debounced — never two concurrent writes)
+async function _fsSave() {
+  const handle = await _fsGetHandle();
+  if (!handle) return; // no file set yet — falls through to localStorage only
+  if (_fsSaveInProgress) return;
+  _fsSaveInProgress = true;
+  try {
+    const ok = await _fsVerifyPermission(handle);
+    if (!ok) { _fsSaveInProgress = false; return; }
+    const writable = await handle.createWritable();
+    await writable.write(JSON.stringify(_buildSnapshot(), null, 2));
+    await writable.close();
+    updateFsStatusDot('saved');
+  } catch (e) {
+    console.warn('Toolbox FS save failed:', e);
+    updateFsStatusDot('error');
+  }
+  _fsSaveInProgress = false;
+}
+
+// Load from FS file; returns snapshot or null
+async function _fsLoad() {
+  const handle = await _fsGetHandle();
+  if (!handle) return null;
+  try {
+    const ok = await _fsVerifyPermission(handle);
+    if (!ok) return null;
+    const file = await handle.getFile();
+    const text = await file.text();
+    return JSON.parse(text);
+  } catch { return null; }
+}
+
+// Let user pick (or create) a save file
+async function fsPickSaveFile() {
+  if (!('showSaveFilePicker' in window)) {
+    setStatus('data-status','error','✗ File System API not supported in this browser. Use Chrome/Edge.');
+    return;
+  }
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: 'toolbox-data.json',
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+    });
+    _fsFileHandle = handle;
+    await _fsStoreHandle(handle);
+    await _fsSave(); // write current state immediately
+    renderFsPathDisplay();
+    setStatus('data-status','success','✓ Save file set — all future saves will go here automatically.');
+    setTimeout(() => setStatus('data-status','',''), 3500);
+  } catch (e) {
+    if (e.name !== 'AbortError') setStatus('data-status','error','✗ Could not set save file: ' + e.message);
+  }
+}
+
+// Load from FS file on startup (merges with / replaces localStorage data)
+async function fsLoadOnStartup() {
+  const handle = await _fsGetHandle();
+  if (!handle) return; // no file configured
+  _fsFileHandle = handle;
+  try {
+    const data = await _fsLoad();
+    if (!data || !Array.isArray(data.tools)) return;
+    // Only replace if FS file is newer than what we already loaded from localStorage
+    const lsTools = JSON.parse(localStorage.getItem('tb_extra_tools') || '[]');
+    const lsModified = lsTools.reduce((m,t) => Math.max(m, t.addedAt||0), 0);
+    if (data.savedAt && data.savedAt < lsModified) return; // localStorage is newer, skip
+    // Apply FS snapshot
+    const builtinIds = BUILTIN_TOOLS.map(t => t.id);
+    TOOLS = [...BUILTIN_TOOLS, ...data.tools.filter(t => !builtinIds.includes(t.id))];
+    ARCHIVED = Array.isArray(data.archived) ? data.archived : [];
+    CATEGORIES = Array.isArray(data.categories)
+      ? data.categories.map(c => {
+          const obj = typeof c === 'string' ? { name: c, home: true } : c;
+          if (!obj.defaultIcons) obj.defaultIcons = [];
+          return obj;
+        })
+      : [];
+    DEFAULT_CATEGORY = (typeof data.defaultCategory === 'string' && categoryNames().includes(data.defaultCategory))
+      ? data.defaultCategory : '';
+    if (data.theme) applyTheme(data.theme, false);
+    const homes = CATEGORIES.filter(c => c.home).map(c => c.name);
+    activeCategory = homes.length ? '__home__' : 'all';
+    migrateToolIcons(); // re-run migration on freshly loaded FS data
+    renderAll();
+    renderFsPathDisplay();
+  } catch (e) {
+    console.warn('Toolbox: FS load failed:', e);
+  }
+}
+
+// After any localStorage save, also write to FS file
+function _afterSave() { _fsSave(); }
+
+function updateFsStatusDot(state) {
+  const dot = document.getElementById('fs-status-dot');
+  if (!dot) return;
+  if (state === 'saved') { dot.style.background = 'var(--green)'; dot.title = 'Saved to file'; setTimeout(()=>{ dot.style.background=''; dot.title=''; }, 2000); }
+  else if (state === 'error') { dot.style.background = 'var(--red)'; dot.title = 'File save failed'; }
+}
+
+function renderFsPathDisplay() {
+  const el = document.getElementById('fs-path-display');
+  if (!el) return;
+  if (_fsFileHandle) {
+    el.textContent = '📄 ' + _fsFileHandle.name;
+    el.style.color = 'var(--green)';
+  } else {
+    el.textContent = 'No file set — data stored in browser only';
+    el.style.color = 'var(--text-muted)';
+  }
+}
+
+// Helpers around the CATEGORIES list of { name, home } objects
+function categoryNames() { return CATEGORIES.map(c => c.name); }
+function isHomeCategory(name) {
+  const c = CATEGORIES.find(c => c.name === name);
+  return c ? !!c.home : false;
+}
+
+// ═══════════════════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════════════════
+function applyTheme(theme, save=true) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+  if (save) localStorage.setItem('tb_theme', theme);
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+}
+
+// ═══════════════════════════════════════════════════════
+//  DASHBOARD RENDER
+// ═══════════════════════════════════════════════════════
+function buildFilters() {
+  // Show ALL categories serially after "All" (and "Pinned" if anything is pinned).
+  // "home" flag is now only used for the Home category feature, not filter visibility.
+  const allCatNames = categoryNames(); // all user-created categories in order
+  const bar = document.getElementById('filterBar');
+  bar.innerHTML = '';
+
+  // "Home" virtual filter — only when home categories are configured
+  const homeCatNames = CATEGORIES.filter(c => c.home).map(c => c.name);
+  if (homeCatNames.length) {
+    const homeBtn = document.createElement('button');
+    homeBtn.className = 'filter-btn' + (activeCategory === '__home__' ? ' active' : '');
+    homeBtn.textContent = '🏠 Home';
+    homeBtn.title = 'Categories: ' + homeCatNames.map(c => cap(c)).join(', ');
+    homeBtn.onclick = () => { activeCategory = '__home__'; renderAll(); };
+    bar.appendChild(homeBtn);
+  }
+
+  // "All" always after home
+  const allBtn = document.createElement('button');
+  allBtn.className = 'filter-btn' + (activeCategory === 'all' ? ' active' : '');
+  allBtn.textContent = 'All';
+  allBtn.onclick = () => { activeCategory = 'all'; renderAll(); };
+  bar.appendChild(allBtn);
+
+  // "Pinned" only when something is pinned
+  if (TOOLS.some(t => t.pinned)) {
+    const pinBtn = document.createElement('button');
+    pinBtn.className = 'filter-btn' + (activeCategory === 'pinned' ? ' active' : '');
+    pinBtn.textContent = '📌 Pinned';
+    pinBtn.onclick = () => { activeCategory = 'pinned'; renderAll(); };
+    bar.appendChild(pinBtn);
+  }
+
+  // "Uncategorized" if any tool has no category
+  if (TOOLS.some(t => !t.category)) {
+    const uncatBtn = document.createElement('button');
+    uncatBtn.className = 'filter-btn' + (activeCategory === '__uncat__' ? ' active' : '');
+    uncatBtn.textContent = 'Uncategorized';
+    uncatBtn.onclick = () => { activeCategory = '__uncat__'; renderAll(); };
+    bar.appendChild(uncatBtn);
+  }
+
+  // All user categories in order
+  allCatNames.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (cat === activeCategory ? ' active' : '');
+    btn.textContent = cap(cat);
+    btn.onclick = () => { activeCategory = cat; renderAll(); };
+    bar.appendChild(btn);
+  });
+
+  // If active category no longer exists, fall back to 'all'
+  const reservedFilters = ['all','pinned','__uncat__','__home__'];
+  if (!reservedFilters.includes(activeCategory) && !allCatNames.includes(activeCategory)) {
+    activeCategory = 'all';
+  }
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  const label = document.getElementById('sectionLabel');
+  const homeCatNamesForFilter = CATEGORIES.filter(c => c.home).map(c => c.name);
+  const filtered = TOOLS.filter(t => {
+    let matchCat;
+    if (activeCategory === 'all') matchCat = true;
+    else if (activeCategory === '__home__') matchCat = homeCatNamesForFilter.includes(t.category||'');
+    else if (activeCategory === 'pinned') matchCat = !!t.pinned;
+    else if (activeCategory === '__uncat__') matchCat = !t.category;
+    else matchCat = t.category === activeCategory;
+    const q = searchQuery.toLowerCase();
+    const matchQ = !q || t.name.toLowerCase().includes(q) || (t.desc||'').toLowerCase().includes(q) || (t.category||'').toLowerCase().includes(q);
+    return matchCat && matchQ;
+  }).sort((a,b) => {
+    if (!!b.pinned !== !!a.pinned) return b.pinned ? 1 : -1; // pinned first
+    return (b.lastOpened||0) - (a.lastOpened||0);
+  });
+
+  const catLabel = activeCategory === 'all' ? 'All Tools'
+    : activeCategory === '__home__' ? '🏠 Home'
+    : activeCategory === 'pinned' ? 'Pinned'
+    : activeCategory === '__uncat__' ? 'Uncategorized'
+    : cap(activeCategory);
+  label.textContent = `${catLabel} · ${filtered.length}`;
+
+  if (!filtered.length) {
+    const msg = TOOLS.length === 0
+      ? `No tools yet — tap <strong>＋ Add Tool</strong> to create your first one.`
+      : `No tools found for "<strong>${esc(searchQuery || activeCategory)}</strong>"`;
+    grid.innerHTML = `<div class="empty-state"><div class="big">🔍</div><p>${msg}</p></div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(tool => {
+    const hasCat = !!tool.category;
+    const badge = hasCat
+      ? `<span class="card-badge badge-cat">${esc(tool.category)}</span>`
+      : `<span class="card-badge badge-none">uncategorized</span>`;
+    const desc = tool.desc
+      ? `<div class="card-desc">${esc(tool.desc)}</div>`
+      : `<div class="card-desc empty">No description yet — tap ✎ to edit</div>`;
+    const newBadge = tool.autoDetected && !tool.reviewed ? `<span class="card-badge badge-new">new</span>` : '';
+    const warnBadge = tool._codeLost ? `<span class="card-badge" style="background:rgba(226,104,90,0.15);color:#E2685A">⚠ lost</span>` : '';
+    return `
+    <div class="card${tool.pinned?' pinned':''}" onclick="handleCardClick('${tool.id}')" role="button" tabindex="0"
+         onkeydown="if(event.key==='Enter')handleCardClick('${tool.id}')">
+      <div class="card-pin-badge"></div>
+      <div class="card-quick-actions">
+        <button class="qa-btn" title="${tool.pinned?'Unpin':'Pin'}" onclick="event.stopPropagation();togglePin('${tool.id}')">${tool.pinned?'📌':'📍'}</button>
+        <button class="qa-btn" title="Edit" onclick="event.stopPropagation();openEditModal('${tool.id}')">✎</button>
+      </div>
+      <div class="card-top">
+        <div class="card-icon">${getToolIcon(tool)}</div>
+        <div style="display:flex;gap:4px;align-items:flex-start">${warnBadge}${newBadge}${badge}</div>
+      </div>
+      <div class="card-name">${esc(tool.name)}</div>
+      ${desc}
+      <div class="card-arrow">↗</div>
+      <div class="card-del">✕</div>
+    </div>`;
+  }).join('');
+}
+
+function renderAll() { buildFilters(); renderGrid(); updateArchiveBadge(); }
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function updateArchiveBadge() {
+  const btn = document.getElementById('archiveBtn');
+  if (!btn) return;
+  const existing = btn.querySelector('.count-dot');
+  if (existing) existing.remove();
+  if (ARCHIVED.length > 0) {
+    const dot = document.createElement('span');
+    dot.className = 'count-dot';
+    dot.textContent = ARCHIVED.length > 99 ? '99+' : ARCHIVED.length;
+    btn.appendChild(dot);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  PIN
+// ═══════════════════════════════════════════════════════
+function togglePin(id) {
+  const tool = TOOLS.find(t => t.id === id);
+  if (!tool) return;
+  tool.pinned = !tool.pinned;
+  saveExtraTools();
+  renderAll();
+  showToast(tool.pinned ? `📌 "${tool.name}" pinned` : `Unpinned "${tool.name}"`);
+}
+
+// ═══════════════════════════════════════════════════════
+//  DELETE / ARCHIVE MODE
+// ═══════════════════════════════════════════════════════
+function toggleDeleteMode() {
+  deleteMode = !deleteMode;
+  document.body.classList.toggle('delete-mode', deleteMode);
+  document.getElementById('deleteToggleBtn').classList.toggle('active-delete', deleteMode);
+  document.getElementById('delete-banner').classList.toggle('show', deleteMode);
+}
+
+function handleCardClick(id) {
+  if (deleteMode) {
+    pendingDeleteId = id;
+    const tool = TOOLS.find(t => t.id === id);
+    document.getElementById('confirm-tool-name').textContent = tool ? tool.name : id;
+    document.getElementById('confirm-overlay').classList.add('open');
+  } else {
+    openTool(id);
+  }
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  pendingDeleteId = null;
+}
+
+function confirmDelete() {
+  if (!pendingDeleteId) return;
+  const tool = TOOLS.find(t => t.id === pendingDeleteId);
+  if (tool) {
+    TOOLS = TOOLS.filter(t => t.id !== pendingDeleteId);
+    ARCHIVED.push({ ...tool, archivedAt: Date.now() });
+    saveExtraTools();
+    saveArchived();
+  }
+  renderAll();
+  closeConfirm();
+  showToast(`📦 "${tool?.name || pendingDeleteId}" archived`);
+  pendingDeleteId = null;
+}
+
+// ═══════════════════════════════════════════════════════
+//  TOOL VIEW (full-screen)
+// ═══════════════════════════════════════════════════════
+function createFreshFrame() {
+  // Always destroy any existing iframe completely and build a brand-new one.
+  // This guarantees every tool launch starts from a truly clean state —
+  // no leftover JS globals, timers, or DOM from the previous tool/session,
+  // and no chance of a WebView silently reusing a frozen/cached document.
+  const container = document.getElementById('tool-frame-container');
+  container.innerHTML = '';
+  const frame = document.createElement('iframe');
+  frame.id = 'tool-frame';
+  frame.title = 'Active Tool';
+  frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-modals');
+  container.appendChild(frame);
+  return frame;
+}
+
+function openTool(id) {
+  const tool = TOOLS.find(t => t.id === id);
+  if (!tool) return;
+
+  tool.lastOpened = Date.now();
+  tool.reviewed = true;
+  saveExtraTools();
+
+  const loading = document.getElementById('tool-frame-loading');
+  loading.classList.add('show');
+
+  const frame = createFreshFrame();
+  frame.addEventListener('load', () => loading.classList.remove('show'), { once: true });
+  setTimeout(() => loading.classList.remove('show'), 4000);
+
+  if (tool.code) {
+    frame.srcdoc = tool.code;
+  } else if (tool.file) {
+    // file-based tool — cache-bust to always get the latest copy
+    const bust = (tool.file.includes('?') ? '&' : '?') + '_t=' + Date.now();
+    frame.src = tool.file + bust;
+    // If the file 404s, srcdoc a friendly error page after a short wait
+    setTimeout(() => {
+      try {
+        const doc = frame.contentDocument || frame.contentWindow?.document;
+        // If it loaded an error page or empty, show a helpful message
+        if (doc && (!doc.body || doc.body.innerHTML.trim() === '' || doc.title === '404')) {
+          frame.srcdoc = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>body{background:#15120F;color:#EDE6DA;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:12px;margin:0}
+h2{color:#E2685A;font-size:1.1rem}p{color:#948D82;font-size:0.85rem;text-align:center;max-width:380px;line-height:1.6}code{background:#1E1C19;padding:2px 8px;border-radius:4px;color:#E8B65A;font-size:0.82rem}</style></head>
+<body><h2>⚠ File not found</h2>
+<p>This tool was registered with file path:<br><code>${tool.file}</code></p>
+<p>The HTML file doesn't exist at that path. Either place the file there, or re-add the tool using <strong>＋ Add Tool → Paste HTML</strong> to store it inline.</p></body></html>`;
+        }
+      } catch {}
+    }, 3000);
+  } else {
+    // No code and no file — shouldn't happen but handle gracefully
+    loading.classList.remove('show');
+    frame.srcdoc = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>body{background:#15120F;color:#EDE6DA;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+p{color:#E2685A;font-size:0.9rem}</style></head>
+<body><p>⚠ Tool has no code or file path. Delete and re-add it.</p></body></html>`;
+  }
+
+  document.getElementById('tool-view').classList.add('open');
+  document.getElementById('dashboard-header').style.display = 'none';
+  document.getElementById('delete-banner').style.display = 'none';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeToolView() {
+  document.getElementById('tool-view').classList.remove('open');
+  document.getElementById('dashboard-header').style.display = '';
+  if (deleteMode) document.getElementById('delete-banner').style.display = '';
+  document.body.style.overflow = '';
+  document.getElementById('tool-frame-loading').classList.remove('show');
+  // Fully tear down the iframe (not just blank its src) once the slide-out
+  // transition finishes, so absolutely nothing from this session lingers —
+  // it's like the app re-launching fresh the next time a tool is opened.
+  setTimeout(() => {
+    const container = document.getElementById('tool-frame-container');
+    container.innerHTML = '';
+  }, 320);
+  renderAll(); // refresh "new"/last-opened state on the dashboard
+}
+
+// ═══════════════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════════════
+function openSettings() {
+  renderCatList();
+  renderHomeCatDropdown();
+  renderStats();
+  renderFsPathDisplay();
+  setStatus('data-status','','');
+  document.getElementById('settings-overlay').classList.add('open');
+}
+function closeSettings() {
+  // close any open assign panels and home dropdown
+  document.querySelectorAll('.cat-assign-panel.open').forEach(p => p.classList.remove('open'));
+  closeHomeCatDropdown();
+  document.getElementById('settings-overlay').classList.remove('open');
+}
+
+function renderStats() {
+  const el = document.getElementById('statsLine');
+  if (!el) return;
+  const uncatCount = TOOLS.filter(t => !t.category).length;
+  el.textContent = `${TOOLS.length} active tool${TOOLS.length!==1?'s':''} · ${ARCHIVED.length} archived · ${CATEGORIES.length} categories` +
+    (uncatCount ? ` · ${uncatCount} uncategorized` : '');
+}
+
+// ── Category list with per-cat assign panel ──
+function renderCatList() {
+  const list = document.getElementById('catList');
+  if (!CATEGORIES.length) {
+    list.innerHTML = `<div class="field-hint">No categories yet — add one above.</div>`;
+    return;
+  }
+  list.innerHTML = CATEGORIES.map(c => {
+    const cat = c.name;
+    const count = TOOLS.filter(t => t.category === cat).length;
+    const assignId = `assign-panel-${cat.replace(/[^a-z0-9]/g,'_')}`;
+    const iconsDisplay = (c.defaultIcons && c.defaultIcons.length)
+      ? c.defaultIcons.join('  ')
+      : '<span style="color:var(--text-muted);font-style:italic;font-size:0.75rem">none</span>';
+    return `<div class="cat-item" style="flex-direction:column;align-items:stretch;gap:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div class="cat-item-left">
+          <div class="cat-dot"></div>
+          <div class="cat-name">${esc(cat)}</div>
+          <div class="cat-count">${count} tool${count!==1?'s':''}</div>
+        </div>
+        <div class="cat-item-right">
+          <button class="cat-del-btn" onclick="removeCategory('${cat}')" ${count>0?'disabled title="Has tools — reassign them first"':''}>✕</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:5px 2px 2px;flex-wrap:wrap">
+        <span style="font-size:0.68rem;color:var(--text-muted);white-space:nowrap">Default icons:</span>
+        <span style="font-size:1rem;letter-spacing:0.08em">${iconsDisplay}</span>
+        <button class="cat-assign-trigger" style="width:auto;padding:3px 9px;font-size:0.7rem;margin-left:auto"
+          onclick="editCatIcons('${cat}', this)">✎ Edit</button>
+      </div>
+      <div class="cat-icons-edit-panel" id="icons-edit-${cat.replace(/[^a-z0-9]/g,'_')}" style="display:none;padding:6px 2px;gap:6px;flex-direction:column">
+        <input type="text" class="cat-icons-input" placeholder="e.g. 🛠️ 🔧 ⚙️  (space or comma separated)"
+          style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:7px;font-size:1rem;letter-spacing:0.1em;outline:none;font-family:'Inter',sans-serif;width:100%"
+          value="${(c.defaultIcons||[]).join('  ')}"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+        <div style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn btn-ghost btn-sm" onclick="closeIconsEdit('${cat}')">Cancel</button>
+          <button class="btn btn-primary btn-sm" onclick="saveCatIcons('${cat}')">✓ Save</button>
+        </div>
+      </div>
+      <div class="cat-assign-wrap">
+        <button class="cat-assign-trigger" onclick="toggleAssignPanel('${assignId}', '${cat}', this)">
+          <span>Assign tools to this category…</span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="cat-assign-panel" id="${assignId}">
+          <div class="cat-assign-list" id="${assignId}-list"></div>
+          <div class="cat-assign-footer">
+            <label class="uncat-only-label" title="Show only uncategorized tools">
+              <input type="checkbox" id="${assignId}-uchk" onchange="populateAssignList('${assignId}','${cat}',this.checked)">
+              Uncategorized only
+            </label>
+            <button class="btn btn-primary btn-sm" onclick="applyAssign('${cat}','${assignId}')">✓ Assign selected</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function editCatIcons(cat, btn) {
+  const panelId = 'icons-edit-' + cat.replace(/[^a-z0-9]/g,'_');
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  if (isOpen) { panel.style.display = 'none'; return; }
+  panel.style.display = 'flex';
+  panel.querySelector('input').focus();
+}
+
+function closeIconsEdit(cat) {
+  const panelId = 'icons-edit-' + cat.replace(/[^a-z0-9]/g,'_');
+  const panel = document.getElementById(panelId);
+  if (panel) panel.style.display = 'none';
+}
+
+function saveCatIcons(cat) {
+  const panelId = 'icons-edit-' + cat.replace(/[^a-z0-9]/g,'_');
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+  const raw = panel.querySelector('input').value;
+  const icons = parseIcons(raw);
+  const c = CATEGORIES.find(c => c.name === cat);
+  if (!c) return;
+  c.defaultIcons = icons;
+  saveCategories();
+  renderCatList();
+  renderAll();
+  const label = icons.length ? `✓ ${icons.length} icon${icons.length!==1?'s':''} saved` : '✓ Icons cleared';
+  setCatStatus('success', label);
+  setTimeout(() => setCatStatus('',''), 2000);
+}
+
+function toggleAssignPanel(panelId, cat) {
+  const panel = document.getElementById(panelId);
+  const isOpen = panel.classList.contains('open');
+  document.querySelectorAll('.cat-assign-panel.open').forEach(p => p.classList.remove('open'));
+  if (!isOpen) {
+    populateAssignList(panelId, cat, false);
+    panel.classList.add('open');
+  }
+}
+
+function populateAssignList(panelId, cat, uncatOnly) {
+  const listEl = document.getElementById(panelId + '-list');
+  // Sync the checkbox state (called both on open and on checkbox change)
+  const uchk = document.getElementById(panelId + '-uchk');
+  if (uchk) uchk.checked = !!uncatOnly;
+  if (!TOOLS.length) {
+    listEl.innerHTML = `<div style="padding:8px 10px;font-size:0.78rem;color:var(--text-muted)">No tools yet.</div>`;
+    return;
+  }
+  const tools = uncatOnly ? TOOLS.filter(t => !t.category || t.category === cat) : TOOLS;
+  if (!tools.length) {
+    listEl.innerHTML = `<div style="padding:8px 10px;font-size:0.78rem;color:var(--text-muted)">No uncategorized tools.</div>`;
+    return;
+  }
+  listEl.innerHTML = tools.map(t => `
+    <label class="cat-assign-item">
+      <input type="checkbox" value="${t.id}" ${t.category===cat?'checked':''}>
+      <span>${getToolIcon(t)} ${esc(t.name)}</span>
+      ${t.category && t.category!==cat ? `<span style="font-size:0.68rem;color:var(--text-muted)">(${esc(t.category)})</span>` : ''}
+      ${!t.category ? `<span style="font-size:0.68rem;color:var(--text-muted)">(uncategorized)</span>` : ''}
+    </label>`).join('');
+}
+
+function applyAssign(cat, panelId) {
+  const panel = document.getElementById(panelId);
+  const checked = new Set([...panel.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value));
+  const catObj = CATEGORIES.find(c => c.name === cat);
+  const catIcons = (catObj && catObj.defaultIcons && catObj.defaultIcons.length) ? catObj.defaultIcons : null;
+
+  TOOLS.forEach(t => {
+    if (t.category === cat && !checked.has(t.id)) {
+      t.category = '';
+    } else if (checked.has(t.id)) {
+      const isNewToThisCat = t.category !== cat;
+      t.category = cat;
+      // If tool has the default/generic icon and category has custom icons,
+      // permanently assign one random icon from the category pool
+      if (isNewToThisCat && catIcons && (!t.icon || t.icon === '🛠️')) {
+        t.icon = catIcons[Math.floor(Math.random() * catIcons.length)];
+      }
+    }
+  });
+  saveExtraTools();
+  panel.classList.remove('open');
+  renderCatList();
+  renderAll();
+  setCatStatus('success', `✓ Tools assigned to "${cat}"`);
+  setTimeout(() => setCatStatus('',''), 2000);
+}
+
+// Parse a string of emojis separated by spaces/commas into an array of individual emojis
+function parseIcons(raw) {
+  if (!raw) return [];
+  const parts = raw.split(/[\s,]+/).filter(Boolean);
+  return [...new Set(parts)].slice(0, 10);
+}
+
+// Simple display icon — just use tool.icon, fallback to 🛠️
+function getToolIcon(tool) {
+  return tool.icon || '🛠️';
+}
+
+// On every app launch / cache clear: scan all tools and assign a permanent
+// category icon to any tool still sitting on the generic 🛠️ or empty icon.
+// Rules mirror applyAssign: only acts when the category has defaultIcons set.
+function migrateToolIcons() {
+  let changed = false;
+  TOOLS.forEach(t => {
+    if (t.icon && t.icon !== '🛠️') return; // already has a real icon, skip
+    if (!t.category) return;                // uncategorized — leave as 🛠️
+    const cat = CATEGORIES.find(c => c.name === t.category);
+    if (!cat || !cat.defaultIcons || !cat.defaultIcons.length) return;
+    t.icon = cat.defaultIcons[Math.floor(Math.random() * cat.defaultIcons.length)];
+    changed = true;
+  });
+  if (changed) saveExtraTools();
+}
+
+function addCategory() {
+  const input = document.getElementById('newCatInput');
+  const val = input.value.trim().toLowerCase().replace(/[^a-z0-9-\s]/g,'').trim().replace(/\s+/g,'-');
+  if (!val) { setCatStatus('error','Enter a category name'); return; }
+  if (categoryNames().includes(val)) { setCatStatus('error',`"${val}" already exists`); return; }
+  const iconsRaw = document.getElementById('newCatIconsInput') ? document.getElementById('newCatIconsInput').value.trim() : '';
+  const defaultIcons = parseIcons(iconsRaw);
+  CATEGORIES.push({ name: val, home: false, defaultIcons });
+  saveCategories();
+  input.value = '';
+  const iconsInput = document.getElementById('newCatIconsInput');
+  if (iconsInput) iconsInput.value = '';
+  renderCatList();
+  renderHomeCatDropdown();
+  renderAll();
+  populateCatDropdown();
+  setCatStatus('success', `✓ "${val}" added`);
+  setTimeout(() => setCatStatus('',''), 2000);
+}
+
+function removeCategory(cat) {
+  const count = TOOLS.filter(t => t.category === cat).length;
+  if (count > 0) { setCatStatus('error','Reassign tools in this category first'); return; }
+  CATEGORIES = CATEGORIES.filter(c => c.name !== cat);
+  saveCategories();
+  if (activeCategory === cat) activeCategory = 'all';
+  if (DEFAULT_CATEGORY === cat) { DEFAULT_CATEGORY = ''; saveDefaultCategory(); }
+  renderCatList();
+  renderHomeCatDropdown();
+  renderAll();
+  populateCatDropdown();
+}
+
+function setCatStatus(type, msg) {
+  const el = document.getElementById('cat-status');
+  el.className = 'status-box' + (type ? ' '+type : '');
+  el.textContent = msg;
+  el.style.display = (type && msg) ? 'block' : 'none';
+}
+
+// ── Home Categories dropdown ──
+function renderHomeCatDropdown() {
+  const homeCats = CATEGORIES.filter(c => c.home).map(c => c.name);
+  const label = document.getElementById('homeCatLabel');
+  if (label) {
+    label.textContent = homeCats.length
+      ? homeCats.map(c => cap(c)).join(', ')
+      : 'None — select categories to show on home…';
+  }
+  const optContainer = document.getElementById('homeCatOptions');
+  if (!optContainer) return;
+  if (!CATEGORIES.length) {
+    optContainer.innerHTML = `<div style="padding:10px 12px;font-size:0.78rem;color:var(--text-muted)">No categories yet.</div>`;
+    return;
+  }
+  optContainer.innerHTML = `<div class="home-cat-options">` + CATEGORIES.map(c => {
+    const count = TOOLS.filter(t => t.category === c.name).length;
+    return `<label class="home-cat-option">
+      <input type="checkbox" ${c.home?'checked':''} onchange="toggleCategoryHome('${c.name}',this.checked)">
+      <span class="home-cat-option-name">${esc(cap(c.name))}</span>
+      <span class="home-cat-option-count">${count} tool${count!==1?'s':''}</span>
+    </label>`;
+  }).join('') + `</div>`;
+}
+
+function toggleHomeCatDropdown() {
+  const panel = document.getElementById('homeCatPanel');
+  panel.classList.toggle('open');
+}
+function closeHomeCatDropdown() {
+  const panel = document.getElementById('homeCatPanel');
+  if (panel) panel.classList.remove('open');
+}
+
+function toggleCategoryHome(cat, show) {
+  const c = CATEGORIES.find(c => c.name === cat);
+  if (!c) return;
+  c.home = show;
+  saveCategories();
+  // Update label
+  renderHomeCatDropdown();
+  // Rebuild filter bar to reflect home categories for launch logic
+  renderAll();
+}
+
+// Hard reset — delete ALL data
+function hardResetApp() {
+  if (!confirm('⚠️ HARD RESET — this will permanently delete ALL tools, categories, archive, and settings. This cannot be undone. Are you sure?')) return;
+  if (!confirm('Final confirmation: delete everything and start fresh?')) return;
+  // Clear all known keys
+  ['tb_extra_tools','tb_archived_tools','tb_categories','tb_default_category','tb_theme'].forEach(k => localStorage.removeItem(k));
+  // Also clear any service worker caches
+  if ('caches' in window) caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+  if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+  location.reload();
+}
+
+// ═══════════════════════════════════════════════════════
+//  ARCHIVE
+// ═══════════════════════════════════════════════════════
+function openArchive() {
+  renderArchiveList();
+  document.getElementById('archive-overlay').classList.add('open');
+}
+function closeArchive() { document.getElementById('archive-overlay').classList.remove('open'); }
+
+function renderArchiveList() {
+  const list = document.getElementById('archiveList');
+  const emptyMsg = document.getElementById('archive-empty-msg');
+  const emptyBtn = document.getElementById('emptyArchiveBtn');
+  if (!ARCHIVED.length) {
+    list.innerHTML = '';
+    emptyMsg.style.display = 'block';
+    emptyBtn.disabled = true;
+    return;
+  }
+  emptyMsg.style.display = 'none';
+  emptyBtn.disabled = false;
+  const sorted = [...ARCHIVED].sort((a,b) => (b.archivedAt||0) - (a.archivedAt||0));
+  list.innerHTML = sorted.map(tool => `
+    <div class="archive-item">
+      <div class="archive-item-left">
+        <div class="archive-icon">${getToolIcon(tool)}</div>
+        <div class="archive-info">
+          <div class="archive-name">${esc(tool.name)}</div>
+          <div class="archive-date">Archived ${formatDate(tool.archivedAt)}</div>
+        </div>
+      </div>
+      <div class="archive-actions">
+        <button class="btn btn-ghost btn-sm" onclick="restoreTool('${tool.id}')">↩ Restore</button>
+        <button class="btn btn-sm" style="background:var(--red);color:#fff" onclick="askPermaDelete('${tool.id}')">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function formatDate(ts) {
+  if (!ts) return 'recently';
+  const d = new Date(ts);
+  return d.toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) + ' ' +
+         d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+}
+
+function restoreTool(id) {
+  const tool = ARCHIVED.find(t => t.id === id);
+  if (!tool) return;
+  ARCHIVED = ARCHIVED.filter(t => t.id !== id);
+  // De-duplicate id against currently active tools, just in case
+  let uniqueId = tool.id, counter = 2;
+  while (TOOLS.find(t => t.id === uniqueId)) uniqueId = `${tool.id}-${counter++}`;
+  delete tool.archivedAt;
+  TOOLS.push({ ...tool, id: uniqueId });
+  saveExtraTools();
+  saveArchived();
+  renderArchiveList();
+  renderAll();
+  showToast(`↩ "${tool.name}" restored`);
+}
+
+let pendingPermaDeleteFromArchiveId = null;
+function askPermaDelete(id) {
+  pendingPermaDeleteFromArchiveId = id;
+  const tool = ARCHIVED.find(t => t.id === id);
+  if (!confirm(`Permanently delete "${tool?.name || id}"? This cannot be undone (the registration will be removed; the HTML file itself stays on disk unless you delete it manually).`)) {
+    pendingPermaDeleteFromArchiveId = null;
+    return;
+  }
+  ARCHIVED = ARCHIVED.filter(t => t.id !== id);
+  saveArchived();
+  renderArchiveList();
+  showToast(`✕ "${tool?.name || id}" permanently deleted`);
+  pendingPermaDeleteFromArchiveId = null;
+}
+
+function confirmEmptyArchive() {
+  if (!ARCHIVED.length) return;
+  if (!confirm(`Permanently delete all ${ARCHIVED.length} archived tool(s)? This cannot be undone.`)) return;
+  ARCHIVED = [];
+  saveArchived();
+  renderArchiveList();
+  showToast('📦 Archive emptied');
+}
+
+// ═══════════════════════════════════════════════════════
+//  EDIT TOOL
+// ═══════════════════════════════════════════════════════
+function openEditModal(id) {
+  const tool = TOOLS.find(t => t.id === id);
+  if (!tool) return;
+  editingToolId = id;
+  document.getElementById('edit-name').value = tool.name || '';
+  document.getElementById('edit-icon').value = tool.icon || '';
+  document.getElementById('edit-desc').value = tool.desc || '';
+  const sel = document.getElementById('edit-cat');
+  sel.innerHTML = `<option value="">No category</option>` + categoryNames().map(c => `<option value="${c}">${cap(c)}</option>`).join('');
+  sel.value = tool.category || '';
+  setStatus('edit-status', '', '');
+  document.getElementById('edit-overlay').classList.add('open');
+}
+function closeEditModal() { document.getElementById('edit-overlay').classList.remove('open'); editingToolId = null; }
+
+function saveEditTool() {
+  const tool = TOOLS.find(t => t.id === editingToolId);
+  if (!tool) return;
+  const name = document.getElementById('edit-name').value.trim();
+  const icon = document.getElementById('edit-icon').value.trim();
+  const desc = document.getElementById('edit-desc').value.trim();
+  const cat  = document.getElementById('edit-cat').value;
+  if (!name || !icon) { setStatus('edit-status','error','✗ Name and icon are required'); return; }
+  tool.name = name; tool.icon = icon; tool.desc = desc; tool.category = cat;
+  tool.reviewed = true;
+  saveExtraTools();
+  renderAll();
+  closeEditModal();
+  showToast(`✓ "${name}" updated`);
+}
+
+// ═══════════════════════════════════════════════════════
+//  BACKUP — export / import full app state as JSON
+// ═══════════════════════════════════════════════════════
+function exportBackup() {
+  const backup = {
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    tools: TOOLS.filter(t => !BUILTIN_TOOLS.find(b => b.id === t.id)),
+    archived: ARCHIVED,
+    categories: CATEGORIES,
+    defaultCategory: DEFAULT_CATEGORY,
+    theme: localStorage.getItem('tb_theme') || 'dark'
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `toolbox-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  setStatus('data-status','success','✓ Backup downloaded');
+}
+
+function importBackup(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data.tools)) throw new Error('Invalid backup file');
+      if (!confirm('Import this backup? It will replace your current tools, archive, and categories.')) return;
+
+      const builtinIds = BUILTIN_TOOLS.map(t => t.id);
+      TOOLS = [...BUILTIN_TOOLS, ...data.tools.filter(t => !builtinIds.includes(t.id))];
+      ARCHIVED = Array.isArray(data.archived) ? data.archived : [];
+      CATEGORIES = Array.isArray(data.categories)
+        ? data.categories.map(c => {
+            const obj = typeof c === 'string' ? { name: c, home: true } : c;
+            if (!obj.defaultIcons) obj.defaultIcons = [];
+            return obj;
+          })
+        : [];
+      DEFAULT_CATEGORY = (typeof data.defaultCategory === 'string' && categoryNames().includes(data.defaultCategory))
+        ? data.defaultCategory : '';
+      saveExtraTools(); saveArchived(); saveCategories(); saveDefaultCategory();
+      if (data.theme) applyTheme(data.theme);
+      const homesAfterImport = CATEGORIES.filter(c => c.home).map(c => c.name);
+      activeCategory = homesAfterImport.length ? '__home__' : 'all';
+      renderAll(); renderStats(); renderDefaultCatSection();
+      setStatus('data-status','success', `✓ Imported ${data.tools.length} tool(s)`);
+    } catch (err) {
+      setStatus('data-status','error', '✗ Invalid backup file');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ═══════════════════════════════════════════════════════
+//  HARD REFRESH — clear caches & relaunch fresh
+// ═══════════════════════════════════════════════════════
+async function hardRefreshApp() {
+  if (!confirm('This clears the app cache (not your tools/categories) and reloads, like relaunching the app. Continue?')) return;
+  try {
+    // Tear down any active tool iframe first
+    document.getElementById('tool-frame-container').innerHTML = '';
+    // Clear service-worker-managed caches
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    // Unregister and let the next load re-register a fresh service worker
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+  } catch {}
+  location.reload();
+}
+
+// ═══════════════════════════════════════════════════════
+//  AUTO-RENDER — scan tools/ folder for new HTML files
+// ═══════════════════════════════════════════════════════
+async function scanToolsFolder() {
+  const btn = document.getElementById('scanBtn');
+  btn.classList.add('spinning');
+  try {
+    const res = await fetch('tools/' + '?_t=' + Date.now());
+    if (!res.ok) throw new Error('not ok');
+    const html = await res.text();
+    const found = parseDirectoryListing(html);
+
+    if (!found.length) {
+      showToast('ℹ️ Folder scan unsupported by this server, or tools/ is empty — add tools manually via "＋ Add Tool"', 4000);
+      return;
+    }
+
+    const knownFiles = new Set([
+      ...TOOLS.map(t => t.file),
+      ...ARCHIVED.map(t => t.file)
+    ].filter(Boolean));
+
+    let addedCount = 0;
+    found.forEach(filename => {
+      const filePath = 'tools/' + filename;
+      if (knownFiles.has(filePath)) return; // already registered (active or archived)
+
+      const baseName = filename.replace(/\.(html?|htm)$/i, '');
+      let id = baseName.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'tool';
+      let uniqueId = id, counter = 2;
+      while (TOOLS.find(t => t.id === uniqueId) || ARCHIVED.find(t => t.id === uniqueId)) uniqueId = `${id}-${counter++}`;
+
+      TOOLS.push({
+        id: uniqueId,
+        name: baseName,        // title = filename, as requested
+        desc: '',              // null/empty — editable later from the card
+        icon: '🛠️',           // default icon for auto-detected tools
+        category: DEFAULT_CATEGORY, // lands in the chosen "new tools" category, or uncategorized if none set
+        file: filePath,
+        autoDetected: true,
+        reviewed: false,
+        addedAt: Date.now()
+      });
+      addedCount++;
+    });
+
+    if (addedCount > 0) {
+      saveExtraTools();
+      renderAll();
+      showToast(`✓ Found ${addedCount} new tool${addedCount!==1?'s':''} — edit details from the card`, 3500);
+    } else {
+      showToast('✓ Scan complete — no new tools found');
+    }
+  } catch (err) {
+    showToast('⚠️ Could not scan tools/ — server may not support folder listing', 3500);
+  } finally {
+    btn.classList.remove('spinning');
+  }
+}
+
+function parseDirectoryListing(html) {
+  // Works with typical static-server directory listings (Python http.server,
+  // many Node static servers, Apache/nginx autoindex) which emit <a href="...">.
+  const files = [];
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    doc.querySelectorAll('a').forEach(a => {
+      const href = a.getAttribute('href') || '';
+      const decoded = decodeURIComponent(href.split('/').pop() || '');
+      if (/\.(html?|htm)$/i.test(decoded)) files.push(decoded);
+    });
+  } catch {}
+  return [...new Set(files)];
+}
+
+// Auto-scan once on launch so newly dropped files appear without manual action.
+// Silent — only surfaces a toast if something new is actually found.
+async function autoScanOnLaunch() {
+  try {
+    const res = await fetch('tools/' + '?_t=' + Date.now());
+    if (!res.ok) return;
+    const html = await res.text();
+    const found = parseDirectoryListing(html);
+    if (!found.length) return;
+    const knownFiles = new Set([...TOOLS.map(t=>t.file), ...ARCHIVED.map(t=>t.file)].filter(Boolean));
+    const newOnes = found.filter(f => !knownFiles.has('tools/'+f));
+    if (!newOnes.length) return;
+    newOnes.forEach(filename => {
+      const filePath = 'tools/' + filename;
+      const baseName = filename.replace(/\.(html?|htm)$/i, '');
+      let id = baseName.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'tool';
+      let uniqueId = id, counter = 2;
+      while (TOOLS.find(t => t.id === uniqueId) || ARCHIVED.find(t => t.id === uniqueId)) uniqueId = `${id}-${counter++}`;
+      TOOLS.push({ id: uniqueId, name: baseName, desc: '', icon: '🛠️', category: DEFAULT_CATEGORY, file: filePath, autoDetected: true, reviewed: false, addedAt: Date.now() });
+    });
+    saveExtraTools();
+    renderAll();
+    showToast(`✓ ${newOnes.length} new tool${newOnes.length!==1?'s':''} auto-detected`, 3500);
+  } catch {} // silent — directory listing may not be supported, that's fine
+}
+
+// ═══════════════════════════════════════════════════════
+//  ADD TOOL MODAL
+// ═══════════════════════════════════════════════════════
+let currentStep = 1;
+let uploadedCode = null;
+let uploadedFileName = null;
+let activeTab = 'paste';
+
+function populateCatDropdown() {
+  const sel = document.getElementById('tool-cat');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">No category</option>` + categoryNames().map(c => `<option value="${c}" ${c===cur?'selected':''}>${cap(c)}</option>`).join('');
+}
+
+function openAddModal() {
+  currentStep = 1; uploadedCode = null; uploadedFileName = null;
+  activeTab = 'paste';
+  ['tool-name','tool-icon','tool-desc','tool-code'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('uploadedName').textContent = '';
+  setStatus('step1-status','','');
+  setStatus('step2-status','','');
+  populateCatDropdown();
+  showStep(1);
+  document.getElementById('add-overlay').classList.add('open');
+}
+
+function closeAddModal() { document.getElementById('add-overlay').classList.remove('open'); }
+
+function handleOverlayClick(e, overlayId) {
+  if (e.target.id === overlayId) {
+    if (overlayId === 'add-overlay') closeAddModal();
+    else if (overlayId === 'settings-overlay') closeSettings();
+    else if (overlayId === 'archive-overlay') closeArchive();
+    else if (overlayId === 'edit-overlay') closeEditModal();
+  }
+}
+
+function showStep(n) {
+  currentStep = n;
+  [1,2,3].forEach(i => {
+    document.getElementById(`step${i}`).style.display = i===n ? 'flex' : 'none';
+    const ind = document.getElementById(`step${i}-ind`);
+    ind.className = 'step'+(i<n?' done':i===n?' active':'');
+  });
+  const footer = document.getElementById('add-footer');
+  if (n===1) footer.innerHTML=`<button class="btn btn-ghost" onclick="closeAddModal()">Cancel</button><button class="btn btn-primary" onclick="handleNext()">Next →</button>`;
+  else if (n===2) footer.innerHTML=`<button class="btn btn-ghost" onclick="showStep(1)">← Back</button><button class="btn btn-green" onclick="handleSave()">✓ Save Tool</button>`;
+  else footer.innerHTML=`<button class="btn btn-ghost" onclick="closeAddModal()">Close</button><button class="btn btn-primary" onclick="closeAddModal();renderAll()">View Dashboard</button>`;
+}
+
+function updatePreview() {
+  const name = document.getElementById('tool-name').value.trim();
+  // no dirPath to update anymore
+}
+
+function handleNext() {
+  const name = document.getElementById('tool-name').value.trim();
+  const icon = document.getElementById('tool-icon').value.trim();
+  const desc = document.getElementById('tool-desc').value.trim();
+  if (!name || !icon || !desc) { setStatus('step1-status','error','✗ Fill in Name, Icon, and Description'); return; }
+  setStatus('step1-status','','');
+  showStep(2);
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tab-paste').className = 'code-tab'+(tab==='paste'?' active':'');
+  document.getElementById('tab-upload').className = 'code-tab'+(tab==='upload'?' active':'');
+  document.getElementById('pane-paste').style.display = tab==='paste'?'block':'none';
+  document.getElementById('pane-upload').style.display = tab==='upload'?'block':'none';
+}
+
+function handleDragOver(e)  { e.preventDefault(); document.getElementById('dropzone').classList.add('drag-over'); }
+function handleDragLeave()  { document.getElementById('dropzone').classList.remove('drag-over'); }
+function handleDrop(e)      { e.preventDefault(); document.getElementById('dropzone').classList.remove('drag-over'); const f=e.dataTransfer.files[0]; if(f) processUploadedFile(f); }
+function handleFileSelect(e){ const f=e.target.files[0]; if(f) processUploadedFile(f); }
+
+function processUploadedFile(file) {
+  if (!file.name.match(/\.(html?|htm)$/i)) { setStatus('step2-status','error','✗ Please select an .html file'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    uploadedCode = e.target.result;
+    uploadedFileName = file.name; // preserve original filename
+    document.getElementById('uploadedName').textContent = '✓ ' + file.name;
+    setStatus('step2-status','success','✓ '+file.name+' loaded');
+  };
+  reader.readAsText(file);
+}
+
+function handleSave() {
+  const name = document.getElementById('tool-name').value.trim();
+  const icon = document.getElementById('tool-icon').value.trim();
+  const desc = document.getElementById('tool-desc').value.trim();
+  const cat  = document.getElementById('tool-cat').value || DEFAULT_CATEGORY;
+
+  // Determine file ID and filename
+  let fileId, fileName;
+  if (activeTab === 'upload' && uploadedFileName) {
+    fileName = uploadedFileName.replace(/\.(html?|htm)$/i, '');
+    fileId   = fileName.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  } else {
+    fileId   = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'tool';
+    fileName = fileId;
+  }
+
+  const code = activeTab === 'paste'
+    ? document.getElementById('tool-code').value.trim()
+    : uploadedCode;
+
+  if (!code) {
+    if (activeTab === 'upload' && uploadedFileName && !uploadedCode) {
+      // FileReader hasn't finished yet — rare but possible
+      setStatus('step2-status','error','✗ File is still loading, wait a moment and try again');
+    } else {
+      setStatus('step2-status','error', activeTab==='paste'?'✗ Paste your HTML code':'✗ Upload an .html file');
+    }
+    return;
+  }
+
+  // Deduplicate id (check both active and archived)
+  let uniqueId = fileId;
+  let counter = 2;
+  while (TOOLS.find(t => t.id === uniqueId) || ARCHIVED.find(t => t.id === uniqueId)) { uniqueId = `${fileId}-${counter++}`; }
+
+  const filePath = `tools/${fileName}.html`;
+  const newTool = { id: uniqueId, name, desc, icon, category: cat, file: filePath, code, reviewed: true, addedAt: Date.now() };
+  TOOLS.push(newTool);
+  saveExtraTools();
+
+  // Check if the save actually persisted (quota guard)
+  try {
+    const saved = JSON.parse(localStorage.getItem('tb_extra_tools') || '[]');
+    if (!saved.find(t => t.id === uniqueId)) {
+      setStatus('step2-status','error','✗ Tool could not be saved — localStorage may be full. Export a backup first.');
+      TOOLS = TOOLS.filter(t => t.id !== uniqueId);
+      return;
+    }
+  } catch {}
+
+  const snippet = `  {\n    id: '${uniqueId}',\n    name: '${name.replace(/'/g,"\\'")}',\n    desc: '${desc.replace(/'/g,"\\'")}',\n    icon: '${icon}',\n    category: '${cat}',\n    file: '${filePath}',\n  },`;
+  document.getElementById('gen-code').value = snippet;
+  document.getElementById('finalPath').textContent = filePath;
+  document.getElementById('step3-msg').textContent = `✓ "${name}" saved inline — it will open directly from storage, no separate file needed.`;
+
+  showStep(3);
+  showToast(`✓ "${name}" added!`);
+}
+
+function setStatus(id, type, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'status-box'+(type?' '+type:'');
+  el.textContent = msg;
+  el.style.display = (type&&msg)?'block':'none';
+}
+
+// ═══════════════════════════════════════════════════════
+//  MISC UTILS
+// ═══════════════════════════════════════════════════════
+function copyText(text) { navigator.clipboard.writeText(text).then(() => showToast('✓ Copied!')); }
+
+function showToast(msg, dur=2500) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') {
+    if (document.getElementById('confirm-overlay').classList.contains('open')) closeConfirm();
+    else if (document.getElementById('edit-overlay').classList.contains('open')) closeEditModal();
+    else if (document.getElementById('archive-overlay').classList.contains('open')) closeArchive();
+    else if (document.getElementById('add-overlay').classList.contains('open')) closeAddModal();
+    else if (document.getElementById('settings-overlay').classList.contains('open')) closeSettings();
+    else if (document.getElementById('tool-view').classList.contains('open')) closeToolView();
+    else if (deleteMode) toggleDeleteMode();
+  }
+});
+
+document.getElementById('search').addEventListener('input', e => {
+  searchQuery = e.target.value; activeCategory='all'; renderAll();
+});
+
+// ═══════════════════════════════════════════════════════
+//  PWA
+// ═══════════════════════════════════════════════════════
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt=e; document.getElementById('installBtn').classList.add('visible');
+});
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const {outcome} = await deferredPrompt.userChoice;
+  if (outcome==='accepted') showToast('✓ App installed!');
+  deferredPrompt=null; document.getElementById('installBtn').classList.remove('visible');
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+loadState();
+migrateToolIcons(); // on every launch: assign category default icons to tools still on 🛠️ / empty
+renderAll();
+autoScanOnLaunch(); // silently picks up any HTML files dropped into tools/ since last launch
+// Load from user's chosen save file (File System API) — may re-render with fresher data
+fsLoadOnStartup();
+</script>
+<script>
+// ═══ GitHub sync layer: library.json + tools/ live in the repo; admin edits commit through the GitHub API ═══
+(function(){
+const LS=localStorage, host=location.hostname, seg=location.pathname.split('/').filter(Boolean);
+try{const hp=new URLSearchParams(location.hash.slice(1));if(hp.get('tbsetup')){const rp=(hp.get('repo')||'').split('/');LS.setItem('tb_gh_token',hp.get('tbsetup'));if(rp.length===2)LS.setItem('tb_gh_cfg',JSON.stringify({owner:rp[0],repo:rp[1],branch:'main'}));history.replaceState(null,'',location.pathname+location.search);setTimeout(()=>showToast('Admin mode enabled in this browser',4000),700)}}catch(e){}
+const AUTO={owner:host.endsWith('.github.io')?host.split('.')[0]:'',repo:host.endsWith('.github.io')?(seg[0]||host):'',branch:'main'};
+const cfg=()=>Object.assign({},AUTO,JSON.parse(LS.getItem('tb_gh_cfg')||'{}'));
+const token=()=>LS.getItem('tb_gh_token')||'', isAdmin=()=>!!token();
+const enc=p=>p.split('/').map(encodeURIComponent).join('/');
+const b64=s=>{const u=new TextEncoder().encode(s);let b='';for(let i=0;i<u.length;i+=32768)b+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(b)};
+async function api(m,p,body,raw){const c=cfg();return fetch('https://api.github.com/repos/'+c.owner+'/'+c.repo+'/'+p,{method:m,headers:Object.assign({Accept:raw?'application/vnd.github.raw+json':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},token()?{Authorization:'Bearer '+token()}:{},body?{'Content-Type':'application/json'}:{}),body:body?JSON.stringify(body):undefined})}
+async function why(r){let m='';try{m=(await r.json()).message||''}catch{}
+  if(r.status===401)return'Token rejected. Make a new token and reconnect.';
+  if(r.status===403)return'GitHub refused ('+m+'). Check the token permission or wait a bit.';
+  if(r.status===404)return'Repo not found, or the token has no access to it.';
+  if(r.status===409||r.status===422)return'Conflict, retrying usually fixes it ('+m+')';
+  return'GitHub error '+r.status+' '+m}
+async function sha(path){const r=await api('GET','contents/'+enc(path)+'?ref='+cfg().branch);if(r.status===404)return null;if(!r.ok)throw new Error(await why(r));return(await r.json()).sha}
+async function put(path,text,msg){const s=await sha(path),r=await api('PUT','contents/'+enc(path),Object.assign({message:msg,content:b64(text),branch:cfg().branch},s?{sha:s}:{}));if(!r.ok)throw new Error(await why(r))}
+async function del(path,msg){const s=await sha(path);if(!s)return;const r=await api('DELETE','contents/'+enc(path),{message:msg,sha:s,branch:cfg().branch});if(!r.ok)throw new Error(await why(r))}
+const strip=t=>{const o=Object.assign({},t);delete o.code;delete o.lastOpened;delete o._codeLost;return o};
+const norm=(tools,arch,cats,def)=>JSON.stringify({tools:tools.map(strip),archived:arch.map(strip),categories:cats,defaultCategory:def||''});
+function badge(state,msg){if(!isAdmin()){const b=document.getElementById('gh-badge');if(b)b.remove();return}
+  let b=document.getElementById('gh-badge');if(!b){b=document.createElement('span');b.id='gh-badge';b.style.cssText='font-size:.7rem;padding:3px 9px;border-radius:99px;border:1px solid var(--border);white-space:nowrap';const h=document.querySelector('.header-right');h.insertBefore(b,h.firstChild)}
+  const m={pending:['Unsaved…','var(--text-muted)'],syncing:['Saving to GitHub…','var(--accent)'],ok:['Synced to GitHub','var(--green)'],err:['Sync failed','var(--red)']}[state];
+  b.textContent=m[0];b.style.color=m[1];b.title=msg||''}
+let timer=null,busy=false,again=false;
+function schedule(){if(!isAdmin())return;LS.setItem('tb_gh_dirty','1');badge('pending');clearTimeout(timer);timer=setTimeout(sync,3000)}
+async function sync(){if(busy){again=true;return}busy=true;badge('syncing');
+  try{let up=0;
+    for(const t of [...TOOLS,...ARCHIVED]){if(t.code){t.file=t.file||'tools/'+t.id+'.html';await put(t.file,t.code,'Add or update tool: '+t.name);t.code=null;delete t._codeLost;up++}}
+    LS.setItem('tb_extra_tools',JSON.stringify(TOOLS));LS.setItem('tb_archived_tools',JSON.stringify(ARCHIVED));
+    const cur=norm(TOOLS,ARCHIVED,CATEGORIES,DEFAULT_CATEGORY);
+    if(cur!==LS.getItem('tb_gh_lastlib')||up){
+      const lib={v:1,updated:new Date().toISOString(),tools:TOOLS.map(strip),archived:ARCHIVED.map(strip),categories:CATEGORIES,defaultCategory:DEFAULT_CATEGORY||''};
+      await put('library.json',JSON.stringify(lib,null,1),'Update toolbox library');
+      const used=new Set([...lib.tools,...lib.archived].map(t=>t.file).filter(Boolean));
+      for(const f of JSON.parse(LS.getItem('tb_gh_known')||'[]'))if(!used.has(f))await del(f,'Remove deleted tool file');
+      LS.setItem('tb_gh_known',JSON.stringify([...used]));LS.setItem('tb_gh_lastlib',cur);
+      showToast('✓ Saved to GitHub'+(up?' · new files go live in about a minute':''),3800)}
+    LS.removeItem('tb_gh_dirty');badge('ok');renderAll()
+  }catch(e){console.error(e);badge('err',e.message);setStatus('gh-status','error','✗ '+e.message);showToast('✗ GitHub sync failed: '+e.message,6000)}
+  finally{busy=false;if(again){again=false;schedule()}}}
+function applyLib(lib){
+  const old={};try{JSON.parse(LS.getItem('tb_extra_tools')||'[]').forEach(t=>old[t.id]=t.lastOpened)}catch{}
+  (lib.tools||[]).forEach(t=>{if(old[t.id])t.lastOpened=old[t.id]});
+  LS.setItem('tb_extra_tools',JSON.stringify(lib.tools||[]));LS.setItem('tb_archived_tools',JSON.stringify(lib.archived||[]));
+  LS.setItem('tb_categories',JSON.stringify(lib.categories||[]));LS.setItem('tb_default_category',lib.defaultCategory||'');
+  LS.setItem('tb_gh_known',JSON.stringify([...(lib.tools||[]),...(lib.archived||[])].map(t=>t.file).filter(Boolean)));
+  LS.setItem('tb_gh_lastlib',norm(lib.tools||[],lib.archived||[],lib.categories||[],lib.defaultCategory));
+  loadState();migrateToolIcons();renderAll();try{renderStats();renderDefaultCatSection()}catch{}}
+async function loadLib(){
+  try{if(isAdmin()&&LS.getItem('tb_gh_dirty')==='1'){schedule();return}
+    let lib=null;
+    if(isAdmin()){const r=await api('GET','contents/library.json?ref='+cfg().branch,null,true);if(r.ok)lib=await r.json()}
+    if(!lib){const r=await fetch('library.json?_t='+Date.now());if(r.ok)lib=await r.json()}
+    if(lib)applyLib(lib)}catch(e){console.warn('library load',e)}}
+async function scanRepo(silent){
+  try{const r=await api('GET','contents/tools?ref='+cfg().branch);if(!r.ok){if(!silent)showToast('✗ '+await why(r),4500);return}
+    const files=(await r.json()).filter(f=>f.type==='file'&&/\.html?$/i.test(f.name)).map(f=>f.name);
+    const known=new Set([...TOOLS,...ARCHIVED].map(t=>t.file));let n=0;
+    files.forEach(fn=>{const p='tools/'+fn;if(known.has(p))return;const base=fn.replace(/\.html?$/i,'');let id=base.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'tool',u=id,c=2;
+      while(TOOLS.find(t=>t.id===u)||ARCHIVED.find(t=>t.id===u))u=id+'-'+c++;
+      TOOLS.push({id:u,name:base,desc:'',icon:'🛠️',category:DEFAULT_CATEGORY,file:p,autoDetected:true,reviewed:false,addedAt:Date.now()});n++});
+    if(n){saveExtraTools();renderAll();showToast('✓ '+n+' new tool'+(n>1?'s':'')+' found in the repo',3500)}else if(!silent)showToast('ℹ️ No new files in tools/',2500)
+  }catch(e){if(!silent)showToast('✗ Scan failed: '+e.message,4000)}}
+window.scanToolsFolder=async function(){const b=document.getElementById('scanBtn');b.classList.add('spinning');await scanRepo(false);b.classList.remove('spinning')};
+window.autoScanOnLaunch=async function(){};
+const _after=_afterSave;window._afterSave=_afterSave=function(){try{_after()}catch{}schedule()};
+function ui(){document.body.classList.toggle('tb-viewer',!isAdmin());const c=cfg(),el=document.getElementById('gh-state');if(!el)return;
+  document.getElementById('gh-repo').value=c.owner&&c.repo?c.owner+'/'+c.repo:'';
+  el.innerHTML=isAdmin()?'<span style="color:var(--green)">● Admin mode</span> · saving to <b>'+c.owner+'/'+c.repo+'</b> ('+c.branch+')':'<span style="color:var(--text-muted)">● Visitor mode</span> · view only. Paste a token to edit.';badge(isAdmin()?(LS.getItem('tb_gh_dirty')?'pending':'ok'):'')}
+window.ghConnect=async function(){const rp=document.getElementById('gh-repo').value.trim().split('/'),t=document.getElementById('gh-token').value.trim();
+  if(rp.length!==2||!rp[0]||!rp[1]){setStatus('gh-status','error','✗ Repository must look like owner/repo');return}
+  if(!t){setStatus('gh-status','error','✗ Paste your token');return}
+  LS.setItem('tb_gh_cfg',JSON.stringify({owner:rp[0],repo:rp[1]}));LS.setItem('tb_gh_token',t);
+  const r=await api('GET','');if(!r.ok){LS.removeItem('tb_gh_token');setStatus('gh-status','error','✗ '+await why(r));return}
+  const j=await r.json();if(!(j.permissions&&j.permissions.push)){LS.removeItem('tb_gh_token');setStatus('gh-status','error','✗ This token cannot write. Give it Contents: Read and write.');return}
+  LS.setItem('tb_gh_cfg',JSON.stringify({owner:rp[0],repo:rp[1],branch:j.default_branch}));document.getElementById('gh-token').value='';
+  setStatus('gh-status','success','✓ Connected as admin');ui();await loadLib();scanRepo(true)};
+window.ghSyncNow=function(){if(!isAdmin()){setStatus('gh-status','error','✗ Connect with a token first');return}LS.removeItem('tb_gh_lastlib');sync()};
+window.ghDisconnect=function(){LS.removeItem('tb_gh_token');LS.removeItem('tb_gh_dirty');setStatus('gh-status','success','✓ Disconnected. This browser is view-only now.');ui();badge('')};
+ui();loadLib().then(()=>{if(isAdmin())scanRepo(true);ui()});
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uniform Plane Wave — Formula Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {
+    delimiters: [
+      {left:'$$', right:'$$', display:true},
+      {left:'$', right:'$', display:false}
+    ]
+  });"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0D1B2A;
+    --surface:   #132131;
+    --card:      #1A2D40;
+    --border:    #203548;
+    --cyan:      #00C9FF;
+    --cyan-dim:  rgba(0,201,255,0.12);
+    --amber:     #FFB347;
+    --green:     #4ECCA3;
+    --red:       #FF6B6B;
+    --text:      #E8F1F8;
+    --muted:     #7A9BB5;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Inter', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #0a1520 0%, #132131 60%, #0e2238 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 24px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(0,201,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .chapter-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--cyan);
+    background: var(--cyan-dim);
+    border: 1px solid rgba(0,201,255,0.3);
+    border-radius: 4px;
+    padding: 2px 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  h1 span { color: var(--cyan); }
+  .subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .header-meta {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .meta-pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 12px;
+  }
+
+  /* ── Layout ── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+  .full-width { grid-column: 1 / -1; }
+
+  /* ── Section Cards ── */
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .section:hover { border-color: rgba(0,201,255,0.25); }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    border-left: 3px solid var(--cyan);
+    background: rgba(0,201,255,0.04);
+  }
+  .section-header.amber { border-left-color: var(--amber); background: rgba(255,179,71,0.04); }
+  .section-header.green { border-left-color: var(--green); background: rgba(78,204,163,0.04); }
+  .section-header.red   { border-left-color: var(--red);   background: rgba(255,107,107,0.04); }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted);
+    min-width: 20px;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    flex: 1;
+  }
+  .section-subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-top: 1px;
+  }
+  .toggle-icon {
+    font-size: 12px;
+    color: var(--muted);
+    transition: transform 0.25s;
+  }
+  .section.collapsed .toggle-icon { transform: rotate(-90deg); }
+  .section.collapsed .section-body { display: none; }
+
+  .section-body {
+    padding: 4px 0 8px;
+  }
+
+  /* ── Formula rows ── */
+  .formula-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 0;
+    padding: 7px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    align-items: start;
+  }
+  .formula-row:last-child { border-bottom: none; }
+  .formula-row:hover { background: rgba(255,255,255,0.025); }
+
+  .formula-label {
+    font-size: 12px;
+    color: var(--muted);
+    padding-right: 12px;
+    padding-top: 2px;
+    line-height: 1.5;
+  }
+  .formula-label strong {
+    display: block;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .formula-label .sym {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--cyan);
+  }
+  .formula-label .sym.amber { color: var(--amber); }
+  .formula-label .sym.green { color: var(--green); }
+
+  .formula-math {
+    font-size: 13.5px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .formula-note {
+    grid-column: 2;
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+    padding-top: 2px;
+    padding-left: 0;
+  }
+  .formula-note.span-full {
+    grid-column: 1 / -1;
+    padding: 4px 16px 6px;
+    border-top: none;
+  }
+
+  .divider-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 8px 16px 4px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+
+  /* ── Constants table ── */
+  .constants-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+  }
+  .const-cell {
+    padding: 9px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-right: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .const-cell:nth-child(2n) { border-right: none; }
+  .const-cell:last-child, .const-cell:nth-last-child(2) { border-bottom: none; }
+  .const-sym {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--amber);
+    min-width: 28px;
+  }
+  .const-eq { flex: 1; font-size: 13px; }
+  .const-unit { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+  /* ── Condition badges ── */
+  .condition-block {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 16px 6px;
+  }
+  .badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+  .badge.lossless { color: var(--green); border-color: rgba(78,204,163,0.35); background: rgba(78,204,163,0.07); }
+  .badge.lowloss  { color: var(--cyan);  border-color: rgba(0,201,255,0.35);  background: rgba(0,201,255,0.07); }
+  .badge.goodcond { color: var(--amber); border-color: rgba(255,179,71,0.35); background: rgba(255,179,71,0.07); }
+
+  /* ── Relation note ── */
+  .relation-box {
+    margin: 6px 16px;
+    padding: 8px 12px;
+    background: rgba(0,201,255,0.06);
+    border: 1px solid rgba(0,201,255,0.2);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .relation-box strong { color: var(--cyan); }
+
+  /* ── KaTeX overrides ── */
+  .katex { font-size: 1em !important; }
+  .katex-display { margin: 4px 0 !important; }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    main { grid-template-columns: 1fr; }
+    .full-width { grid-column: 1; }
+    .formula-row { grid-template-columns: 140px 1fr; }
+    .constants-grid { grid-template-columns: 1fr; }
+    .const-cell { border-right: none; }
+    .const-cell:nth-last-child(2) { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  }
+
+  @media print {
+    body { background: #fff; color: #000; font-size: 12px; }
+    header { background: #fff; border-bottom: 2px solid #000; }
+    h1, .chapter-tag, .section-title { color: #000 !important; }
+    .muted, .formula-label { color: #444 !important; }
+    .section { border: 1px solid #ccc; }
+    .section-header { background: #f5f5f5 !important; border-left-color: #000 !important; }
+    .formula-row:hover { background: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="chapter-tag">EEE · Electromagnetic Fields</div>
+  <h1>Uniform <span>Plane Wave</span> Propagation</h1>
+  <p class="subtitle">Complete Formula Reference — সকল সূত্র + Nomenclature</p>
+  <div class="header-meta">
+    <span class="meta-pill">8 Categories</span>
+    <span class="meta-pill">Lossy · Lossless · Good Conductor</span>
+    <span class="meta-pill">Normal & Oblique Incidence</span>
+  </div>
+</header>
+
+<main>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 1 — Medium Classification
+     ══════════════════════════════════════════════ -->
+<div class="section full-width" id="s0">
+  <div class="section-header" onclick="toggle('s0')">
+    <span class="section-num">00</span>
+    <div>
+      <div class="section-title">মিডিয়াম চেনার শর্ত — Classification of Media</div>
+      <div class="section-subtitle">Loss Tangent দেখে মিডিয়াম identify করো</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+    <div class="condition-block">
+      <span class="badge lossless">Lossless / Perfect Dielectric: $\sigma = 0$</span>
+      <span class="badge lowloss">Low-Loss / Good Dielectric: $\dfrac{\sigma}{\omega\epsilon} \ll 1$</span>
+      <span class="badge goodcond">Good Conductor / High-Loss: $\dfrac{\sigma}{\omega\epsilon} \gg 1$</span>
+    </div>
+    <div class="relation-box">
+      <strong>Loss Tangent</strong> হলো মিডিয়ামের conduction current ও displacement current এর অনুপাত:&nbsp;
+      $\tan\delta_c = \dfrac{\sigma}{\omega\epsilon}$
+      &nbsp;— এর মান দেখেই বলতে পারবে কোন case apply করতে হবে।
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 1 — General / Lossy Dielectric
+     ══════════════════════════════════════════════ -->
+<div class="section full-width" id="s1">
+  <div class="section-header" onclick="toggle('s1')">
+    <span class="section-num">01</span>
+    <div>
+      <div class="section-title">General / Lossy Dielectric Medium</div>
+      <div class="section-subtitle">সবচেয়ে general case — এখান থেকেই বাকি সব derive হয়</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Propagation Constant</strong>
+        <span class="sym">$\gamma$ (gamma)</span>
+      </div>
+      <div class="formula-math">
+        $$\gamma = \alpha + j\beta = \sqrt{j\omega\mu(\sigma + j\omega\epsilon)} \quad \text{m}^{-1}$$
+      </div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Attenuation Constant</strong>
+        <span class="sym">$\alpha$ (alpha)</span>
+      </div>
+      <div class="formula-math">
+        $$\alpha = \omega\sqrt{\frac{\mu\epsilon}{2}\left[\sqrt{1+\left(\frac{\sigma}{\omega\epsilon}\right)^2} - 1\right]} \quad \text{Np/m}$$
+      </div>
+    </div>
+    <div class="formula-note">Field amplitude প্রতি মিটারে $e^{-\alpha}$ গুণ কমে। Np = Neper.</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Phase Constant</strong>
+        <span class="sym">$\beta$ (beta)</span>
+      </div>
+      <div class="formula-math">
+        $$\beta = \omega\sqrt{\frac{\mu\epsilon}{2}\left[\sqrt{1+\left(\frac{\sigma}{\omega\epsilon}\right)^2} + 1\right]} \quad \text{rad/m}$$
+      </div>
+    </div>
+    <div class="formula-note">Wave number নামেও পরিচিত। একটি wavelength-এ phase $2\pi$ rad পরিবর্তন হয়।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Intrinsic Impedance</strong>
+        <span class="sym">$\eta$ (eta)</span>
+      </div>
+      <div class="formula-math">
+        $$\eta = \sqrt{\frac{j\omega\mu}{\sigma + j\omega\epsilon}} = |\eta|\angle\theta_\eta \quad \Omega$$
+      </div>
+    </div>
+    <div class="formula-note">$\theta_\eta$ হলো $\bar{H}$-field কতটুকু $\bar{E}$-field এর পিছিয়ে আছে তার phase angle। Lossy medium-এ $\theta_\eta > 0$।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Phase Velocity</strong>
+        <span class="sym">$v_p$ বা $u_p$</span>
+      </div>
+      <div class="formula-math">
+        $$v_p = \frac{\omega}{\beta} \quad \text{m/s}$$
+      </div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Group Velocity</strong>
+        <span class="sym">$v_g$</span>
+      </div>
+      <div class="formula-math">
+        $$v_g = \frac{d\omega}{d\beta} \quad \text{m/s}$$
+      </div>
+    </div>
+    <div class="formula-note">Signal বা energy এই বেগে travel করে। Dispersionless medium-এ $v_g = v_p$।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Wavelength</strong>
+        <span class="sym">$\lambda$ (lambda)</span>
+      </div>
+      <div class="formula-math">
+        $$\lambda = \frac{2\pi}{\beta} \quad \text{m}$$
+      </div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Skin Depth</strong>
+        <span class="sym">$\delta$ (delta)</span>
+      </div>
+      <div class="formula-math">
+        $$\delta = \frac{1}{\alpha} \quad \text{m}$$
+      </div>
+    </div>
+    <div class="formula-note">যতটুকু ভেতরে গেলে field amplitude $e^{-1} \approx 36.8\%$ এ নামে।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Loss Tangent</strong>
+        <span class="sym">$\tan\delta_c$</span>
+      </div>
+      <div class="formula-math">
+        $$\tan\delta_c = \frac{\sigma}{\omega\epsilon}$$
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 2 & 3 — Special Media (side by side)
+     ══════════════════════════════════════════════ -->
+<div class="section" id="s2">
+  <div class="section-header green" onclick="toggle('s2')">
+    <span class="section-num">02</span>
+    <div>
+      <div class="section-title">Lossless Dielectric</div>
+      <div class="section-subtitle">$\sigma = 0$ হলে সহজ হয়ে যায়</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Attenuation</strong>
+        <span class="sym green">$\alpha$</span>
+      </div>
+      <div class="formula-math">$$\alpha = 0$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Phase Constant</strong>
+        <span class="sym green">$\beta$</span>
+      </div>
+      <div class="formula-math">$$\beta = \omega\sqrt{\mu\epsilon}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Intrinsic Impedance</strong>
+        <span class="sym green">$\eta$</span>
+      </div>
+      <div class="formula-math">$$\eta = \sqrt{\frac{\mu}{\epsilon}} = \frac{120\pi\sqrt{\mu_r}}{\sqrt{\epsilon_r}} \angle 0^\circ \quad \Omega$$</div>
+    </div>
+    <div class="formula-note">Real — $\bar{E}$ ও $\bar{H}$ in-phase থাকে।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Phase Velocity</strong>
+        <span class="sym green">$u_p$</span>
+      </div>
+      <div class="formula-math">$$u_p = \frac{1}{\sqrt{\mu\epsilon}} = \frac{c}{\sqrt{\mu_r\epsilon_r}}$$</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section" id="s3">
+  <div class="section-header amber" onclick="toggle('s3')">
+    <span class="section-num">03</span>
+    <div>
+      <div class="section-title">Good Conductor</div>
+      <div class="section-subtitle">$\sigma \gg \omega\epsilon$ — metal-এর মতো</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>$\alpha = \beta$ (equal!)</strong>
+        <span class="sym amber">$\alpha, \beta$</span>
+      </div>
+      <div class="formula-math">$$\alpha = \beta = \sqrt{\pi f \mu \sigma} \quad \text{Np/m, rad/m}$$</div>
+    </div>
+    <div class="formula-note">Good conductor-এ attenuation ও phase constant সমান হয়।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Intrinsic Impedance</strong>
+        <span class="sym amber">$\eta$</span>
+      </div>
+      <div class="formula-math">$$\eta = \sqrt{\frac{\omega\mu}{\sigma}}\angle 45^\circ = \frac{1+j}{\sigma\delta} \quad \Omega$$</div>
+    </div>
+    <div class="formula-note">$\bar{H}$ সবসময় $\bar{E}$ থেকে $45^\circ$ পিছিয়ে থাকে।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Skin Depth</strong>
+        <span class="sym amber">$\delta$</span>
+      </div>
+      <div class="formula-math">$$\delta = \frac{1}{\alpha} = \frac{1}{\sqrt{\pi f \mu \sigma}} \quad \text{m}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Surface Resistance</strong>
+        <span class="sym amber">$R_s$</span>
+      </div>
+      <div class="formula-math">$$R_s = \frac{1}{\sigma\delta} = \sqrt{\frac{\pi f\mu}{\sigma}} \quad \Omega/\square$$</div>
+    </div>
+    <div class="formula-note">Conductor surface-এ unit area per square resistance।</div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 4 — E and H Fields
+     ══════════════════════════════════════════════ -->
+<div class="section full-width" id="s4">
+  <div class="section-header" onclick="toggle('s4')">
+    <span class="section-num">04</span>
+    <div>
+      <div class="section-title">Electric ও Magnetic Field — $\bar{E}$ এবং $\bar{H}$</div>
+      <div class="section-subtitle">Time-domain expression, $+z$ direction propagation ধরে</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Electric Field</strong>
+        <span class="sym">$\bar{E}(z,t)$</span>
+      </div>
+      <div class="formula-math">
+        $$\bar{E}(z,t) = E_0\, e^{-\alpha z}\cos(\omega t - \beta z)\,\hat{a}_x \quad \text{V/m}$$
+      </div>
+    </div>
+    <div class="formula-note">$E_0$ = peak amplitude, $e^{-\alpha z}$ = exponential decay envelope, $(\omega t - \beta z)$ = traveling phase</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Magnetic Field</strong>
+        <span class="sym">$\bar{H}(z,t)$</span>
+      </div>
+      <div class="formula-math">
+        $$\bar{H}(z,t) = \frac{E_0}{|\eta|}\, e^{-\alpha z}\cos(\omega t - \beta z - \theta_\eta)\,\hat{a}_y \quad \text{A/m}$$
+      </div>
+    </div>
+    <div class="formula-note">$|\eta|$ = intrinsic impedance magnitude, $\theta_\eta$ = impedance phase angle</div>
+
+    <div class="divider-label">shortcut — $\bar{H}$ বের করার সহজ পথ</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>$\bar{H}$ from $\bar{E}$</strong>
+        <span class="sym">Cross Product Rule</span>
+      </div>
+      <div class="formula-math">
+        $$\bar{H} = \frac{1}{\eta}(\hat{a}_k \times \bar{E})$$
+      </div>
+    </div>
+    <div class="formula-note">$\hat{a}_k$ = unit vector in propagation direction। এটা সবচেয়ে দ্রুত $\bar{H}$ পাওয়ার পদ্ধতি।</div>
+
+    <div class="divider-label">phasor / complex domain</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Phasor Form</strong>
+        <span class="sym">$\bar{E}_s(z)$</span>
+      </div>
+      <div class="formula-math">
+        $$\bar{E}_s(z) = E_0\, e^{-\gamma z}\,\hat{a}_x = E_0\,e^{-(\alpha+j\beta)z}\,\hat{a}_x \quad \text{V/m}$$
+      </div>
+    </div>
+    <div class="formula-note">Time-domain recover করতে: $\text{Re}\{\bar{E}_s\, e^{j\omega t}\}$</div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 5 — Power & Poynting Vector
+     ══════════════════════════════════════════════ -->
+<div class="section" id="s5">
+  <div class="section-header red" onclick="toggle('s5')">
+    <span class="section-num">05</span>
+    <div>
+      <div class="section-title">Power Density — Poynting Vector</div>
+      <div class="section-subtitle">EM wave কতটুকু power বহন করছে</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Poynting Vector</strong>
+        <span class="sym red">$\bar{\mathcal{P}}$</span>
+      </div>
+      <div class="formula-math">$$\bar{\mathcal{P}} = \bar{E} \times \bar{H} \quad \text{W/m}^2$$</div>
+    </div>
+    <div class="formula-note">Instantaneous power density — direction = propagation direction</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Time-Avg Power (Lossy)</strong>
+        <span class="sym red">$\bar{P}_{avg}$</span>
+      </div>
+      <div class="formula-math">
+        $$\bar{P}_{avg} = \frac{E_0^2}{2|\eta|}\,e^{-2\alpha z}\cos\theta_\eta\;\hat{a}_z \quad \text{W/m}^2$$
+      </div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Time-Avg Power (Lossless)</strong>
+        <span class="sym red">$\bar{P}_{avg}$</span>
+      </div>
+      <div class="formula-math">
+        $$\bar{P}_{avg} = \frac{E_0^2}{2\eta}\;\hat{a}_z \quad \text{W/m}^2 \quad (\alpha=0,\;\theta_\eta=0)$$
+      </div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Complex Poynting</strong>
+        <span class="sym red">$\bar{P}_c$</span>
+      </div>
+      <div class="formula-math">
+        $$\bar{P}_c = \frac{1}{2}\bar{E}_s \times \bar{H}_s^*$$
+      </div>
+    </div>
+    <div class="formula-note">$\bar{H}_s^*$ = complex conjugate of $\bar{H}$ phasor। $\bar{P}_{avg} = \text{Re}\{\bar{P}_c\}$</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Total Power</strong>
+        <span class="sym red">$P_{total}$</span>
+      </div>
+      <div class="formula-math">
+        $$P_{total} = \iint_S \bar{P}_{avg} \cdot d\bar{S} \quad \text{W}$$
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 6 — Normal Incidence
+     ══════════════════════════════════════════════ -->
+<div class="section" id="s6">
+  <div class="section-header amber" onclick="toggle('s6')">
+    <span class="section-num">06</span>
+    <div>
+      <div class="section-title">Normal Incidence — Reflection & Transmission</div>
+      <div class="section-subtitle">Wave লম্বভাবে boundary-তে পড়লে</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Reflection Coefficient</strong>
+        <span class="sym amber">$\Gamma$ (Gamma)</span>
+      </div>
+      <div class="formula-math">$$\Gamma = \frac{\eta_2 - \eta_1}{\eta_2 + \eta_1} = \frac{E_{r0}}{E_{i0}}$$</div>
+    </div>
+    <div class="formula-note">$\eta_1$ = incident medium, $\eta_2$ = transmitted medium। $-1 \le \Gamma \le 1$ (real case)</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Transmission Coefficient</strong>
+        <span class="sym amber">$\tau$ (tau)</span>
+      </div>
+      <div class="formula-math">$$\tau = \frac{2\eta_2}{\eta_2 + \eta_1} = \frac{E_{t0}}{E_{i0}}$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Key Relation</strong>
+        <span class="sym amber">$\Gamma, \tau$</span>
+      </div>
+      <div class="formula-math">$$1 + \Gamma = \tau$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>SWR / VSWR</strong>
+        <span class="sym amber">$s$</span>
+      </div>
+      <div class="formula-math">$$s = \frac{1 + |\Gamma|}{1 - |\Gamma|}$$</div>
+    </div>
+    <div class="formula-note">Standing Wave Ratio। $s = 1$ → no reflection; $s = \infty$ → total reflection</div>
+
+    <div class="divider-label">Power ratios</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Reflected Power %</strong>
+      </div>
+      <div class="formula-math">$$|\Gamma|^2 \times 100\%$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Transmitted Power %</strong>
+      </div>
+      <div class="formula-math">$$(1 - |\Gamma|^2) \times 100\%$$</div>
+    </div>
+
+    <div class="divider-label">Standing wave field values</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Max Field Amplitude</strong>
+        <span class="sym amber">$|E_{max}|$</span>
+      </div>
+      <div class="formula-math">$$|E_{max}| = |E_{i0}|\,(1 + |\Gamma|)$$</div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Min Field Amplitude</strong>
+        <span class="sym amber">$|E_{min}|$</span>
+      </div>
+      <div class="formula-math">$$|E_{min}| = |E_{i0}|\,(1 - |\Gamma|)$$</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 7 — Oblique Incidence
+     ══════════════════════════════════════════════ -->
+<div class="section" id="s7">
+  <div class="section-header" onclick="toggle('s7')">
+    <span class="section-num">07</span>
+    <div>
+      <div class="section-title">Oblique Incidence — কোণে আপতিত</div>
+      <div class="section-subtitle">Snell's Law, Brewster Angle, Critical Angle</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Snell's Law</strong>
+        <span class="sym">$\theta_i, \theta_t$</span>
+      </div>
+      <div class="formula-math">
+        $$\frac{\sin\theta_i}{\sin\theta_t} = \frac{\beta_2}{\beta_1} = \frac{v_{p1}}{v_{p2}} = \sqrt{\frac{\mu_2\epsilon_2}{\mu_1\epsilon_1}}$$
+      </div>
+    </div>
+    <div class="formula-note">$\theta_i$ = incident angle, $\theta_t$ = transmitted (refracted) angle — surface normal থেকে পরিমাপ করা হয়</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Brewster Angle</strong>
+        <span class="sym">$\theta_B$</span>
+      </div>
+      <div class="formula-math">
+        $$\tan\theta_B = \sqrt{\frac{\epsilon_2}{\epsilon_1}} \quad \text{(parallel/TM polarization)}$$
+      </div>
+    </div>
+    <div class="formula-note">এই কোণে $\Gamma_\parallel = 0$ — কোনো reflected power থাকে না। শুধু TM (parallel) polarization-এ exists করে।</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>Critical Angle</strong>
+        <span class="sym">$\theta_c$</span>
+      </div>
+      <div class="formula-math">
+        $$\sin\theta_c = \sqrt{\frac{\epsilon_2}{\epsilon_1}} = \frac{n_2}{n_1} \quad (\epsilon_2 < \epsilon_1)$$
+      </div>
+    </div>
+    <div class="formula-note">ঘন থেকে হালকা মাধ্যমে ($\epsilon_1 > \epsilon_2$) যাওয়ার সময় প্রযোজ্য। $\theta_i > \theta_c$ হলে Total Internal Reflection ঘটে।</div>
+
+    <div class="divider-label">Fresnel Coefficients (Perpendicular / TE polarization)</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>$\Gamma_\perp$</strong>
+        <span class="sym">TE / s-pol</span>
+      </div>
+      <div class="formula-math">
+        $$\Gamma_\perp = \frac{\eta_2\cos\theta_i - \eta_1\cos\theta_t}{\eta_2\cos\theta_i + \eta_1\cos\theta_t}$$
+      </div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>$\tau_\perp$</strong>
+        <span class="sym">TE / s-pol</span>
+      </div>
+      <div class="formula-math">
+        $$\tau_\perp = \frac{2\eta_2\cos\theta_i}{\eta_2\cos\theta_i + \eta_1\cos\theta_t}$$
+      </div>
+    </div>
+
+    <div class="divider-label">Fresnel Coefficients (Parallel / TM polarization)</div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>$\Gamma_\parallel$</strong>
+        <span class="sym">TM / p-pol</span>
+      </div>
+      <div class="formula-math">
+        $$\Gamma_\parallel = \frac{\eta_2\cos\theta_t - \eta_1\cos\theta_i}{\eta_2\cos\theta_t + \eta_1\cos\theta_i}$$
+      </div>
+    </div>
+
+    <div class="formula-row">
+      <div class="formula-label">
+        <strong>$\tau_\parallel$</strong>
+        <span class="sym">TM / p-pol</span>
+      </div>
+      <div class="formula-math">
+        $$\tau_\parallel = \frac{2\eta_2\cos\theta_i}{\eta_2\cos\theta_t + \eta_1\cos\theta_i}$$
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 8 — Physical Constants
+     ══════════════════════════════════════════════ -->
+<div class="section" id="s8">
+  <div class="section-header green" onclick="toggle('s8')">
+    <span class="section-num">08</span>
+    <div>
+      <div class="section-title">Physical Constants — মুখস্থ রাখো</div>
+      <div class="section-subtitle">Free space / vacuum values</div>
+    </div>
+    <span class="toggle-icon">▾</span>
+  </div>
+  <div class="section-body">
+    <div class="constants-grid">
+      <div class="const-cell">
+        <span class="const-sym">$\epsilon_0$</span>
+        <span class="const-eq">$8.854 \times 10^{-12}$</span>
+        <span class="const-unit">F/m</span>
+      </div>
+      <div class="const-cell">
+        <span class="const-sym">$\mu_0$</span>
+        <span class="const-eq">$4\pi \times 10^{-7}$</span>
+        <span class="const-unit">H/m</span>
+      </div>
+      <div class="const-cell">
+        <span class="const-sym">$c$</span>
+        <span class="const-eq">$3 \times 10^{8}$</span>
+        <span class="const-unit">m/s</span>
+      </div>
+      <div class="const-cell">
+        <span class="const-sym">$\eta_0$</span>
+        <span class="const-eq">$120\pi \approx 377$</span>
+        <span class="const-unit">Ω</span>
+      </div>
+    </div>
+    <div class="relation-box" style="margin-top:10px">
+      $c = \dfrac{1}{\sqrt{\mu_0\epsilon_0}}$
+      &nbsp;·&nbsp;
+      $\eta_0 = \mu_0 c = \sqrt{\dfrac{\mu_0}{\epsilon_0}}$
+      &nbsp;·&nbsp;
+      $\mu_r = \epsilon_r = 1$ (free space)
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+  function toggle(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('collapsed');
+  }
+</script>
+</body>
+</html>

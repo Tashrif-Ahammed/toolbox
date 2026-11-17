@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>চলন ও অঙ্গচালনা — MCQ অনুশীলনী</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF7F1;
+    --paper-edge:#F2ECE2;
+    --ink:#2B2A28;
+    --ink-soft:#5C5650;
+    --rule:#D9D0C2;
+    --accent:#8A3324;
+    --accent-soft:#C9A47A;
+    --badge-bg:#2F4F44;
+    --badge-fg:#F6F1E6;
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{margin:0;padding:0;}
+
+  body{
+    background:linear-gradient(180deg,#EFE8DA 0%, #E7DFCF 100%);
+    font-family:'Hind Siliguri', sans-serif;
+    color:var(--ink);
+    padding:28px 14px 60px;
+  }
+
+  .sheet{
+    max-width:880px;
+    margin:0 auto;
+    background:var(--paper);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    box-shadow:0 18px 40px -22px rgba(40,30,20,0.45), 0 2px 6px rgba(40,30,20,0.06);
+    overflow:hidden;
+  }
+
+  /* ===== Header ===== */
+  header{
+    position:relative;
+    padding:34px 40px 26px;
+    border-bottom:2px solid var(--accent);
+    background:
+      radial-gradient(120% 90% at 100% 0%, rgba(138,51,36,0.07), transparent 60%),
+      var(--paper);
+  }
+
+  .eyebrow{
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    font-weight:600;
+    margin:0 0 6px;
+  }
+
+  h1{
+    font-family:'Tiro Bangla', serif;
+    font-size:30px;
+    line-height:1.35;
+    margin:0 0 6px;
+    color:var(--ink);
+  }
+
+  .sub{
+    font-size:15px;
+    color:var(--ink-soft);
+    margin:0;
+  }
+
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 28px;
+    margin-top:18px;
+    font-size:13.5px;
+    color:var(--ink-soft);
+  }
+
+  .meta-row span b{
+    color:var(--ink);
+    font-weight:600;
+  }
+
+  .bone-mark{
+    position:absolute;
+    top:28px;
+    right:36px;
+    opacity:.9;
+  }
+
+  /* ===== Question grid ===== */
+  .questions{
+    padding:22px 40px 36px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:22px;
+  }
+
+  @media (min-width:760px){
+    .questions{grid-template-columns:1fr 1fr; gap:22px 28px;}
+  }
+
+  .q{
+    border:1px solid var(--rule);
+    border-radius:8px;
+    padding:16px 18px 18px;
+    background:#fff;
+    position:relative;
+    transition:border-color .15s ease;
+  }
+
+  .q:hover{border-color:var(--accent-soft);}
+
+  .qhead{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    margin-bottom:12px;
+  }
+
+  .qnum{
+    flex:0 0 auto;
+    min-width:30px;
+    height:30px;
+    border-radius:50%;
+    background:var(--badge-bg);
+    color:var(--badge-fg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    font-size:14px;
+    font-family:'Tiro Bangla', serif;
+  }
+
+  .qtext{
+    margin:0;
+    font-size:15.5px;
+    line-height:1.55;
+    font-weight:500;
+    padding-top:3px;
+  }
+
+  .options{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px 10px;
+    padding-left:40px;
+  }
+
+  .opt{
+    display:flex;
+    gap:8px;
+    align-items:flex-start;
+    font-size:14.5px;
+    line-height:1.5;
+    color:var(--ink);
+  }
+
+  .opt .lab{
+    flex:0 0 auto;
+    color:var(--accent);
+    font-weight:700;
+    font-family:'Tiro Bangla', serif;
+  }
+
+  /* ===== Footer ===== */
+  footer{
+    border-top:1px solid var(--rule);
+    padding:18px 40px 28px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+
+  @media print{
+    body{background:#fff;padding:0;}
+    .sheet{box-shadow:none;border:none;border-radius:0;max-width:100%;}
+    .questions{grid-template-columns:1fr 1fr;}
+    .q:hover{border-color:var(--rule);}
+  }
+
+  @media (max-width:520px){
+    header{padding:26px 20px 20px;}
+    .questions{padding:18px 20px 28px;}
+    .options{grid-template-columns:1fr; padding-left:36px;}
+    h1{font-size:24px;}
+    .bone-mark{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header>
+    <svg class="bone-mark" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 36c-3.3 0-6-2.7-6-6s2.7-6 6-6c1.3 0 2.5.4 3.5 1.1l16-16C32.6 8.1 32.2 6.9 32.2 5.6c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6c-1.3 0-2.5-.4-3.5-1.1l-16 16c.9 1 1.3 2.2 1.3 3.5s-.4 2.5-1.1 3.5l16 16c1-.7 2.2-1.1 3.5-1.1 3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6c0-1.3.4-2.5 1.1-3.5l-16-16c-1 .7-2.2 1.1-3.5 1.1z" stroke="#8A3324" stroke-width="1.6" stroke-linejoin="round"/>
+    </svg>
+    <p class="eyebrow">HSC জীববিজ্ঞান দ্বিতীয় পত্র · অধ্যায় ৭</p>
+    <h1>চলন ও অঙ্গচালনা — অস্থি, সন্ধি ও পেশিতন্ত্র</h1>
+    <p class="sub">মেডিকেল ভর্তি পরীক্ষা মানের MCQ অনুশীলনী শীট</p>
+    <div class="meta-row">
+      <span>মোট প্রশ্ন: <b>৫০</b></span>
+      <span>বিভাগ: <b>অস্থিতন্ত্র · সন্ধি · পেশিতন্ত্র</b></span>
+      <span>মান: <b>প্রতিটি ১</b></span>
+    </div>
+  </header>
+
+  <div class="questions">
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">১</span><p class="qtext">মানবদেহে মোট অস্থির সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>২০০</div>
+        <div class="opt"><span class="lab">খ.</span>২০৬</div>
+        <div class="opt"><span class="lab">গ.</span>২১২</div>
+        <div class="opt"><span class="lab">ঘ.</span>২২০</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">২</span><p class="qtext">অক্ষীয় কঙ্কালে (Axial skeleton) অস্থির সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>৬০</div>
+        <div class="opt"><span class="lab">খ.</span>৭০</div>
+        <div class="opt"><span class="lab">গ.</span>৮০</div>
+        <div class="opt"><span class="lab">ঘ.</span>১২৬</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৩</span><p class="qtext">উপাংশীয় কঙ্কালে (Appendicular skeleton) অস্থির সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>৮০</div>
+        <div class="opt"><span class="lab">খ.</span>১০৬</div>
+        <div class="opt"><span class="lab">গ.</span>১২০</div>
+        <div class="opt"><span class="lab">ঘ.</span>১২৬</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৪</span><p class="qtext">করোটিতে (Skull) মোট অস্থির সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>৮</div>
+        <div class="opt"><span class="lab">খ.</span>১৪</div>
+        <div class="opt"><span class="lab">গ.</span>২০</div>
+        <div class="opt"><span class="lab">ঘ.</span>২২</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৫</span><p class="qtext">ক্রেনিয়াল অস্থির (Cranial bones) সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>৬</div>
+        <div class="opt"><span class="lab">খ.</span>৮</div>
+        <div class="opt"><span class="lab">গ.</span>১০</div>
+        <div class="opt"><span class="lab">ঘ.</span>১৪</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৬</span><p class="qtext">ফেসিয়াল অস্থির (Facial bones) সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>৮</div>
+        <div class="opt"><span class="lab">খ.</span>১২</div>
+        <div class="opt"><span class="lab">গ.</span>১৪</div>
+        <div class="opt"><span class="lab">ঘ.</span>১৬</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৭</span><p class="qtext">মানবদেহের মেরুদণ্ডে (Vertebral column) মোট কশেরুকার সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>২৬</div>
+        <div class="opt"><span class="lab">খ.</span>৩০</div>
+        <div class="opt"><span class="lab">গ.</span>৩৩</div>
+        <div class="opt"><span class="lab">ঘ.</span>৩৪</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৮</span><p class="qtext">সারভাইক্যাল কশেরুকার (Cervical vertebrae) সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>৫</div>
+        <div class="opt"><span class="lab">খ.</span>৭</div>
+        <div class="opt"><span class="lab">গ.</span>১২</div>
+        <div class="opt"><span class="lab">ঘ.</span>৪</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৯</span><p class="qtext">প্রথম সারভাইক্যাল কশেরুকাকে কী বলা হয়?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>অ্যাক্সিস</div>
+        <div class="opt"><span class="lab">খ.</span>অ্যাটলাস</div>
+        <div class="opt"><span class="lab">গ.</span>স্যাক্রাম</div>
+        <div class="opt"><span class="lab">ঘ.</span>কক্সিক্স</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">১০</span><p class="qtext">থোরাসিক কশেরুকার (Thoracic vertebrae) সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>৭</div>
+        <div class="opt"><span class="lab">খ.</span>৫</div>
+        <div class="opt"><span class="lab">গ.</span>১২</div>
+        <div class="opt"><span class="lab">ঘ.</span>৪</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">১১</span><p class="qtext">লাম্বার কশেরুকার (Lumbar vertebrae) সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>৪</div>
+        <div class="opt"><span class="lab">খ.</span>৫</div>
+        <div class="opt"><span class="lab">গ.</span>৭</div>
+        <div class="opt"><span class="lab">ঘ.</span>৬</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">১২</span><p class="qtext">মানবদেহে পাঁজরের (Ribs) জোড়া সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>১০</div>
+        <div class="opt"><span class="lab">খ.</span>১১</div>
+        <div class="opt"><span class="lab">গ.</span>১২</div>
+        <div class="opt"><span class="lab">ঘ.</span>১৩</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">১৩</span><p class="qtext">সত্যিকার পাঁজরের (True ribs) জোড়া সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>৫</div>
+        <div class="opt"><span class="lab">খ.</span>৬</div>
+        <div class="opt"><span class="lab">গ.</span>৭</div>
+        <div class="opt"><span class="lab">ঘ.</span>৮</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">১৪</span><p class="qtext">ভাসমান পাঁজরের (Floating ribs) জোড়া সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>১</div>
+        <div class="opt"><span class="lab">খ.</span>২</div>
+        <div class="opt"><span class="lab">গ.</span>৩</div>
+        <div class="opt"><span class="lab">ঘ.</span>৫</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">১৫</span><p class="qtext">স্টার্নামের কোন অংশ সবচেয়ে নিচের দিকে অবস্থিত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>মেনুব্রিয়াম</div>
+        <div class="opt"><span class="lab">খ.</span>বডি</div>
+        <div class="opt"><span class="lab">গ.</span>জাইফয়েড প্রসেস</div>
+        <div class="opt"><span class="lab">ঘ.</span>ক্ল্যাভিকল</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">১৬</span><p class="qtext">পেক্টোরাল গার্ডল (Pectoral girdle) কোন অস্থি দ্বারা গঠিত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>ফিমার ও টিবিয়া</div>
+        <div class="opt"><span class="lab">খ.</span>ক্ল্যাভিকল ও স্ক্যাপুলা</div>
+        <div class="opt"><span class="lab">গ.</span>ইলিয়াম ও ইসকিয়াম</div>
+        <div class="opt"><span class="lab">ঘ.</span>হিউমেরাস ও রেডিয়াস</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">১৭</span><p class="qtext">কলারবোন (Collarbone) নামে পরিচিত অস্থিটি হলো—</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>স্ক্যাপুলা</div>
+        <div class="opt"><span class="lab">খ.</span>ক্ল্যাভিকল</div>
+        <div class="opt"><span class="lab">গ.</span>স্টার্নাম</div>
+        <div class="opt"><span class="lab">ঘ.</span>হিউমেরাস</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">১৮</span><p class="qtext">পেলভিক গার্ডল (Pelvic girdle) কতটি হিপ বোন দ্বারা গঠিত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>১</div>
+        <div class="opt"><span class="lab">খ.</span>২</div>
+        <div class="opt"><span class="lab">গ.</span>৩</div>
+        <div class="opt"><span class="lab">ঘ.</span>৪</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">১৯</span><p class="qtext">হিপ বোন কোন তিনটি অস্থির সংযুক্তিতে গঠিত হয়?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>ইলিয়াম, ইসকিয়াম, পিউবিস</div>
+        <div class="opt"><span class="lab">খ.</span>ফিমার, টিবিয়া, ফিবুলা</div>
+        <div class="opt"><span class="lab">গ.</span>রেডিয়াস, আলনা, হিউমেরাস</div>
+        <div class="opt"><span class="lab">ঘ.</span>কার্পাল, মেটাকার্পাল, ফ্যালাঞ্জেস</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">২০</span><p class="qtext">মানবদেহের দীর্ঘতম অস্থি কোনটি?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>হিউমেরাস</div>
+        <div class="opt"><span class="lab">খ.</span>টিবিয়া</div>
+        <div class="opt"><span class="lab">গ.</span>ফিমার</div>
+        <div class="opt"><span class="lab">ঘ.</span>রেডিয়াস</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">২১</span><p class="qtext">বাহুর ঊর্ধ্বাংশের অস্থিকে কী বলা হয়?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>রেডিয়াস</div>
+        <div class="opt"><span class="lab">খ.</span>আলনা</div>
+        <div class="opt"><span class="lab">গ.</span>হিউমেরাস</div>
+        <div class="opt"><span class="lab">ঘ.</span>ফিমার</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">২২</span><p class="qtext">বাহুর নিম্নাংশে (Forearm) কতটি অস্থি থাকে?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>১</div>
+        <div class="opt"><span class="lab">খ.</span>২</div>
+        <div class="opt"><span class="lab">গ.</span>৩</div>
+        <div class="opt"><span class="lab">ঘ.</span>৪</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">২৩</span><p class="qtext">প্রতিটি হাতের কব্জিতে কার্পাল অস্থির সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>৫</div>
+        <div class="opt"><span class="lab">খ.</span>৭</div>
+        <div class="opt"><span class="lab">গ.</span>৮</div>
+        <div class="opt"><span class="lab">ঘ.</span>১৪</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">২৪</span><p class="qtext">প্রতিটি হাতে মেটাকার্পাল অস্থির সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>৪</div>
+        <div class="opt"><span class="lab">খ.</span>৫</div>
+        <div class="opt"><span class="lab">গ.</span>৭</div>
+        <div class="opt"><span class="lab">ঘ.</span>৮</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">২৫</span><p class="qtext">প্রতিটি হাতে ফ্যালাঞ্জেসের (Phalanges) সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>১২</div>
+        <div class="opt"><span class="lab">খ.</span>১৩</div>
+        <div class="opt"><span class="lab">গ.</span>১৪</div>
+        <div class="opt"><span class="lab">ঘ.</span>১৫</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">২৬</span><p class="qtext">প্রতিটি পায়ের গোড়ালিতে টারসাল অস্থির সংখ্যা কত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>৫</div>
+        <div class="opt"><span class="lab">খ.</span>৭</div>
+        <div class="opt"><span class="lab">গ.</span>৮</div>
+        <div class="opt"><span class="lab">ঘ.</span>১৪</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">২৭</span><p class="qtext">মানবদেহের বৃহত্তম সিসাময়েড অস্থি (Sesamoid bone) কোনটি?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>ক্যালকেনিয়াম</div>
+        <div class="opt"><span class="lab">খ.</span>প্যাটেলা</div>
+        <div class="opt"><span class="lab">গ.</span>কার্পাল</div>
+        <div class="opt"><span class="lab">ঘ.</span>ম্যান্ডিবল</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">২৮</span><p class="qtext">নিচের কোনটি দীর্ঘ অস্থির (Long bone) উদাহরণ?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>স্ক্যাপুলা</div>
+        <div class="opt"><span class="lab">খ.</span>ফিমার</div>
+        <div class="opt"><span class="lab">গ.</span>কার্পাল</div>
+        <div class="opt"><span class="lab">ঘ.</span>কশেরুকা</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">২৯</span><p class="qtext">নিচের কোনটি চ্যাপ্টা অস্থির (Flat bone) উদাহরণ?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>হিউমেরাস</div>
+        <div class="opt"><span class="lab">খ.</span>স্ক্যাপুলা</div>
+        <div class="opt"><span class="lab">গ.</span>কার্পাল</div>
+        <div class="opt"><span class="lab">ঘ.</span>ফিমার</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৩০</span><p class="qtext">নিচের কোনটি অনিয়তাকার অস্থির (Irregular bone) উদাহরণ?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>কশেরুকা</div>
+        <div class="opt"><span class="lab">খ.</span>হিউমেরাস</div>
+        <div class="opt"><span class="lab">গ.</span>টিবিয়া</div>
+        <div class="opt"><span class="lab">ঘ.</span>মেটাকার্পাল</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৩১</span><p class="qtext">কনড্রোসাইট (Chondrocyte) কোষ কোথায় পাওয়া যায়?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>অস্থিতে</div>
+        <div class="opt"><span class="lab">খ.</span>কার্টিলেজে</div>
+        <div class="opt"><span class="lab">গ.</span>পেশিতে</div>
+        <div class="opt"><span class="lab">ঘ.</span>রক্তে</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৩২</span><p class="qtext">মানবদেহে কত প্রকার কার্টিলেজ পাওয়া যায়?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>২</div>
+        <div class="opt"><span class="lab">খ.</span>৩</div>
+        <div class="opt"><span class="lab">গ.</span>৪</div>
+        <div class="opt"><span class="lab">ঘ.</span>৫</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৩৩</span><p class="qtext">দুটি অস্থির সংযোগস্থলকে কী বলা হয়?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>লিগামেন্ট</div>
+        <div class="opt"><span class="lab">খ.</span>টেন্ডন</div>
+        <div class="opt"><span class="lab">গ.</span>অস্থিসন্ধি (Joint)</div>
+        <div class="opt"><span class="lab">ঘ.</span>সারকোমিয়ার</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৩৪</span><p class="qtext">সম্পূর্ণ অনড় অস্থিসন্ধিকে (Immovable joint) কী বলা হয়?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>ফাইব্রাস জয়েন্ট</div>
+        <div class="opt"><span class="lab">খ.</span>কার্টিলেজিনাস জয়েন্ট</div>
+        <div class="opt"><span class="lab">গ.</span>সাইনোভিয়াল জয়েন্ট</div>
+        <div class="opt"><span class="lab">ঘ.</span>বল অ্যান্ড সকেট জয়েন্ট</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৩৫</span><p class="qtext">কনুই ও হাঁটুর সন্ধি কোন প্রকার জয়েন্টের উদাহরণ?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>বল অ্যান্ড সকেট জয়েন্ট</div>
+        <div class="opt"><span class="lab">খ.</span>হিঞ্জ জয়েন্ট</div>
+        <div class="opt"><span class="lab">গ.</span>পিভট জয়েন্ট</div>
+        <div class="opt"><span class="lab">ঘ.</span>গ্লাইডিং জয়েন্ট</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৩৬</span><p class="qtext">কাঁধ ও হিপের সন্ধি কোন প্রকার জয়েন্টের উদাহরণ?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>হিঞ্জ জয়েন্ট</div>
+        <div class="opt"><span class="lab">খ.</span>পিভট জয়েন্ট</div>
+        <div class="opt"><span class="lab">গ.</span>বল অ্যান্ড সকেট জয়েন্ট</div>
+        <div class="opt"><span class="lab">ঘ.</span>সাডল জয়েন্ট</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৩৭</span><p class="qtext">অ্যাটলাস ও অ্যাক্সিসের মধ্যবর্তী সন্ধি কোন প্রকার?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>হিঞ্জ জয়েন্ট</div>
+        <div class="opt"><span class="lab">খ.</span>পিভট জয়েন্ট</div>
+        <div class="opt"><span class="lab">গ.</span>গ্লাইডিং জয়েন্ট</div>
+        <div class="opt"><span class="lab">ঘ.</span>সাডল জয়েন্ট</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৩৮</span><p class="qtext">কার্পাল অস্থিসমূহের মধ্যবর্তী সন্ধি কোন প্রকার?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>হিঞ্জ জয়েন্ট</div>
+        <div class="opt"><span class="lab">খ.</span>গ্লাইডিং জয়েন্ট</div>
+        <div class="opt"><span class="lab">গ.</span>বল অ্যান্ড সকেট জয়েন্ট</div>
+        <div class="opt"><span class="lab">ঘ.</span>পিভট জয়েন্ট</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৩৯</span><p class="qtext">বৃদ্ধাঙ্গুলির কার্পোমেটাকার্পাল সন্ধি কোন প্রকার জয়েন্টের উদাহরণ?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>হিঞ্জ জয়েন্ট</div>
+        <div class="opt"><span class="lab">খ.</span>পিভট জয়েন্ট</div>
+        <div class="opt"><span class="lab">গ.</span>সাডল জয়েন্ট</div>
+        <div class="opt"><span class="lab">ঘ.</span>বল অ্যান্ড সকেট জয়েন্ট</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৪০</span><p class="qtext">অস্থির সাথে অস্থিকে যুক্ত করে কোনটি?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>টেন্ডন</div>
+        <div class="opt"><span class="lab">খ.</span>লিগামেন্ট</div>
+        <div class="opt"><span class="lab">গ.</span>সারকোলেমা</div>
+        <div class="opt"><span class="lab">ঘ.</span>মায়োসিন</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৪১</span><p class="qtext">পেশিকে অস্থির সাথে যুক্ত করে কোনটি?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>লিগামেন্ট</div>
+        <div class="opt"><span class="lab">খ.</span>টেন্ডন</div>
+        <div class="opt"><span class="lab">গ.</span>সাইনোভিয়াল মেমব্রেন</div>
+        <div class="opt"><span class="lab">ঘ.</span>পেরিকন্ড্রিয়াম</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৪২</span><p class="qtext">সাইনোভিয়াল ফ্লুইড নিঃসৃত হয় কোথা থেকে?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>পেরিঅস্টিয়াম</div>
+        <div class="opt"><span class="lab">খ.</span>সাইনোভিয়াল মেমব্রেন</div>
+        <div class="opt"><span class="lab">গ.</span>কার্টিলেজ</div>
+        <div class="opt"><span class="lab">ঘ.</span>বোন ম্যারো</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৪৩</span><p class="qtext">মানবদেহে পেশি কত প্রকার?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>২</div>
+        <div class="opt"><span class="lab">খ.</span>৩</div>
+        <div class="opt"><span class="lab">গ.</span>৪</div>
+        <div class="opt"><span class="lab">ঘ.</span>৫</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৪৪</span><p class="qtext">ঐচ্ছিক ও রৈখিক পেশিকে কী বলা হয়?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>স্মুথ মাসল</div>
+        <div class="opt"><span class="lab">খ.</span>কার্ডিয়াক মাসল</div>
+        <div class="opt"><span class="lab">গ.</span>স্কেলিটাল মাসল</div>
+        <div class="opt"><span class="lab">ঘ.</span>ভিসেরাল মাসল</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৪৫</span><p class="qtext">হৃৎপিণ্ডের পেশি কোন প্রকারের?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>স্কেলিটাল</div>
+        <div class="opt"><span class="lab">খ.</span>স্মুথ</div>
+        <div class="opt"><span class="lab">গ.</span>কার্ডিয়াক</div>
+        <div class="opt"><span class="lab">ঘ.</span>ভিসেরাল</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৪৬</span><p class="qtext">পেশি তন্তুর গঠনগত একক (Functional unit) কী?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>মায়োফাইব্রিল</div>
+        <div class="opt"><span class="lab">খ.</span>সারকোমিয়ার</div>
+        <div class="opt"><span class="lab">গ.</span>সারকোপ্লাজম</div>
+        <div class="opt"><span class="lab">ঘ.</span>ট্রপোমায়োসিন</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৪৭</span><p class="qtext">পেশির পুরু তন্তু (Thick filament) গঠিত হয় কোন প্রোটিন দ্বারা?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>অ্যাক্টিন</div>
+        <div class="opt"><span class="lab">খ.</span>মায়োসিন</div>
+        <div class="opt"><span class="lab">গ.</span>ট্রোপোনিন</div>
+        <div class="opt"><span class="lab">ঘ.</span>ট্রপোমায়োসিন</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৪৮</span><p class="qtext">পেশি সংকোচনের তত্ত্বটি কী নামে পরিচিত?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>লক অ্যান্ড কি তত্ত্ব</div>
+        <div class="opt"><span class="lab">খ.</span>স্লাইডিং ফিলামেন্ট তত্ত্ব</div>
+        <div class="opt"><span class="lab">গ.</span>অসমোসিস তত্ত্ব</div>
+        <div class="opt"><span class="lab">ঘ.</span>ফ্লুইড মোজাইক তত্ত্ব</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৪৯</span><p class="qtext">পেশি সংকোচনের জন্য প্রয়োজনীয় শক্তির প্রধান উৎস কী?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>গ্লুকোজ</div>
+        <div class="opt"><span class="lab">খ.</span>ATP</div>
+        <div class="opt"><span class="lab">গ.</span>ক্রিয়েটিনিন</div>
+        <div class="opt"><span class="lab">ঘ.</span>গ্লাইকোজেন</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qhead"><span class="qnum">৫০</span><p class="qtext">পেশি সংকোচনের সময় ক্যালসিয়াম আয়ন নিঃসৃত হয় কোথা থেকে?</p></div>
+      <div class="options">
+        <div class="opt"><span class="lab">ক.</span>মাইটোকন্ড্রিয়া</div>
+        <div class="opt"><span class="lab">খ.</span>সারকোপ্লাজমিক রেটিকুলাম</div>
+        <div class="opt"><span class="lab">গ.</span>নিউক্লিয়াস</div>
+        <div class="opt"><span class="lab">ঘ.</span>গলগি বস্তু</div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>অধ্যায় ৭ — চলন ও অঙ্গচালনা</span>
+    <span>HSC জীববিজ্ঞান দ্বিতীয় পত্র · মেডিকেল ভর্তি অনুশীলনী</span>
+  </footer>
+
+</div>
+</body>
+</html>

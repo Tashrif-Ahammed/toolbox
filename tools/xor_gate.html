@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>সুইচ দিয়ে XOR গেট — ক্রস সুইচ ডেমো</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+Bengali:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a2138;
+    --bg2:#0d273f;
+    --paper:#10ame;
+    --paper-card:#0f2a45;
+    --grid:rgba(255,255,255,0.055);
+    --line:#6f93b3;
+    --line-dim:#3c5876;
+    --ink:#eaf2fb;
+    --ink-soft:#9fbbd6;
+    --accent:#ffb020;
+    --accent-soft:rgba(255,176,32,0.18);
+    --rule:rgba(255,255,255,0.12);
+    --font-bn:'Noto Sans Bengali', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/28px 28px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/28px 28px,
+      var(--bg);
+    color:var(--ink);
+    font-family:var(--font-bn);
+    line-height:1.65;
+    padding:28px 16px 60px;
+  }
+
+  .wrap{max-width:920px;margin:0 auto;}
+
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 10px;
+  }
+
+  h1{
+    font-family:var(--font-bn);
+    font-weight:700;
+    font-size:clamp(26px,5vw,38px);
+    margin:0 0 10px;
+    letter-spacing:.01em;
+  }
+
+  .lede{
+    color:var(--ink-soft);
+    font-size:15.5px;
+    max-width:680px;
+    margin:0 0 28px;
+  }
+
+  .card{
+    background:var(--paper-card);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:18px 18px 8px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .card::before{
+    content:"";
+    position:absolute;inset:0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/24px 24px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/24px 24px;
+    pointer-events:none;
+    opacity:.6;
+  }
+
+  .figcap{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    color:var(--ink-soft);
+    letter-spacing:.06em;
+    margin:2px 4px 6px;
+    position:relative;
+    z-index:1;
+  }
+
+  svg{display:block;width:100%;height:auto;position:relative;z-index:1;}
+
+  /* ---- schematic styles ---- */
+  .wire{fill:none;stroke:var(--line);stroke-width:4;stroke-linecap:round;transition:stroke .25s;}
+  .wire.live-wire{
+    stroke:var(--accent);
+    stroke-dasharray:10 8;
+    animation:dashflow .6s linear infinite;
+    filter:drop-shadow(0 0 6px rgba(255,176,32,.65));
+  }
+  .arm{
+    stroke:var(--line);
+    stroke-width:6;
+    stroke-linecap:round;
+    fill:none;
+    transform-box:fill-box;
+    transform-origin:0% 50%;
+    transition:transform .32s cubic-bezier(.34,1.56,.64,1), stroke .25s;
+  }
+  .arm.live-wire{
+    stroke:var(--accent);
+    stroke-dasharray:10 8;
+    animation:dashflow .6s linear infinite;
+    filter:drop-shadow(0 0 6px rgba(255,176,32,.65));
+  }
+  .arm.rotT{transform:rotate(var(--angleT));}
+  .arm.rotB{transform:rotate(var(--angleB));}
+
+  .pole, .throw{fill:var(--ink-soft);}
+  .hitArea{fill:transparent;cursor:pointer;}
+  .hitArea:hover ~ .ringHint, .switchGroup:hover .ringHint{opacity:.6;}
+  .ringHint{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 4;opacity:0;transition:opacity .2s;pointer-events:none;}
+
+  .compLabel{font-family:var(--font-mono);font-size:13px;fill:var(--ink-soft);letter-spacing:.04em;}
+  .tagLabel{font-family:var(--font-bn);font-size:13px;fill:var(--ink-soft);}
+
+  .crossmark{fill:none;stroke:var(--accent);stroke-width:1.4;stroke-dasharray:3 4;opacity:.55;}
+  .crossLabel{font-family:var(--font-mono);font-size:11px;fill:var(--accent);opacity:.8;letter-spacing:.05em;}
+
+  .led-shape{stroke:var(--line);stroke-width:3;fill:none;stroke-linejoin:round;transition:stroke .3s;}
+  .led-bar{stroke:var(--line);stroke-width:5;transition:stroke .3s;}
+  .led-glow{fill:var(--accent);opacity:0;filter:blur(11px);transition:opacity .3s;}
+  .led-ray{stroke:var(--line-dim);stroke-width:2.5;stroke-linecap:round;opacity:0;transition:opacity .3s, stroke .3s;}
+  .ledgroup.on .led-shape{stroke:var(--accent);}
+  .ledgroup.on .led-bar{stroke:var(--accent);}
+  .ledgroup.on .led-glow{opacity:.85;}
+  .ledgroup.on .led-ray{opacity:1;stroke:var(--accent);}
+
+  @keyframes dashflow{to{stroke-dashoffset:-36;}}
+
+  /* ---- controls / readout ---- */
+  .controls{
+    display:flex;flex-wrap:wrap;gap:14px;align-items:center;
+    margin:18px 0 4px;position:relative;z-index:1;
+  }
+  .swbtn{
+    font-family:var(--font-mono);
+    background:var(--bg2);
+    border:1px solid var(--rule);
+    color:var(--ink);
+    border-radius:5px;
+    padding:10px 16px;
+    font-size:14px;
+    cursor:pointer;
+    display:flex;align-items:center;gap:10px;
+    transition:border-color .2s, background .2s;
+  }
+  .swbtn:hover{border-color:var(--accent);}
+  .swbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .swbtn .bn{font-family:var(--font-bn);color:var(--ink-soft);}
+  .swbtn .val{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:4px;
+    background:var(--bg);border:1px solid var(--line-dim);
+    font-weight:700;
+  }
+  .swbtn[data-state="1"] .val{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+
+  .readout{
+    font-family:var(--font-mono);
+    font-size:15px;
+    color:var(--ink-soft);
+    background:var(--bg2);
+    border:1px solid var(--rule);
+    border-radius:5px;
+    padding:10px 16px;
+    margin-left:auto;
+  }
+  .readout b{color:var(--ink);}
+  .readout .yval{font-weight:700;color:var(--line-dim);transition:color .25s;}
+  .readout .yval.on{color:var(--accent);}
+
+  .hint{
+    font-size:13px;color:var(--ink-soft);margin:14px 4px 0;position:relative;z-index:1;
+  }
+
+  .dwgblock{
+    font-family:var(--font-mono);font-size:10.5px;color:var(--line-dim);
+    text-align:right;letter-spacing:.04em;margin:10px 6px 2px;position:relative;z-index:1;
+  }
+
+  /* ---- explanation + table ---- */
+  .grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;margin-top:30px;}
+  @media (max-width:720px){.grid2{grid-template-columns:1fr;} .readout{margin-left:0;width:100%;}}
+
+  h2{font-size:18px;margin:0 0 12px;font-weight:700;}
+  p{margin:0 0 12px;color:var(--ink-soft);font-size:14.5px;}
+  p b{color:var(--ink);font-weight:500;}
+
+  table{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:14px;}
+  caption{text-align:left;font-size:12px;color:var(--ink-soft);margin-bottom:8px;font-family:var(--font-mono);letter-spacing:.05em;}
+  th,td{border-bottom:1px solid var(--rule);padding:9px 10px;text-align:center;}
+  th{color:var(--ink-soft);font-weight:500;font-size:12.5px;letter-spacing:.04em;}
+  tr.active td{background:var(--accent-soft);color:var(--ink);font-weight:700;}
+  td.led-on{color:var(--accent);}
+  td.led-off{color:var(--line-dim);}
+
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+
+  footer{margin-top:36px;color:var(--line-dim);font-size:12px;font-family:var(--font-mono);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">LOGIC GATE LAB · FIG. 1</p>
+  <h1>সুইচ দিয়ে XOR গেট</h1>
+  <p class="lede">শুধু একটা ব্যাটারি, দুটো ক্রস (SPDT) সুইচ আর একটা LED দিয়ে কীভাবে XOR লজিক তৈরি হয় — নিচের সুইচ দুটো ক্লিক করে নিজে চালিয়ে দেখুন।</p>
+
+  <div class="card">
+    <p class="figcap">FIG. 1 — দুই SPDT সুইচ, ক্রস-ওয়্যারিং, XOR আউটপুট</p>
+
+    <svg viewBox="0 0 900 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ব্যাটারি, দুটি সুইচ ও একটি LED-এর schematic, যেখানে সুইচের মধ্যবর্তী তার দুটি ক্রস করা">
+
+      <!-- battery -->
+      <text x="70" y="40" text-anchor="middle" class="tagLabel">ব্যাটারি</text>
+      <line x1="70" y1="80" x2="70" y2="215" stroke="var(--line)" stroke-width="3" fill="none"/>
+      <line x1="47" y1="110" x2="93" y2="110" stroke="var(--line)" stroke-width="3"/>
+      <line x1="58" y1="135" x2="82" y2="135" stroke="var(--line)" stroke-width="8"/>
+      <line x1="47" y1="160" x2="93" y2="160" stroke="var(--line)" stroke-width="3"/>
+      <line x1="58" y1="185" x2="82" y2="185" stroke="var(--line)" stroke-width="8"/>
+      <text x="100" y="108" class="compLabel">+</text>
+      <text x="100" y="188" class="compLabel">−</text>
+
+      <!-- fixed wires -->
+      <path id="wireBattToP1" class="wire" d="M70,80 H240 V150"/>
+      <path id="wireP2ToLed" class="wire" d="M660,150 H790 V135"/>
+      <path id="wireLedToBattNeg" class="wire" d="M70,215 V410 H790 V175"/>
+
+      <!-- diagonals (crossed travelers) -->
+      <path id="diagTB" class="wire" d="M360,80 L540,220"/>
+      <path id="diagBT" class="wire" d="M360,220 L540,80"/>
+      <circle class="crossmark" cx="450" cy="150" r="15"/>
+      <text x="450" y="118" text-anchor="middle" class="crossLabel">CROSSED TRAVELERS</text>
+
+      <!-- switch A -->
+      <g class="switchGroup">
+        <text x="240" y="58" text-anchor="middle" class="compLabel">SW-A</text>
+        <circle cx="360" cy="80" r="5" class="throw"/>
+        <circle cx="360" cy="220" r="5" class="throw"/>
+        <line id="arm1" class="arm" x1="240" y1="150" x2="379" y2="150"
+              style="--angleT:-30.26deg;--angleB:30.26deg"/>
+        <circle cx="240" cy="150" r="6" class="pole"/>
+        <circle class="hitArea" cx="240" cy="150" r="42" onclick="toggleSwitch('A')" role="button" tabindex="-1" aria-hidden="true"/>
+      </g>
+
+      <!-- switch B -->
+      <g class="switchGroup">
+        <text x="660" y="58" text-anchor="middle" class="compLabel">SW-B</text>
+        <circle cx="540" cy="80" r="5" class="throw"/>
+        <circle cx="540" cy="220" r="5" class="throw"/>
+        <line id="arm2" class="arm" x1="660" y1="150" x2="799" y2="150"
+              style="--angleT:-149.74deg;--angleB:149.74deg"/>
+        <circle cx="660" cy="150" r="6" class="pole"/>
+        <circle class="hitArea" cx="660" cy="150" r="42" onclick="toggleSwitch('B')" role="button" tabindex="-1" aria-hidden="true"/>
+      </g>
+
+      <!-- LED -->
+      <g id="ledGroup" class="ledgroup">
+        <text x="790" y="58" text-anchor="middle" class="compLabel">LED1</text>
+        <circle class="led-glow" cx="790" cy="155" r="42"/>
+        <polygon class="led-shape" points="770,140 810,140 790,170"/>
+        <line class="led-bar" x1="770" y1="170" x2="810" y2="170"/>
+        <line class="led-shape" x1="790" y1="135" x2="790" y2="140"/>
+        <line class="led-shape" x1="790" y1="170" x2="790" y2="175"/>
+        <line class="led-ray" x1="817" y1="118" x2="828" y2="105"/>
+        <line class="led-ray" x1="817" y1="105" x2="828" y2="118" transform="translate(8,8)"/>
+        <line class="led-ray" x1="826" y1="132" x2="838" y2="120"/>
+      </g>
+
+    </svg>
+    <p class="dwgblock">DWG: XOR-2SW-01 &nbsp; SCALE: N.T.S. &nbsp; REV: A</p>
+  </div>
+
+  <div class="controls">
+    <button class="swbtn" id="btnA" data-state="0" onclick="toggleSwitch('A')" aria-pressed="false">
+      <span class="bn">সুইচ A</span><span class="val" id="valA-btn">0</span>
+    </button>
+    <button class="swbtn" id="btnB" data-state="0" onclick="toggleSwitch('B')" aria-pressed="false">
+      <span class="bn">সুইচ B</span><span class="val" id="valB-btn">0</span>
+    </button>
+    <div class="readout">
+      A=<b id="roA">0</b> &nbsp;B=<b id="roB">0</b> &nbsp;→&nbsp; LED(Y)=<span class="yval" id="roY">0</span>
+      &nbsp;(<span id="roState">বন্ধ</span>)
+    </div>
+  </div>
+  <p class="hint">ক্লিক করে সুইচ A ও B-এর অবস্থা পরিবর্তন করুন — schematic-এর arm দুটোও সাথে সাথে ঘুরে যাবে।</p>
+  <div aria-live="polite" class="sr-only" id="liveRegion"></div>
+
+  <div class="grid2">
+    <div>
+      <h2>ক্রস-ওয়্যারিং কেন XOR তৈরি করে</h2>
+      <p>প্রতিটি সুইচ একটি <b>SPDT (ওয়ান-পোল, টু-থ্রো)</b> সুইচ — একটা কমন তার, যা দুটো ভিন্ন সংযোগ-বিন্দু (throw) এর কোনো একটায় যেতে পারে। দুই সুইচের মাঝখানের দুটো তার <b>ক্রস করে</b> জোড়া দেওয়া: সুইচ A-এর উপরের বিন্দু সুইচ B-এর নিচের বিন্দুর সাথে, আর সুইচ A-এর নিচের বিন্দু সুইচ B-এর উপরের বিন্দুর সাথে যুক্ত।</p>
+      <p>তাই দুই সুইচ যখন <b>আলাদা অবস্থানে</b> থাকে (০১ বা ১০), তখনই তাদের আর্ম একই ক্রস-করা তারের দুই প্রান্তে গিয়ে মিলিত হয় — বর্তনী সম্পূর্ণ হয়, LED জ্বলে ওঠে। আর দুই সুইচ <b>একই অবস্থানে</b> থাকলে (০০ বা ১১), ক্রস করা তারের কারণে তারা ভিন্ন প্রান্তে গিয়ে আটকে যায় — বর্তনী খোলা থেকে যায়, LED বন্ধ থাকে।</p>
+      <p>এটাই হলো <b>XOR (এক্সক্লুসিভ OR)</b>: ইনপুট দুটো ভিন্ন হলেই আউটপুট সত্য (১), একই হলে আউটপুট মিথ্যা (০)।</p>
+    </div>
+    <div>
+      <table>
+        <caption>TRUTH TABLE — A ⊕ B</caption>
+        <thead>
+          <tr><th>A</th><th>B</th><th>Y</th><th>LED</th></tr>
+        </thead>
+        <tbody id="truthBody">
+          <tr data-row="00"><td>0</td><td>0</td><td>0</td><td class="led-off">বন্ধ</td></tr>
+          <tr data-row="01"><td>0</td><td>1</td><td>1</td><td class="led-on">চালু</td></tr>
+          <tr data-row="10"><td>1</td><td>0</td><td>1</td><td class="led-on">চালু</td></tr>
+          <tr data-row="11"><td>1</td><td>1</td><td>0</td><td class="led-off">বন্ধ</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>NOTES: SW-A &amp; SW-B = SPDT cross/traveler switches · LED1 lights only when inputs differ (XOR)</footer>
+</div>
+
+<script>
+  const state = {A:0, B:0};
+
+  const arm1 = document.getElementById('arm1');
+  const arm2 = document.getElementById('arm2');
+  const wireBattToP1 = document.getElementById('wireBattToP1');
+  const wireP2ToLed = document.getElementById('wireP2ToLed');
+  const wireLedToBattNeg = document.getElementById('wireLedToBattNeg');
+  const diagTB = document.getElementById('diagTB');
+  const diagBT = document.getElementById('diagBT');
+  const ledGroup = document.getElementById('ledGroup');
+  const liveRegion = document.getElementById('liveRegion');
+
+  function toggleSwitch(which){
+    state[which] = state[which] ? 0 : 1;
+    render();
+  }
+
+  function setArm(arm, on){
+    arm.classList.remove('rotT','rotB');
+    arm.classList.add(on ? 'rotT' : 'rotB');
+  }
+
+  function render(){
+    const isOn = state.A !== state.B;
+
+    setArm(arm1, state.A === 1);
+    setArm(arm2, state.B === 1);
+
+    [wireBattToP1, wireP2ToLed, wireLedToBattNeg, arm1, arm2].forEach(el=>{
+      el.classList.toggle('live-wire', isOn);
+    });
+    diagTB.classList.toggle('live-wire', isOn && state.A === 1 && state.B === 0);
+    diagBT.classList.toggle('live-wire', isOn && state.A === 0 && state.B === 1);
+    ledGroup.classList.toggle('on', isOn);
+
+    document.getElementById('roA').textContent = state.A;
+    document.getElementById('roB').textContent = state.B;
+    document.getElementById('roY').textContent = isOn ? 1 : 0;
+    document.getElementById('roY').classList.toggle('on', isOn);
+    document.getElementById('roState').textContent = isOn ? 'চালু' : 'বন্ধ';
+
+    const btnA = document.getElementById('btnA');
+    const btnB = document.getElementById('btnB');
+    btnA.dataset.state = state.A; btnA.setAttribute('aria-pressed', state.A === 1);
+    btnB.dataset.state = state.B; btnB.setAttribute('aria-pressed', state.B === 1);
+    document.getElementById('valA-btn').textContent = state.A;
+    document.getElementById('valB-btn').textContent = state.B;
+
+    document.querySelectorAll('#truthBody tr').forEach(tr=>{
+      tr.classList.toggle('active', tr.dataset.row === ('' + state.A + state.B));
+    });
+
+    liveRegion.textContent = `A = ${state.A}, B = ${state.B}, LED ${isOn ? 'চালু' : 'বন্ধ'}`;
+  }
+
+  render();
+</script>
+</body>
+</html>
