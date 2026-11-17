@@ -1,6 +1,6 @@
 {
  "v": 1,
- "updated": "2026-11-16T00:00:00Z",
+ "updated": "2026-11-17T01:27:18.770Z",
  "tools": [
   {
    "id": "1-crore-savings-calculator",
@@ -10,7 +10,7 @@
    "category": "",
    "file": "tools/1_crore_savings_calculator.html",
    "autoDetected": true,
-   "reviewed": false,
+   "reviewed": true,
    "addedAt": 1700000000000
   },
   {
@@ -252,7 +252,7 @@
    "category": "",
    "file": "tools/roadmap_6months.html",
    "autoDetected": true,
-   "reviewed": false,
+   "reviewed": true,
    "addedAt": 1700000000000
   },
   {
@@ -263,7 +263,7 @@
    "category": "",
    "file": "tools/uniform_plane_wave_solutions.html",
    "autoDetected": true,
-   "reviewed": false,
+   "reviewed": true,
    "addedAt": 1700000000000
   },
   {
