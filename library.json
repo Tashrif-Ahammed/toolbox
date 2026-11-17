@@ -1,6 +1,6 @@
 {
  "v": 1,
- "updated": "2026-11-17T01:27:18.770Z",
+ "updated": "2026-11-17T01:28:29.006Z",
  "tools": [
   {
    "id": "1-crore-savings-calculator",
@@ -87,7 +87,7 @@
    "category": "",
    "file": "tools/hisab-khata (5).html",
    "autoDetected": true,
-   "reviewed": false,
+   "reviewed": true,
    "addedAt": 1700000000000
   },
   {
