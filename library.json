@@ -1,6 +1,6 @@
 {
  "v": 1,
- "updated": "2026-11-17T01:33:34.859Z",
+ "updated": "2026-11-17T01:36:01.689Z",
  "tools": [
   {
    "id": "1-crore-savings-calculator",
@@ -208,7 +208,7 @@
    "category": "",
    "file": "tools/pathshala.html",
    "autoDetected": true,
-   "reviewed": false,
+   "reviewed": true,
    "addedAt": 1700000000000
   },
   {
