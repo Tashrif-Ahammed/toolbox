@@ -1,6 +1,6 @@
 {
- "v": 1,
- "updated": "2026-11-17T01:36:01.689Z",
+ "v": 3,
+ "updated": "2026-11-17T09:50:39.649Z",
  "tools": [
   {
    "id": "1-crore-savings-calculator",
@@ -11,7 +11,8 @@
    "file": "tools/1_crore_savings_calculator.html",
    "autoDetected": true,
    "reviewed": true,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "ml",
@@ -22,7 +23,8 @@
    "file": "tools/ML.html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "ai-model-lab-2",
@@ -33,7 +35,8 @@
    "file": "tools/ai-model-lab (2).html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "cloud-manager-1",
@@ -44,7 +47,8 @@
    "file": "tools/cloud_manager (1).html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "em-revision",
@@ -55,7 +59,8 @@
    "file": "tools/em_revision.html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "gemini-tester",
@@ -66,7 +71,8 @@
    "file": "tools/gemini-tester.html",
    "autoDetected": true,
    "reviewed": true,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "gemini-model-tester",
@@ -77,7 +83,8 @@
    "file": "tools/gemini_model_tester.html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "hisab-khata-5",
@@ -88,7 +95,8 @@
    "file": "tools/hisab-khata (5).html",
    "autoDetected": true,
    "reviewed": true,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "hsc-biology-ch7-mcq-1",
@@ -99,7 +107,8 @@
    "file": "tools/hsc_biology_ch7_mcq (1).html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "hsc-biology-ch7-solution",
@@ -110,7 +119,8 @@
    "file": "tools/hsc_biology_ch7_solution.html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "kmap-solver-2",
@@ -121,7 +131,8 @@
    "file": "tools/kmap_solver (2).html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "mag-maxwell-waveguide-formulas",
@@ -132,7 +143,8 @@
    "file": "tools/mag_maxwell_waveguide_formulas.html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "magneto-maxwell-waveguide-solutions",
@@ -143,7 +155,8 @@
    "file": "tools/magneto_maxwell_waveguide_solutions.html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "node-ai-benchmark",
@@ -154,7 +167,8 @@
    "file": "tools/node_ai_benchmark.html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "node-file-structure",
@@ -165,7 +179,8 @@
    "file": "tools/node_file_structure.html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "node-question-ui-and-flow-1",
@@ -176,7 +191,8 @@
    "file": "tools/node_question_ui_and_flow (1).html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "node-question-ui-and-flow",
@@ -187,7 +203,8 @@
    "file": "tools/node_question_ui_and_flow.html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "notespace",
@@ -198,7 +215,8 @@
    "file": "tools/notespace.html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "pathshala",
@@ -209,7 +227,8 @@
    "file": "tools/pathshala.html",
    "autoDetected": true,
    "reviewed": true,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "plane-wave-formulas",
@@ -220,7 +239,8 @@
    "file": "tools/plane_wave_formulas.html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "print-cost-calculator",
@@ -231,7 +251,8 @@
    "file": "tools/print_cost_calculator.html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "profile-manager-redesigned-3",
@@ -242,7 +263,8 @@
    "file": "tools/profile_manager_redesigned (3).html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "roadmap-6months",
@@ -253,7 +275,8 @@
    "file": "tools/roadmap_6months.html",
    "autoDetected": true,
    "reviewed": true,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "uniform-plane-wave-solutions",
@@ -264,7 +287,8 @@
    "file": "tools/uniform_plane_wave_solutions.html",
    "autoDetected": true,
    "reviewed": true,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "xor-gate",
@@ -275,7 +299,8 @@
    "file": "tools/xor_gate.html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   },
   {
    "id": "xor-gate-demo",
@@ -286,10 +311,18 @@
    "file": "tools/xor_gate_demo.html",
    "autoDetected": true,
    "reviewed": false,
-   "addedAt": 1700000000000
+   "addedAt": 1700000000000,
+   "visibility": "public"
   }
  ],
  "archived": [],
  "categories": [],
- "defaultCategory": ""
+ "defaultCategory": "",
+ "settings": {
+  "title": "Toolbox",
+  "tagline": "Tashrif",
+  "announce": "",
+  "defaultVisibility": "private",
+  "siteOpen": true
+ }
 }
