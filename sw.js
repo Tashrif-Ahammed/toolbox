@@ -1,4 +1,4 @@
-const CACHE_NAME = 'toolbox-v3';
+const CACHE_NAME = 'toolbox-v5';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -27,6 +27,9 @@ self.addEventListener('activate', (event) => {
 // cache-first for other static assets (fonts, icons, etc.)
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+
+  // Encrypted private files are never cached
+  if (url.pathname.includes('/vault/')) return;
 
   const isHTMLOrDynamic =
     event.request.mode === 'navigate' ||

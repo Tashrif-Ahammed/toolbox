@@ -572,9 +572,12 @@
   body.tb-viewer #addToolBtn, body.tb-viewer #deleteToggleBtn, body.tb-viewer #archiveBtn, body.tb-viewer #scanBtn,
   body.tb-viewer .card-quick-actions, body.tb-viewer .card-del { display:none !important; }
   body.tb-viewer #settings-modal .settings-section:not(#gh-section) { display:none !important; }
+  #site-banner{padding:8px 16px;text-align:center;font-size:.85rem;background:rgba(255,255,255,.05);color:var(--accent);border-bottom:1px solid var(--border)}
+  #closed-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;text-align:center;background:var(--bg);color:var(--text)}
+  #closed-overlay[hidden],#site-banner[hidden]{display:none !important}
 </style>
 </head>
-<body>
+<body class="tb-viewer">
 
 <!-- ── Header ── -->
 <header id="dashboard-header">
@@ -625,6 +628,8 @@
     <button id="installBtn">⬇ Install</button>
   </div>
 </header>
+<div id="site-banner" hidden></div>
+<div id="closed-overlay" hidden><div><div style="font-size:2.6rem">🔧</div><h2 style="margin:10px 0 6px">Be right back</h2><p style="color:var(--text-muted)">This toolbox is temporarily closed.</p></div></div>
 
 <!-- Delete mode banner -->
 <div id="delete-banner">
@@ -687,6 +692,7 @@
         </select>
         <div class="field-hint">Pick where this tool lives, or leave uncategorized. Manage categories from ⚙ Settings.</div>
       </div>
+      <div class="field"><label>Visibility</label><select id="tool-vis"><option value="private">🔒 Private (only me)</option><option value="public">🌐 Public (visitors can see it)</option></select></div>
       <div class="status-box" id="step1-status"></div>
     </div>
 
@@ -798,6 +804,38 @@
         <div class="field-hint" style="margin-top:6px">⚠ Requires Chrome or Edge. Firefox/Safari do not support the File System Access API.</div>
       </div>
 
+      <!-- Site settings -->
+      <div class="settings-section" id="site-section">
+        <div class="settings-label">Site settings (admin)</div>
+        <div class="field-row">
+          <div class="field"><label>Site name</label><input type="text" id="set-title" /></div>
+          <div class="field"><label>Tagline</label><input type="text" id="set-tag" /></div>
+        </div>
+        <div class="field"><label>Announcement (shown at the top for everyone)</label><input type="text" id="set-ann" placeholder="Leave empty to hide" /></div>
+        <div class="field-row">
+          <div class="field"><label>New tools are</label><select id="set-vis"><option value="private">Private (hidden from visitors)</option><option value="public">Public</option></select></div>
+          <div class="field"><label>Visitor access</label><select id="set-open"><option value="1">Open</option><option value="0">Closed (maintenance page)</option></select></div>
+        </div>
+        <div class="field-hint">Visitors only see tools marked public (the 🌐 button on each card). Files stay in the repo, but the dashboard never lists private tools to visitors.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <button class="btn btn-primary btn-sm" onclick="saveSite()">Save settings</button>
+          <button class="btn btn-ghost btn-sm" onclick="bulkVis('public')">Make all public</button>
+          <button class="btn btn-ghost btn-sm" onclick="bulkVis('private')">Make all private</button>
+        </div>
+        <div class="status-box" id="site-status"></div>
+      </div>
+
+      <!-- Organize -->
+      <div class="settings-section" id="org-section">
+        <div class="settings-label">Organize uncategorized tools</div>
+        <div id="org-list"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-primary btn-sm" onclick="orgApply()">Apply categories</button>
+          <button class="btn btn-ghost btn-sm" onclick="orgRender()">Reset suggestions</button>
+        </div>
+        <div class="status-box" id="org-status"></div>
+      </div>
+
       <!-- ⓖ GitHub Sync -->
       <div class="settings-section" id="gh-section">
         <div class="settings-label">GitHub Sync (admin)</div>
@@ -900,6 +938,7 @@
           <option value="">No category</option>
         </select>
       </div>
+      <div class="field"><label>Visibility</label><select id="edit-vis"><option value="private">🔒 Private (only me)</option><option value="public">🌐 Public (visitors can see it)</option></select></div>
       <div class="status-box" id="edit-status"></div>
     </div>
     <div class="modal-footer">
@@ -1306,6 +1345,7 @@ function renderGrid() {
     const desc = tool.desc
       ? `<div class="card-desc">${esc(tool.desc)}</div>`
       : `<div class="card-desc empty">No description yet — tap ✎ to edit</div>`;
+    const visBadge = document.body.classList.contains('tb-viewer') ? '' : (tool.visibility === 'public' ? `<span class="card-badge" style="background:rgba(61,214,140,0.15);color:#3DD68C">public</span>` : `<span class="card-badge" style="background:rgba(160,160,160,0.15);color:var(--text-muted)">private</span>`);
     const newBadge = tool.autoDetected && !tool.reviewed ? `<span class="card-badge badge-new">new</span>` : '';
     const warnBadge = tool._codeLost ? `<span class="card-badge" style="background:rgba(226,104,90,0.15);color:#E2685A">⚠ lost</span>` : '';
     return `
@@ -1315,10 +1355,11 @@ function renderGrid() {
       <div class="card-quick-actions">
         <button class="qa-btn" title="${tool.pinned?'Unpin':'Pin'}" onclick="event.stopPropagation();togglePin('${tool.id}')">${tool.pinned?'📌':'📍'}</button>
         <button class="qa-btn" title="Edit" onclick="event.stopPropagation();openEditModal('${tool.id}')">✎</button>
+        <button class="qa-btn" title="${tool.visibility==='public'?'Public. Click to make private':'Private. Click to make public'}" onclick="event.stopPropagation();toggleVisibility('${tool.id}')">${tool.visibility==='public'?'🌐':'🔒'}</button>
       </div>
       <div class="card-top">
         <div class="card-icon">${getToolIcon(tool)}</div>
-        <div style="display:flex;gap:4px;align-items:flex-start">${warnBadge}${newBadge}${badge}</div>
+        <div style="display:flex;gap:4px;align-items:flex-start">${visBadge}${warnBadge}${newBadge}${badge}</div>
       </div>
       <div class="card-name">${esc(tool.name)}</div>
       ${desc}
@@ -1886,6 +1927,7 @@ function openEditModal(id) {
   const sel = document.getElementById('edit-cat');
   sel.innerHTML = `<option value="">No category</option>` + categoryNames().map(c => `<option value="${c}">${cap(c)}</option>`).join('');
   sel.value = tool.category || '';
+  document.getElementById('edit-vis').value = tool.visibility === 'public' ? 'public' : 'private';
   setStatus('edit-status', '', '');
   document.getElementById('edit-overlay').classList.add('open');
 }
@@ -1899,7 +1941,7 @@ function saveEditTool() {
   const desc = document.getElementById('edit-desc').value.trim();
   const cat  = document.getElementById('edit-cat').value;
   if (!name || !icon) { setStatus('edit-status','error','✗ Name and icon are required'); return; }
-  tool.name = name; tool.icon = icon; tool.desc = desc; tool.category = cat;
+  tool.name = name; tool.icon = icon; tool.desc = desc; tool.category = cat; tool.visibility = document.getElementById('edit-vis').value;
   tool.reviewed = true;
   saveExtraTools();
   renderAll();
@@ -2114,6 +2156,7 @@ function openAddModal() {
   setStatus('step1-status','','');
   setStatus('step2-status','','');
   populateCatDropdown();
+  document.getElementById('tool-vis').value = (window.tbDefaultVis && window.tbDefaultVis()) || 'private';
   showStep(1);
   document.getElementById('add-overlay').classList.add('open');
 }
@@ -2217,7 +2260,7 @@ function handleSave() {
   while (TOOLS.find(t => t.id === uniqueId) || ARCHIVED.find(t => t.id === uniqueId)) { uniqueId = `${fileId}-${counter++}`; }
 
   const filePath = `tools/${fileName}.html`;
-  const newTool = { id: uniqueId, name, desc, icon, category: cat, file: filePath, code, reviewed: true, addedAt: Date.now() };
+  const newTool = { id: uniqueId, name, desc, icon, category: cat, file: filePath, code, reviewed: true, addedAt: Date.now(), visibility: document.getElementById('tool-vis').value };
   TOOLS.push(newTool);
   saveExtraTools();
 
@@ -2305,89 +2348,269 @@ autoScanOnLaunch(); // silently picks up any HTML files dropped into tools/ sinc
 fsLoadOnStartup();
 </script>
 <script>
-// ═══ GitHub sync layer: library.json + tools/ live in the repo; admin edits commit through the GitHub API ═══
+// ═══ GitHub sync layer v3: atomic commits, encrypted private vault, admin panel ═══
 (function(){
-const LS=localStorage, host=location.hostname, seg=location.pathname.split('/').filter(Boolean);
+const LS=localStorage, host=location.hostname, seg=location.pathname.split('/').filter(Boolean), $=i=>document.getElementById(i), sleep=ms=>new Promise(r=>setTimeout(r,ms));
 try{const hp=new URLSearchParams(location.hash.slice(1));if(hp.get('tbsetup')){const rp=(hp.get('repo')||'').split('/');LS.setItem('tb_gh_token',hp.get('tbsetup'));if(rp.length===2)LS.setItem('tb_gh_cfg',JSON.stringify({owner:rp[0],repo:rp[1],branch:'main'}));history.replaceState(null,'',location.pathname+location.search);setTimeout(()=>showToast('Admin mode enabled in this browser',4000),700)}}catch(e){}
 const AUTO={owner:host.endsWith('.github.io')?host.split('.')[0]:'',repo:host.endsWith('.github.io')?(seg[0]||host):'',branch:'main'};
 const cfg=()=>Object.assign({},AUTO,JSON.parse(LS.getItem('tb_gh_cfg')||'{}'));
 const token=()=>LS.getItem('tb_gh_token')||'', isAdmin=()=>!!token();
+const DEF={title:'Toolbox',tagline:'Tashrif',announce:'',defaultVisibility:'private',siteOpen:true};
+let SET=Object.assign({},DEF,JSON.parse(LS.getItem('tb_site')||'{}'));
+const isPriv=t=>t.visibility==='private';
 const enc=p=>p.split('/').map(encodeURIComponent).join('/');
-const b64=s=>{const u=new TextEncoder().encode(s);let b='';for(let i=0;i<u.length;i+=32768)b+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(b)};
-async function api(m,p,body,raw){const c=cfg();return fetch('https://api.github.com/repos/'+c.owner+'/'+c.repo+'/'+p,{method:m,headers:Object.assign({Accept:raw?'application/vnd.github.raw+json':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},token()?{Authorization:'Bearer '+token()}:{},body?{'Content-Type':'application/json'}:{}),body:body?JSON.stringify(body):undefined})}
+const toB64=u=>{let b='';for(let i=0;i<u.length;i+=32768)b+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(b)};
+const b64=s=>toB64(new TextEncoder().encode(s)), fromB64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function api(m,p,body,raw){const c=cfg();return fetch('https://api.github.com/repos/'+c.owner+'/'+c.repo+'/'+p,{method:m,cache:'no-store',headers:Object.assign({Accept:raw?'application/vnd.github.raw+json':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},token()?{Authorization:'Bearer '+token()}:{},body?{'Content-Type':'application/json'}:{}),body:body?JSON.stringify(body):undefined})}
 async function why(r){let m='';try{m=(await r.json()).message||''}catch{}
   if(r.status===401)return'Token rejected. Make a new token and reconnect.';
   if(r.status===403)return'GitHub refused ('+m+'). Check the token permission or wait a bit.';
-  if(r.status===404)return'Repo not found, or the token has no access to it.';
-  if(r.status===409||r.status===422)return'Conflict, retrying usually fixes it ('+m+')';
+  if(r.status===404)return'Repo or file not found, or the token has no access to it.';
+  if(r.status===409||r.status===422)return'Conflict ('+m+')';
   return'GitHub error '+r.status+' '+m}
-async function sha(path){const r=await api('GET','contents/'+enc(path)+'?ref='+cfg().branch);if(r.status===404)return null;if(!r.ok)throw new Error(await why(r));return(await r.json()).sha}
-async function put(path,text,msg){const s=await sha(path),r=await api('PUT','contents/'+enc(path),Object.assign({message:msg,content:b64(text),branch:cfg().branch},s?{sha:s}:{}));if(!r.ok)throw new Error(await why(r))}
-async function del(path,msg){const s=await sha(path);if(!s)return;const r=await api('DELETE','contents/'+enc(path),{message:msg,sha:s,branch:cfg().branch});if(!r.ok)throw new Error(await why(r))}
+async function rj(m,p,b){const r=await api(m,p,b);if(!r.ok){const e=new Error(await why(r));e.status=r.status;throw e}return r.json()}
+// One atomic commit for any number of files: no per-file sha, so no "does not match" conflicts
+async function commit(files,dels,msg){
+  for(let i=0;i<6;i++){
+    try{const br=cfg().branch,head=(await rj('GET','git/ref/heads/'+br)).object.sha,cm=await rj('GET','git/commits/'+head),tree=[];
+      for(const f of files){const bl=await rj('POST','git/blobs',{content:b64(f.text),encoding:'base64'});tree.push({path:f.path,mode:'100644',type:'blob',sha:bl.sha})}
+      for(const d of dels)tree.push({path:d,mode:'100644',type:'blob',sha:null});
+      if(!tree.length)return;
+      const nt=await rj('POST','git/trees',{base_tree:cm.tree.sha,tree}),nc=await rj('POST','git/commits',{message:msg,tree:nt.sha,parents:[head]});
+      await rj('PATCH','git/refs/heads/'+br,{sha:nc.sha,force:false});return
+    }catch(e){if(i<5&&(e.status===422||e.status===409)){if(i>=2)dels=[];await sleep(700*(i+1));continue}throw e}}}
+async function readRepo(path){const r=await api('GET','contents/'+enc(path)+'?ref='+cfg().branch,null,true);if(r.ok)return r.text();if(r.status===404)return null;throw new Error(await why(r))}
+async function readPages(path){const r=await fetch(path+'?_t='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('File not found ('+r.status+')');return r.text()}
 const strip=t=>{const o=Object.assign({},t);delete o.code;delete o.lastOpened;delete o._codeLost;return o};
-const norm=(tools,arch,cats,def)=>JSON.stringify({tools:tools.map(strip),archived:arch.map(strip),categories:cats,defaultCategory:def||''});
-function badge(state,msg){if(!isAdmin()){const b=document.getElementById('gh-badge');if(b)b.remove();return}
-  let b=document.getElementById('gh-badge');if(!b){b=document.createElement('span');b.id='gh-badge';b.style.cssText='font-size:.7rem;padding:3px 9px;border-radius:99px;border:1px solid var(--border);white-space:nowrap';const h=document.querySelector('.header-right');h.insertBefore(b,h.firstChild)}
-  const m={pending:['Unsaved…','var(--text-muted)'],syncing:['Saving to GitHub…','var(--accent)'],ok:['Synced to GitHub','var(--green)'],err:['Sync failed','var(--red)']}[state];
+const sha256=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
+
+// ── Private vault: AES-GCM, key from passphrase (PBKDF2). Only ciphertext ever reaches GitHub ──
+let K=null,VM=null,VP=null,vmNew=false;
+async function derive(pw,salt){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function encT(t){const iv=crypto.getRandomValues(new Uint8Array(12)),ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},K,new TextEncoder().encode(t)));return JSON.stringify({v:1,iv:toB64(iv),ct:toB64(ct)})}
+async function decT(s){const o=JSON.parse(s);return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:fromB64(o.iv)},K,fromB64(o.ct)))}
+async function createVault(pw){const salt=crypto.getRandomValues(new Uint8Array(16));K=await derive(pw,salt);VM={v:1,salt:toB64(salt),check:await encT('toolbox-vault')};vmNew=true;VP={tools:[],archived:[]}}
+async function unlockVault(pw){try{const k=await derive(pw,fromB64(VM.salt));K=k;if(await decT(VM.check)!=='toolbox-vault'){K=null;return false}}catch{K=null;return false}
+  try{const t=await readRepo('vault/library.enc');VP=t?JSON.parse(await decT(t)):{tools:[],archived:[]}}catch(e){K=null;showToast('✗ Could not read the vault: '+e.message,4500);return false}
+  LS.setItem('tb_gh_knownv',JSON.stringify([...VP.tools,...VP.archived].map(t=>t.file).filter(Boolean)));
+  mergePrivate();renderAll();admRender();ui();return true}
+function mergePrivate(){if(!VP)return;TOOLS=TOOLS.filter(t=>!isPriv(t)||t.code);ARCHIVED=ARCHIVED.filter(t=>!isPriv(t)||t.code);
+  VP.tools.forEach(t=>{if(!TOOLS.find(x=>x.id===t.id))TOOLS.push(Object.assign({},t,{visibility:'private'}))});VP.archived.forEach(t=>{if(!ARCHIVED.find(x=>x.id===t.id))ARCHIVED.push(Object.assign({},t,{visibility:'private'}))})}
+function lockVault(){K=null;VP=null;TOOLS=TOOLS.filter(t=>!isPriv(t)||t.code);ARCHIVED=ARCHIVED.filter(t=>!isPriv(t));saveExtraTools();renderAll();admRender();ui()}
+function askPass(title,msg,again){return new Promise(res=>{const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px';
+  o.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;max-width:390px;width:100%;color:var(--text)"><div style="font-weight:700;margin-bottom:6px">'+esc(title)+'</div><div class="field-hint" style="margin-bottom:10px">'+esc(msg)+'</div><input type="password" id="pw1" placeholder="Passphrase" style="width:100%;margin-bottom:8px">'+(again?'<input type="password" id="pw2" placeholder="Repeat passphrase" style="width:100%;margin-bottom:8px">':'')+'<div id="pw-err" style="color:var(--red);font-size:.78rem;min-height:1em"></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn btn-ghost btn-sm" id="pw-c">Cancel</button><button class="btn btn-primary btn-sm" id="pw-o">OK</button></div></div>';
+  document.body.appendChild(o);const g=s=>o.querySelector(s);g('#pw1').focus();const done=v=>{o.remove();res(v)};g('#pw-c').onclick=()=>done(null);
+  const ok=()=>{const a=g('#pw1').value;if(!a){g('#pw-err').textContent='Enter the passphrase';return}if(again){if(a.length<8){g('#pw-err').textContent='Use at least 8 characters';return}if(a!==g('#pw2').value){g('#pw-err').textContent='The two passphrases do not match';return}}done(a)};
+  g('#pw-o').onclick=ok;o.addEventListener('keydown',e=>{if(e.key==='Enter')ok();if(e.key==='Escape')done(null)})})}
+async function ensureVault(){if(K)return true;
+  if(!VM){const p=await askPass('Create your private vault','Private tools are encrypted with this passphrase before they are uploaded. If you forget it they cannot be recovered. Use at least 8 characters.',true);if(!p)return false;await createVault(p);showToast('🔒 Vault created',3000);return true}
+  for(let i=0;i<3;i++){const p=await askPass('Unlock private vault','Enter your vault passphrase to see and edit private tools.',false);if(!p)return false;if(await unlockVault(p))return true;showToast('✗ Wrong passphrase',2500)}return false}
+async function loadVaultMeta(){if(!isAdmin())return;try{const t=await readRepo('vault/meta.json');VM=t?JSON.parse(t):null}catch{}ui()}
+
+// ── Sync ──
+const norm=(tools,arch,cats,def)=>JSON.stringify({tools:tools.map(strip),archived:arch.map(strip),categories:cats,defaultCategory:def||'',settings:SET});
+function badge(state,msg){if(!isAdmin()){const b=$('gh-badge');if(b)b.remove();return}
+  let b=$('gh-badge');if(!b){b=document.createElement('span');b.id='gh-badge';b.style.cssText='font-size:.7rem;padding:3px 9px;border-radius:99px;border:1px solid var(--border);white-space:nowrap';const h=document.querySelector('.header-right');h.insertBefore(b,h.firstChild)}
+  const m={pending:['Unsaved…','var(--text-muted)'],syncing:['Saving to GitHub…','var(--accent)'],ok:['Synced to GitHub','var(--green)'],err:['Sync failed','var(--red)']}[state];if(!m)return;
   b.textContent=m[0];b.style.color=m[1];b.title=msg||''}
-let timer=null,busy=false,again=false;
-function schedule(){if(!isAdmin())return;LS.setItem('tb_gh_dirty','1');badge('pending');clearTimeout(timer);timer=setTimeout(sync,3000)}
+let timer=null,busy=false,again=false,sup=false;
+function schedule(){if(!isAdmin()||sup)return;LS.setItem('tb_gh_dirty','1');badge('pending');clearTimeout(timer);timer=setTimeout(sync,3000)}
+const withLock=f=>navigator.locks?navigator.locks.request('tb-gh-write',f):f();
 async function sync(){if(busy){again=true;return}busy=true;badge('syncing');
-  try{let up=0;
-    for(const t of [...TOOLS,...ARCHIVED]){if(t.code){t.file=t.file||'tools/'+t.id+'.html';await put(t.file,t.code,'Add or update tool: '+t.name);t.code=null;delete t._codeLost;up++}}
-    LS.setItem('tb_extra_tools',JSON.stringify(TOOLS));LS.setItem('tb_archived_tools',JSON.stringify(ARCHIVED));
-    const cur=norm(TOOLS,ARCHIVED,CATEGORIES,DEFAULT_CATEGORY);
-    if(cur!==LS.getItem('tb_gh_lastlib')||up){
-      const lib={v:1,updated:new Date().toISOString(),tools:TOOLS.map(strip),archived:ARCHIVED.map(strip),categories:CATEGORIES,defaultCategory:DEFAULT_CATEGORY||''};
-      await put('library.json',JSON.stringify(lib,null,1),'Update toolbox library');
-      const used=new Set([...lib.tools,...lib.archived].map(t=>t.file).filter(Boolean));
-      for(const f of JSON.parse(LS.getItem('tb_gh_known')||'[]'))if(!used.has(f))await del(f,'Remove deleted tool file');
-      LS.setItem('tb_gh_known',JSON.stringify([...used]));LS.setItem('tb_gh_lastlib',cur);
-      showToast('✓ Saved to GitHub'+(up?' · new files go live in about a minute':''),3800)}
-    LS.removeItem('tb_gh_dirty');badge('ok');renderAll()
+  try{await withLock(async()=>{
+    const all=()=>[...TOOLS,...ARCHIVED];
+    all().forEach(t=>{if(!t.visibility)t.visibility=t.code?SET.defaultVisibility:'public'});
+    for(const t of all()){if(isPriv(t)&&!t.code&&t.file&&!t.file.startsWith('vault/')){try{t.code=await readPages(t.file)}catch(e){console.warn('private migration',t.name,e)}}}
+    if(all().some(t=>isPriv(t)&&t.code)&&!K&&!await ensureVault())throw new Error('Private tools need your vault passphrase. Unlock the vault, or make them public.');
+    const files=[],done=[];
+    for(const t of all()){if(!t.code)continue;
+      if(isPriv(t)){t.file='vault/'+t.id+'.enc';files.push({path:t.file,text:await encT(t.code)})}
+      else{if(!t.file||t.file.startsWith('vault/'))t.file='tools/'+t.id+'.html';files.push({path:t.file,text:t.code})}done.push(t)}
+    const pubT=TOOLS.filter(t=>!isPriv(t)),pubA=ARCHIVED.filter(t=>!isPriv(t)),priT=TOOLS.filter(isPriv),priA=ARCHIVED.filter(isPriv);
+    const cur=norm(pubT,pubA,CATEGORIES,DEFAULT_CATEGORY),libChanged=cur!==LS.getItem('tb_gh_lastlib');
+    if(libChanged)files.push({path:'library.json',text:JSON.stringify({v:3,updated:new Date().toISOString(),tools:pubT.map(strip),archived:pubA.map(strip),categories:CATEGORIES,defaultCategory:DEFAULT_CATEGORY||'',settings:SET},null,1)});
+    let vh=null;
+    if(K){const vj=JSON.stringify({tools:priT.map(strip),archived:priA.map(strip)});vh=await sha256(vj);
+      if(vh!==LS.getItem('tb_gh_lastvault')||done.some(isPriv)||vmNew)files.push({path:'vault/library.enc',text:await encT(vj)});
+      if(vmNew)files.push({path:'vault/meta.json',text:JSON.stringify(VM)})}
+    const usedP=new Set([...pubT,...pubA].map(t=>t.file).filter(Boolean)),usedV=new Set([...priT,...priA].map(t=>t.file).filter(Boolean));
+    const dels=[];JSON.parse(LS.getItem('tb_gh_known')||'[]').forEach(f=>{if(!usedP.has(f)&&!usedV.has(f))dels.push(f)});
+    if(K)JSON.parse(LS.getItem('tb_gh_knownv')||'[]').forEach(f=>{if(!usedV.has(f)&&!usedP.has(f))dels.push(f)});
+    if(!files.length&&!dels.length){LS.removeItem('tb_gh_dirty');return}
+    await commit(files,[...new Set(dels)],'Update toolbox'+(done.length?' ('+done.map(t=>t.name).slice(0,3).join(', ')+')':''));
+    done.forEach(t=>{t.code=null;delete t._codeLost});vmNew=false;
+    LS.setItem('tb_gh_known',JSON.stringify([...usedP]));if(K){LS.setItem('tb_gh_knownv',JSON.stringify([...usedV]));LS.setItem('tb_gh_lastvault',vh)}LS.setItem('tb_gh_lastlib',cur);
+    saveExtraTools();saveArchived();LS.removeItem('tb_gh_dirty');LS.setItem('tb_gh_last',String(Date.now()));
+    showToast('✓ Saved to GitHub'+(done.length?' · new files go live in about a minute':''),3800)});
+    badge('ok');renderAll();admRender()
   }catch(e){console.error(e);badge('err',e.message);setStatus('gh-status','error','✗ '+e.message);showToast('✗ GitHub sync failed: '+e.message,6000)}
   finally{busy=false;if(again){again=false;schedule()}}}
+// keep private tool metadata out of localStorage (pending uploads excepted)
+window.saveExtraTools=function(){const ids=BUILTIN_TOOLS.map(t=>t.id),extra=TOOLS.filter(t=>!ids.includes(t.id)&&(!isPriv(t)||t.code));
+  try{LS.setItem('tb_extra_tools',JSON.stringify(extra))}catch(e){try{LS.setItem('tb_extra_tools',JSON.stringify(extra.map(t=>t.code&&t.code.length>50000?Object.assign({},t,{code:null,_codeLost:true}):t)));showToast('⚠️ Storage limit hit, large tools lost inline code',5000)}catch(e2){showToast('✗ Could not save tools, storage is full',6000)}}_afterSave()};
+window.saveArchived=function(){try{LS.setItem('tb_archived_tools',JSON.stringify(ARCHIVED.filter(t=>!isPriv(t))))}catch(e){}_afterSave()};
+function normalize(){[...TOOLS,...ARCHIVED].forEach(t=>{if(!t.visibility)t.visibility=t.code?SET.defaultVisibility:'public'})}
 function applyLib(lib){
   const old={};try{JSON.parse(LS.getItem('tb_extra_tools')||'[]').forEach(t=>old[t.id]=t.lastOpened)}catch{}
   (lib.tools||[]).forEach(t=>{if(old[t.id])t.lastOpened=old[t.id]});
-  LS.setItem('tb_extra_tools',JSON.stringify(lib.tools||[]));LS.setItem('tb_archived_tools',JSON.stringify(lib.archived||[]));
+  SET=Object.assign({},DEF,lib.settings||{});LS.setItem('tb_site',JSON.stringify(SET));
+  LS.setItem('tb_extra_tools',JSON.stringify(isAdmin()?(lib.tools||[]):(lib.tools||[]).filter(t=>!isPriv(t))));LS.setItem('tb_archived_tools',JSON.stringify(isAdmin()?(lib.archived||[]):[]));
   LS.setItem('tb_categories',JSON.stringify(lib.categories||[]));LS.setItem('tb_default_category',lib.defaultCategory||'');
   LS.setItem('tb_gh_known',JSON.stringify([...(lib.tools||[]),...(lib.archived||[])].map(t=>t.file).filter(Boolean)));
-  LS.setItem('tb_gh_lastlib',norm(lib.tools||[],lib.archived||[],lib.categories||[],lib.defaultCategory));
-  loadState();migrateToolIcons();renderAll();try{renderStats();renderDefaultCatSection()}catch{}}
+  LS.setItem('tb_gh_lastlib',norm((lib.tools||[]).filter(t=>!isPriv(t)),(lib.archived||[]).filter(t=>!isPriv(t)),lib.categories||[],lib.defaultCategory));
+  loadState();if(isAdmin()){normalize();mergePrivate()}migrateToolIcons();renderAll();try{renderStats();renderDefaultCatSection()}catch{}applySite();admRender()}
 async function loadLib(){
   try{if(isAdmin()&&LS.getItem('tb_gh_dirty')==='1'){schedule();return}
     let lib=null;
-    if(isAdmin()){const r=await api('GET','contents/library.json?ref='+cfg().branch,null,true);if(r.ok)lib=await r.json()}
+    if(isAdmin()){const t=await readRepo('library.json').catch(()=>null);if(t)lib=JSON.parse(t)}
     if(!lib){const r=await fetch('library.json?_t='+Date.now());if(r.ok)lib=await r.json()}
     if(lib)applyLib(lib)}catch(e){console.warn('library load',e)}}
 async function scanRepo(silent){
-  try{const r=await api('GET','contents/tools?ref='+cfg().branch);if(!r.ok){if(!silent)showToast('✗ '+await why(r),4500);return}
+  try{const r=await api('GET','contents/tools?ref='+cfg().branch);if(!r.ok){if(!silent&&r.status!==404)showToast('✗ '+await why(r),4500);return}
     const files=(await r.json()).filter(f=>f.type==='file'&&/\.html?$/i.test(f.name)).map(f=>f.name);
     const known=new Set([...TOOLS,...ARCHIVED].map(t=>t.file));let n=0;
     files.forEach(fn=>{const p='tools/'+fn;if(known.has(p))return;const base=fn.replace(/\.html?$/i,'');let id=base.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'tool',u=id,c=2;
       while(TOOLS.find(t=>t.id===u)||ARCHIVED.find(t=>t.id===u))u=id+'-'+c++;
-      TOOLS.push({id:u,name:base,desc:'',icon:'🛠️',category:DEFAULT_CATEGORY,file:p,autoDetected:true,reviewed:false,addedAt:Date.now()});n++});
-    if(n){saveExtraTools();renderAll();showToast('✓ '+n+' new tool'+(n>1?'s':'')+' found in the repo',3500)}else if(!silent)showToast('ℹ️ No new files in tools/',2500)
+      TOOLS.push({id:u,name:base,desc:'',icon:'🛠️',category:DEFAULT_CATEGORY,file:p,autoDetected:true,reviewed:false,addedAt:Date.now(),visibility:'public'});n++});
+    if(n){saveExtraTools();renderAll();admRender();showToast('✓ '+n+' new tool'+(n>1?'s':'')+' found in the repo (public, because the file is already public)',4500)}else if(!silent)showToast('ℹ️ No new files in tools/',2500)
   }catch(e){if(!silent)showToast('✗ Scan failed: '+e.message,4000)}}
-window.scanToolsFolder=async function(){const b=document.getElementById('scanBtn');b.classList.add('spinning');await scanRepo(false);b.classList.remove('spinning')};
+window.scanToolsFolder=async function(){const b=$('scanBtn');b.classList.add('spinning');await scanRepo(false);b.classList.remove('spinning')};
 window.autoScanOnLaunch=async function(){};
 const _after=_afterSave;window._afterSave=_afterSave=function(){try{_after()}catch{}schedule()};
-function ui(){document.body.classList.toggle('tb-viewer',!isAdmin());const c=cfg(),el=document.getElementById('gh-state');if(!el)return;
-  document.getElementById('gh-repo').value=c.owner&&c.repo?c.owner+'/'+c.repo:'';
-  el.innerHTML=isAdmin()?'<span style="color:var(--green)">● Admin mode</span> · saving to <b>'+c.owner+'/'+c.repo+'</b> ('+c.branch+')':'<span style="color:var(--text-muted)">● Visitor mode</span> · view only. Paste a token to edit.';badge(isAdmin()?(LS.getItem('tb_gh_dirty')?'pending':'ok'):'')}
-window.ghConnect=async function(){const rp=document.getElementById('gh-repo').value.trim().split('/'),t=document.getElementById('gh-token').value.trim();
+// open private tools: decrypt on the fly, never stored
+const _open=window.openTool;
+window.openTool=function(id){const t=TOOLS.find(x=>x.id===id);if(!t||!isPriv(t)||t.code)return _open(id);
+  (async()=>{try{if(!await ensureVault())return;const raw=await readRepo(t.file).catch(()=>null)||await readPages(t.file);const html=await decT(raw);sup=true;t.code=html;_open(id);t.code=null;sup=false;saveExtraTools()}catch(e){sup=false;t.code=null;showToast('✗ Could not open private tool: '+e.message,4500)}})()};
+async function fetchCode(t){if(t.code)return t.code;if(isPriv(t)){const raw=await readRepo(t.file).catch(()=>null)||await readPages(t.file);return decT(raw)}return readPages(t.file)}
+async function setVis(ids,vis){if(!isAdmin())return 0;if(vis==='private'&&!await ensureVault())return 0;let n=0;
+  for(const id of ids){const t=[...TOOLS,...ARCHIVED].find(x=>x.id===id);if(!t||(t.visibility||'public')===vis)continue;
+    if(isPriv(t)&&!K){showToast('Unlock the vault first',2500);return n}
+    try{t.code=await fetchCode(t)}catch(e){showToast('✗ '+t.name+': '+e.message,4500);continue}
+    t.visibility=vis;t.file=vis==='private'?'vault/'+t.id+'.enc':'tools/'+t.id+'.html';n++}
+  saveExtraTools();saveArchived();renderAll();admRender();if(n)showToast(n+' tool'+(n>1?'s':'')+' now '+vis+(vis==='private'?' (encrypted)':''),3000);return n}
+window.toggleVisibility=function(id){const t=TOOLS.find(x=>x.id===id);if(t)setVis([id],isPriv(t)?'public':'private')};
+window.bulkVis=function(v){setVis(TOOLS.map(t=>t.id),v).then(()=>setStatus('site-status','success','✓ Done'))};
+window.tbDefaultVis=()=>SET.defaultVisibility;
+// ── Settings modal pieces (unchanged behaviour) ──
+const RULES=[
+ ['AI Tools',['🤖','🧠','✨'],/\b(ai|gemini|claude|model|benchmark|prompt|node)\b/],
+ ['EEE Study',['⚡','🔌','📡'],/(maxwell|waveguide|plane wave|\bem\b|kmap|k map|xor|gate|circuit|formula|vlsi|electro|magneto|machine)/],
+ ['HSC',['🧬','📚'],/(hsc|biology|physics|chemistry|mcq)/],
+ ['Finance',['💰','🧮'],/(hisab|khata|saving|cost|calculator|budget|ledger|expense|money)/],
+ ['Productivity',['🗂️','📝','🎯'],/(note|roadmap|tracker|pathshala|profile|planner|todo|study|manager)/]];
+const suggest=t=>{const s=(t.name+' '+(t.file||'')).toLowerCase().replace(/[_\-.()]+/g,' ');const r=RULES.find(x=>x[2].test(s));return r?r[0]:''};
+function applySite(){const lg=document.querySelector('.logo');if(lg)lg.innerHTML='⚙ '+esc(SET.title)+' <span>'+(SET.tagline?'/ '+esc(SET.tagline):'')+'</span>';document.title=SET.title;
+  const b=$('site-banner'),closed=SET.siteOpen===false,msg=(isAdmin()&&closed?'🔒 The site is closed to visitors right now. ':'')+(SET.announce||'');
+  if(b){b.hidden=!msg;b.textContent=msg}const o=$('closed-overlay');if(o)o.hidden=!(closed&&!isAdmin())}
+function fillSite(){if(!$('set-title'))return;$('set-title').value=SET.title;$('set-tag').value=SET.tagline;$('set-ann').value=SET.announce;$('set-vis').value=SET.defaultVisibility;$('set-open').value=SET.siteOpen===false?'0':'1'}
+window.saveSite=function(){const g=i=>$(i).value.trim();SET={title:g('set-title')||'Toolbox',tagline:g('set-tag'),announce:g('set-ann'),defaultVisibility:g('set-vis'),siteOpen:g('set-open')!=='0'};LS.setItem('tb_site',JSON.stringify(SET));applySite();schedule();setStatus('site-status','success','✓ Saved')};
+window.orgRender=function(){const el=$('org-list');if(!el)return;const U=TOOLS.filter(t=>!t.category);
+  if(!U.length){el.innerHTML='<div class="field-hint">Every tool has a category.</div>';return}
+  const names=[...new Set([...categoryNames(),...RULES.map(r=>r[0])])];
+  el.innerHTML=U.map(t=>{const sg=suggest(t);return '<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><span style="flex:1;font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(t.icon||'')+' '+esc(t.name)+'</span><select data-org="'+esc(t.id)+'" style="width:150px"><option value="">Leave as is</option>'+names.map(n=>'<option'+(n===sg?' selected':'')+'>'+esc(n)+'</option>').join('')+'</select></div>'}).join('')};
+window.orgApply=function(){let n=0;document.querySelectorAll('#org-list select').forEach(s=>{const v=s.value;if(!v)return;const t=TOOLS.find(x=>x.id===s.dataset.org);if(!t)return;
+  if(!CATEGORIES.find(c=>c.name===v)){const r=RULES.find(x=>x[0]===v);CATEGORIES.push({name:v,home:true,defaultIcons:r?r[1]:[]})}t.category=v;n++});
+  if(!n){setStatus('org-status','error','✗ Nothing selected');return}
+  saveCategories();saveExtraTools();migrateToolIcons();renderAll();window.orgRender();admRender();setStatus('org-status','success','✓ '+n+' tools categorized')};
+const _os=window.openSettings;window.openSettings=function(){_os();fillSite();window.orgRender()};
+
+// ═══ Admin panel ═══
+const ADM={tab:'tools',q:'',cat:'*',vis:'*',sel:new Set(),build:''};
+(function(){const s=document.createElement('style');s.textContent=`
+#adm{position:fixed;inset:0;z-index:9000;background:var(--bg);color:var(--text);overflow:auto;display:none}#adm.open{display:block}
+.adm-top{position:sticky;top:0;z-index:2;background:var(--header-bg);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.adm-tabs{display:flex;gap:4px;flex-wrap:wrap;flex:1}.adm-tabs button{border:1px solid transparent;background:none;color:var(--text-muted);padding:7px 13px;border-radius:9px;font:inherit;font-size:.84rem;cursor:pointer}.adm-tabs button.on{background:var(--surface2);color:var(--accent);border-color:var(--border)}
+.adm-body{max-width:1050px;margin:0 auto;padding:18px 16px 60px}.adm-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}.adm-stats div{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px}.adm-stats b{display:block;font-size:1.35rem}.adm-stats span{font-size:.72rem;color:var(--text-muted)}
+.adm-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.adm-bar input,.adm-bar select,#adm select,#adm input[type=text],#adm textarea{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:7px 10px;font:inherit;font-size:.84rem}.adm-bar input{flex:1;min-width:150px}
+.adm-bulk{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:rgba(var(--accent-rgb),.12);border:1px solid var(--accent);border-radius:12px;padding:8px 12px;margin-bottom:10px}
+#adm table{width:100%;border-collapse:collapse;font-size:.85rem}#adm th{text-align:left;color:var(--text-muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;padding:8px 6px;border-bottom:1px solid var(--border)}#adm td{padding:7px 6px;border-bottom:1px solid var(--border);vertical-align:middle}
+.adm-pill{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:99px;padding:4px 11px;font:inherit;font-size:.76rem;cursor:pointer;white-space:nowrap}.adm-pill.pri{border-color:var(--purple);color:var(--purple)}.adm-pill.pub{border-color:var(--green);color:var(--green)}
+.adm-ic{border:0;background:none;color:var(--text-muted);cursor:pointer;font-size:1rem;padding:4px 6px;border-radius:7px}.adm-ic:hover{background:var(--surface2);color:var(--text)}
+.adm-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}.adm-card h3{margin:0 0 6px;font-size:1rem}.adm-card p{margin:0 0 10px;color:var(--text-muted);font-size:.84rem;line-height:1.55}
+.adm-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}.adm-row label{font-size:.78rem;color:var(--text-muted);min-width:110px}.adm-row input[type=text],.adm-row select,.adm-row textarea{flex:1;min-width:160px}
+.adm-note{background:rgba(var(--orange-rgb),.12);border:1px solid var(--orange);border-radius:10px;padding:9px 12px;font-size:.8rem;margin-bottom:12px;line-height:1.5}
+@media(max-width:700px){#adm th:nth-child(4),#adm td:nth-child(4){display:none}}`;document.head.appendChild(s);
+  const o=document.createElement('div');o.id='adm';document.body.appendChild(o);
+  const b=document.createElement('button');b.id='admBtn';b.className='btn btn-ghost btn-sm';b.textContent='Admin';b.onclick=()=>admOpen();b.hidden=true;const h=document.querySelector('.header-right');h.insertBefore(b,$('addToolBtn')||h.firstChild)})();
+function admOpen(t){if(!isAdmin())return;if(t)ADM.tab=t;$('adm').classList.add('open');document.body.style.overflow='hidden';admRender();if(ADM.tab==='publish')pubStatus()}
+function admClose(){$('adm').classList.remove('open');document.body.style.overflow=''}
+const opt=(v,l,s)=>'<option value="'+esc(v)+'"'+(s?' selected':'')+'>'+esc(l)+'</option>';
+function archive(ids){let n=0;ids.forEach(id=>{const t=TOOLS.find(x=>x.id===id);if(!t)return;TOOLS=TOOLS.filter(x=>x.id!==id);ARCHIVED.push(Object.assign({},t,{archivedAt:Date.now()}));n++});if(n){saveExtraTools();saveArchived();renderAll();showToast(n+' archived',2200)}}
+function tTools(){const cats=categoryNames(),q=ADM.q.toLowerCase();
+  const L=TOOLS.filter(t=>(ADM.cat==='*'||(ADM.cat===''?!t.category:t.category===ADM.cat))&&(ADM.vis==='*'||(t.visibility||'public')===ADM.vis)&&((t.name||'')+' '+(t.desc||'')).toLowerCase().includes(q));
+  const nPri=TOOLS.filter(isPriv).length,lockedNote=(VM&&!K)?'<div class="adm-note">🔒 Your vault is locked, so private tools are hidden here. <a href="#" data-a="unlock" style="color:var(--accent)">Unlock</a></div>':'';
+  return lockedNote+'<div class="adm-stats">'+[['Tools',TOOLS.length],['Public',TOOLS.length-nPri],['Private',nPri],['No category',TOOLS.filter(t=>!t.category).length],['Archived',ARCHIVED.length]].map(x=>'<div><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join('')+'</div>'
+  +'<div class="adm-bar"><input type="text" id="adm-q" placeholder="Search tools…" value="'+esc(ADM.q)+'"><select id="adm-fc">'+opt('*','All categories',ADM.cat==='*')+opt('','No category',ADM.cat==='')+cats.map(c=>opt(c,c,ADM.cat===c)).join('')+'</select><select id="adm-fv">'+opt('*','Public + private',ADM.vis==='*')+opt('public','Public only',ADM.vis==='public')+opt('private','Private only',ADM.vis==='private')+'</select></div>'
+  +(ADM.sel.size?'<div class="adm-bulk"><b>'+ADM.sel.size+' selected</b><select id="adm-bc">'+opt('','Set category…')+cats.map(c=>opt(c,c)).join('')+opt('__none','No category')+'</select><button class="btn btn-ghost btn-sm" data-a="bpub">Make public</button><button class="btn btn-ghost btn-sm" data-a="bpri">Make private</button><button class="btn btn-ghost btn-sm" data-a="bpin">Pin</button><button class="btn btn-ghost btn-sm" data-a="barc">Archive</button><button class="btn btn-ghost btn-sm" data-a="bclr">Clear</button></div>':'')
+  +'<div style="overflow-x:auto"><table><thead><tr><th><input type="checkbox" data-a="selall" '+(L.length&&L.every(t=>ADM.sel.has(t.id))?'checked':'')+'></th><th>Tool</th><th>Category</th><th>Visibility</th><th></th></tr></thead><tbody>'
+  +(L.map(t=>'<tr><td><input type="checkbox" data-sel="'+esc(t.id)+'" '+(ADM.sel.has(t.id)?'checked':'')+'></td><td><b>'+esc(t.icon||'')+' '+esc(t.name)+'</b><div style="color:var(--text-muted);font-size:.74rem">'+esc(t.desc||'')+'</div></td><td><select data-cat="'+esc(t.id)+'">'+opt('','No category',!t.category)+cats.map(c=>opt(c,c,t.category===c)).join('')+'</select></td><td><button class="adm-pill '+(isPriv(t)?'pri':'pub')+'" data-vis="'+esc(t.id)+'">'+(isPriv(t)?'🔒 Private':'🌐 Public')+'</button></td><td style="white-space:nowrap"><button class="adm-ic" data-pin="'+esc(t.id)+'" title="Pin">'+(t.pinned?'★':'☆')+'</button><button class="adm-ic" data-open="'+esc(t.id)+'" title="Open">▶</button><button class="adm-ic" data-edit="'+esc(t.id)+'" title="Edit">✎</button><button class="adm-ic" data-arc="'+esc(t.id)+'" title="Archive">🗄</button></td></tr>').join('')||'<tr><td colspan="5" style="color:var(--text-muted);padding:20px">No tools match.</td></tr>')+'</tbody></table></div>'}
+function tCats(){const cs=CATEGORIES;return '<div class="adm-card"><h3>Add a category</h3><div class="adm-row"><input type="text" id="adm-nc" placeholder="e.g. eee study"><button class="btn btn-primary btn-sm" data-a="addcat">Add</button></div></div>'
+  +'<div class="adm-card"><h3>Your categories</h3><p>Rename, reorder, show on the home page, or delete. A category must be empty before it can be deleted.</p>'
+  +(cs.map((c,i)=>{const n=TOOLS.filter(t=>t.category===c.name).length;return '<div class="adm-row"><input type="text" data-rn="'+esc(c.name)+'" value="'+esc(c.name)+'" style="max-width:240px"><span style="color:var(--text-muted);font-size:.8rem;min-width:70px">'+n+' tool'+(n===1?'':'s')+'</span><label style="min-width:auto"><input type="checkbox" data-home="'+esc(c.name)+'" '+(c.home?'checked':'')+'> Home</label><button class="adm-ic" data-up="'+i+'" '+(i?'':'disabled')+'>▲</button><button class="adm-ic" data-dn="'+i+'" '+(i<cs.length-1?'':'disabled')+'>▼</button><button class="adm-ic" data-delcat="'+esc(c.name)+'" title="Delete">🗑</button></div>'}).join('')||'<p>No categories yet.</p>')+'</div>'}
+function tPriv(){const st=K?'unlocked':VM?'locked':'none';
+  return '<div class="adm-card"><h3>Private vault</h3><p><b>Public</b> tools are listed on your site and their files can be downloaded by anyone. <b>Private</b> tools are encrypted in your browser before upload: GitHub only stores unreadable data, and their names are not listed anywhere public. Only someone with the vault passphrase can open them.</p>'
+  +'<div class="adm-row"><span class="adm-pill '+(K?'pub':'pri')+'">'+(st==='unlocked'?'🔓 Unlocked':st==='locked'?'🔒 Locked':'No vault yet')+'</span>'+(st==='unlocked'?'<button class="btn btn-ghost btn-sm" data-a="lock">Lock now</button>':'<button class="btn btn-primary btn-sm" data-a="unlock">'+(st==='locked'?'Unlock vault':'Create vault')+'</button>')+'</div></div>'
+  +'<div class="adm-card"><h3>New tools default to</h3><div class="adm-row"><select id="adm-dv">'+opt('private','Private (encrypted)',SET.defaultVisibility==='private')+opt('public','Public',SET.defaultVisibility==='public')+'</select></div></div>'
+  +'<div class="adm-note">Please note: a tool that was public once stays in your repository history (GitHub keeps old versions). Making it private encrypts it from now on, but cannot erase the old public copy. If the passphrase is lost, private tools cannot be recovered.</div>'}
+function tSite(){return '<div class="adm-card"><h3>Site</h3><div class="adm-row"><label>Title</label><input type="text" id="as-title" value="'+esc(SET.title)+'"></div><div class="adm-row"><label>Tagline</label><input type="text" id="as-tag" value="'+esc(SET.tagline)+'"></div><div class="adm-row"><label>Announcement</label><input type="text" id="as-ann" value="'+esc(SET.announce)+'" placeholder="Shown to every visitor"></div><div class="adm-row"><label>Visitors can enter</label><select id="as-open">'+opt('1','Yes, site is open',SET.siteOpen!==false)+opt('0','No, show a closed message',SET.siteOpen===false)+'</select></div><button class="btn btn-primary btn-sm" data-a="savesite">Save site settings</button></div>'}
+function tPub(){const c=cfg(),url='https://'+c.owner.toLowerCase()+'.github.io/'+c.repo+'/',last=LS.getItem('tb_gh_last');
+  return '<div class="adm-card"><h3>Publishing</h3><p>Site: <a href="'+esc(url)+'" target="_blank" style="color:var(--accent)">'+esc(url)+'</a><br>Repository: <a href="https://github.com/'+esc(c.owner+'/'+c.repo)+'" target="_blank" style="color:var(--accent)">'+esc(c.owner+'/'+c.repo)+'</a> · <a href="https://github.com/'+esc(c.owner+'/'+c.repo)+'/commits/'+esc(c.branch)+'" target="_blank" style="color:var(--accent)">history (undo any change)</a><br>Last save from this browser: '+(last?new Date(+last).toLocaleString():'none yet')+'<br>Website build: <b id="adm-build">'+esc(ADM.build||'checking…')+'</b></p>'
+  +'<div class="adm-row"><button class="btn btn-primary btn-sm" data-a="syncnow">Save everything to GitHub now</button><button class="btn btn-ghost btn-sm" data-a="reload">Reload from GitHub</button><button class="btn btn-ghost btn-sm" data-a="disc">Disconnect this browser</button></div></div>'}
+function admRender(){const el=$('adm');if(!el||!el.classList.contains('open'))return;const T=[['tools','Tools'],['cats','Categories'],['priv','Privacy'],['site','Site'],['publish','Publishing']];
+  el.innerHTML='<div class="adm-top"><b style="font-size:1rem">🛡 Admin panel</b><div class="adm-tabs">'+T.map(x=>'<button data-tab="'+x[0]+'" class="'+(ADM.tab===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</div><button class="btn btn-ghost btn-sm" data-a="close">Close</button></div><div class="adm-body">'+({tools:tTools,cats:tCats,priv:tPriv,site:tSite,publish:tPub}[ADM.tab])()+'</div>'}
+async function pubStatus(){try{const j=await rj('GET','pages/builds/latest');ADM.build=j.status==='built'?'live ✓ (updated '+new Date(j.updated_at).toLocaleTimeString()+')':j.status;}catch(e){ADM.build='unknown'}const b=$('adm-build');if(b)b.textContent=ADM.build}
+function renameCat(o,n){n=n.toLowerCase().replace(/[^a-z0-9-\s]/g,'').trim().replace(/\s+/g,'-');if(!n||n===o)return false;if(categoryNames().includes(n)){showToast('"'+n+'" already exists',2500);return false}
+  CATEGORIES.forEach(c=>{if(c.name===o)c.name=n});[...TOOLS,...ARCHIVED].forEach(t=>{if(t.category===o)t.category=n});if(DEFAULT_CATEGORY===o){DEFAULT_CATEGORY=n;saveDefaultCategory()}if(activeCategory===o)activeCategory=n;saveCategories();saveExtraTools();saveArchived();renderAll();return true}
+document.addEventListener('click',async e=>{const el=$('adm');if(!el||!el.contains(e.target))return;const t=e.target.closest('button,a,input[type=checkbox]');if(!t)return;const d=t.dataset,A=d.a;
+  if(d.tab){ADM.tab=d.tab;admRender();if(d.tab==='publish')pubStatus();return}
+  if(A==='close')return admClose();
+  if(A==='unlock'){e.preventDefault();await ensureVault();return admRender()}
+  if(A==='lock')return lockVault();
+  if(A==='selall'){const on=t.checked;TOOLS.filter(x=>(ADM.cat==='*'||(ADM.cat===''?!x.category:x.category===ADM.cat))&&(ADM.vis==='*'||(x.visibility||'public')===ADM.vis)).forEach(x=>on?ADM.sel.add(x.id):ADM.sel.delete(x.id));return admRender()}
+  if(d.sel!==undefined){t.checked?ADM.sel.add(d.sel):ADM.sel.delete(d.sel);return admRender()}
+  const ids=[...ADM.sel];
+  if(A==='bclr'){ADM.sel.clear();return admRender()}
+  if(A==='bpub'||A==='bpri'){await setVis(ids,A==='bpub'?'public':'private');return}
+  if(A==='bpin'){ids.forEach(i=>{const x=TOOLS.find(y=>y.id===i);if(x)x.pinned=true});saveExtraTools();renderAll();return admRender()}
+  if(A==='barc'){archive(ids);ADM.sel.clear();return admRender()}
+  if(d.vis){const x=TOOLS.find(y=>y.id===d.vis);if(x)await setVis([d.vis],isPriv(x)?'public':'private');return}
+  if(d.pin){togglePin(d.pin);return admRender()}
+  if(d.open){admClose();return openTool(d.open)}
+  if(d.edit){admClose();return openEditModal(d.edit)}
+  if(d.arc){archive([d.arc]);return admRender()}
+  if(A==='addcat'){const v=$('adm-nc').value.trim().toLowerCase().replace(/[^a-z0-9-\s]/g,'').trim().replace(/\s+/g,'-');if(!v||categoryNames().includes(v)){showToast(v?'Already exists':'Enter a name',2000);return}CATEGORIES.push({name:v,home:false,defaultIcons:[]});saveCategories();renderAll();return admRender()}
+  if(d.up!==undefined||d.dn!==undefined){const i=+(d.up??d.dn),j=d.up!==undefined?i-1:i+1;if(CATEGORIES[j]){[CATEGORIES[i],CATEGORIES[j]]=[CATEGORIES[j],CATEGORIES[i]];saveCategories();renderAll();admRender()}return}
+  if(d.home){toggleCategoryHome(d.home,t.checked);return}
+  if(d.delcat){const n=TOOLS.filter(x=>x.category===d.delcat).length;if(n){showToast('Move its '+n+' tool'+(n>1?'s':'')+' to another category first',3500);return}CATEGORIES=CATEGORIES.filter(c=>c.name!==d.delcat);if(DEFAULT_CATEGORY===d.delcat){DEFAULT_CATEGORY='';saveDefaultCategory()}saveCategories();renderAll();return admRender()}
+  if(A==='savesite'){const g=i=>$(i).value.trim();SET=Object.assign({},SET,{title:g('as-title')||'Toolbox',tagline:g('as-tag'),announce:g('as-ann'),siteOpen:g('as-open')!=='0'});LS.setItem('tb_site',JSON.stringify(SET));applySite();schedule();return showToast('✓ Site settings saved',2200)}
+  if(A==='syncnow'){LS.removeItem('tb_gh_lastlib');LS.removeItem('tb_gh_lastvault');return sync()}
+  if(A==='reload'){LS.removeItem('tb_gh_dirty');await loadLib();return showToast('Reloaded from GitHub',2200)}
+  if(A==='disc')return window.ghDisconnect()});
+document.addEventListener('change',e=>{const el=$('adm');if(!el||!el.contains(e.target))return;const t=e.target,d=t.dataset;
+  if(t.id==='adm-fc'){ADM.cat=t.value;return admRender()}if(t.id==='adm-fv'){ADM.vis=t.value;return admRender()}
+  if(d.cat!==undefined){const x=TOOLS.find(y=>y.id===d.cat);if(x){x.category=t.value;saveExtraTools();renderAll();admRender()}return}
+  if(t.id==='adm-bc'&&t.value){const v=t.value==='__none'?'':t.value;ADM.sel.forEach(i=>{const x=TOOLS.find(y=>y.id===i);if(x)x.category=v});saveExtraTools();renderAll();showToast('Category updated for '+ADM.sel.size+' tools',2200);return admRender()}
+  if(d.rn!==undefined){if(!renameCat(d.rn,t.value))t.value=d.rn;return admRender()}
+  if(t.id==='adm-dv'){SET.defaultVisibility=t.value;LS.setItem('tb_site',JSON.stringify(SET));schedule();showToast('Saved',1500)}});
+document.addEventListener('input',e=>{if(e.target.id==='adm-q'){ADM.q=e.target.value;const p=e.target.selectionStart;admRender();const q=$('adm-q');q.focus();q.setSelectionRange(p,p)}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('adm')&&$('adm').classList.contains('open')&&!document.querySelector('[id=pw1]'))admClose()});
+// ── Connect / status ──
+function ui(){document.body.classList.toggle('tb-viewer',!isAdmin());applySite();const ab=$('admBtn');if(ab)ab.hidden=!isAdmin();const c=cfg(),el=$('gh-state');if(!el)return;
+  $('gh-repo').value=c.owner&&c.repo?c.owner+'/'+c.repo:'';
+  el.innerHTML=isAdmin()?'<span style="color:var(--green)">● Admin mode</span> · saving to <b>'+c.owner+'/'+c.repo+'</b> ('+c.branch+')'+(VM?' · vault '+(K?'unlocked':'locked'):''):'<span style="color:var(--text-muted)">● Visitor mode</span> · view only. Paste a token to edit.';badge(isAdmin()?(LS.getItem('tb_gh_dirty')?'pending':'ok'):'')}
+window.ghConnect=async function(){const rp=$('gh-repo').value.trim().split('/'),t=$('gh-token').value.trim();
   if(rp.length!==2||!rp[0]||!rp[1]){setStatus('gh-status','error','✗ Repository must look like owner/repo');return}
   if(!t){setStatus('gh-status','error','✗ Paste your token');return}
   LS.setItem('tb_gh_cfg',JSON.stringify({owner:rp[0],repo:rp[1]}));LS.setItem('tb_gh_token',t);
   const r=await api('GET','');if(!r.ok){LS.removeItem('tb_gh_token');setStatus('gh-status','error','✗ '+await why(r));return}
   const j=await r.json();if(!(j.permissions&&j.permissions.push)){LS.removeItem('tb_gh_token');setStatus('gh-status','error','✗ This token cannot write. Give it Contents: Read and write.');return}
-  LS.setItem('tb_gh_cfg',JSON.stringify({owner:rp[0],repo:rp[1],branch:j.default_branch}));document.getElementById('gh-token').value='';
-  setStatus('gh-status','success','✓ Connected as admin');ui();await loadLib();scanRepo(true)};
-window.ghSyncNow=function(){if(!isAdmin()){setStatus('gh-status','error','✗ Connect with a token first');return}LS.removeItem('tb_gh_lastlib');sync()};
-window.ghDisconnect=function(){LS.removeItem('tb_gh_token');LS.removeItem('tb_gh_dirty');setStatus('gh-status','success','✓ Disconnected. This browser is view-only now.');ui();badge('')};
-ui();loadLib().then(()=>{if(isAdmin())scanRepo(true);ui()});
+  LS.setItem('tb_gh_cfg',JSON.stringify({owner:rp[0],repo:rp[1],branch:j.default_branch}));$('gh-token').value='';
+  setStatus('gh-status','success','✓ Connected as admin');ui();await loadLib();await loadVaultMeta();scanRepo(true)};
+window.ghSyncNow=function(){if(!isAdmin()){setStatus('gh-status','error','✗ Connect with a token first');return}LS.removeItem('tb_gh_lastlib');LS.removeItem('tb_gh_lastvault');sync()};
+window.ghDisconnect=function(){K=null;VP=null;VM=null;TOOLS=TOOLS.filter(t=>!isPriv(t));ARCHIVED=ARCHIVED.filter(t=>!isPriv(t));['tb_gh_token','tb_gh_dirty'].forEach(k=>LS.removeItem(k));saveExtraTools();admClose();setStatus('gh-status','success','✓ Disconnected. This browser is view-only now.');ui();badge('');loadLib()};
+ui();loadLib().then(async()=>{if(isAdmin()){await loadVaultMeta();scanRepo(true)}ui()});
 })();
+
 </script>
 
 </body>
