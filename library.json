@@ -1,6 +1,6 @@
 {
  "v": 3,
- "updated": "2026-11-17T10:18:02.043Z",
+ "updated": "2026-11-17T10:18:59.117Z",
  "tools": [
   {
    "id": "1-crore-savings-calculator",
@@ -154,7 +154,7 @@
    "category": "",
    "file": "tools/magneto_maxwell_waveguide_solutions.html",
    "autoDetected": true,
-   "reviewed": false,
+   "reviewed": true,
    "addedAt": 1700000000000,
    "visibility": "public"
   },
