@@ -1,6 +1,6 @@
 {
  "v": 3,
- "updated": "2026-11-18T01:14:43.475Z",
+ "updated": "2026-11-18T01:18:23.769Z",
  "tools": [],
  "archived": [],
  "categories": [
@@ -47,7 +47,7 @@
   "tagline": "Tashrif",
   "announce": "",
   "defaultVisibility": "private",
-  "siteOpen": true
+  "siteOpen": false
  },
  "unlinked": [
   {
