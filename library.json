@@ -1,8 +1,7 @@
 {
  "v": 3,
- "updated": "2026-11-18T01:11:20.333Z",
- "tools": [],
- "archived": [
+ "updated": "2026-11-18T01:14:34.961Z",
+ "tools": [
   {
    "id": "profile-manager-redesigned-3",
    "name": "Claude tracker",
@@ -13,10 +12,10 @@
    "autoDetected": true,
    "reviewed": true,
    "addedAt": 1782104776746,
-   "archivedAt": 1786080993629,
    "visibility": "public"
   }
  ],
+ "archived": [],
  "categories": [
   {
    "name": "daily",
