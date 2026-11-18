@@ -1,6 +1,6 @@
 {
  "v": 3,
- "updated": "2026-11-17T10:22:09.027Z",
+ "updated": "2026-11-18T01:00:08Z",
  "tools": [
   {
    "id": "hisab-khata-5",
@@ -24,30 +24,6 @@
    "autoDetected": true,
    "reviewed": true,
    "addedAt": 1781790071225,
-   "visibility": "public"
-  },
-  {
-   "id": "profile-manager-redesigned-2",
-   "name": "Claude Manager",
-   "desc": "It is broken. sorry",
-   "icon": "⛓️",
-   "category": "tracking-helper",
-   "file": "tools/profile_manager_redesigned (2).html",
-   "autoDetected": true,
-   "reviewed": true,
-   "addedAt": 1781791063313,
-   "visibility": "public"
-  },
-  {
-   "id": "kmap-solver-1",
-   "name": "kmap_solver (1)",
-   "desc": "",
-   "icon": "🛠️",
-   "category": "",
-   "file": "tools/kmap_solver (1).html",
-   "autoDetected": true,
-   "reviewed": true,
-   "addedAt": 1781816056856,
    "visibility": "public"
   },
   {
@@ -81,18 +57,6 @@
    "icon": "💹",
    "category": "tools",
    "file": "tools/1_crore_savings_calculator.html",
-   "autoDetected": true,
-   "reviewed": true,
-   "addedAt": 1782104776746,
-   "visibility": "public"
-  },
-  {
-   "id": "ai-model-lab",
-   "name": "ai-model-lab",
-   "desc": "Test any of free hosted AI model from any providor",
-   "icon": "🪐",
-   "category": "tools",
-   "file": "tools/ai-model-lab.html",
    "autoDetected": true,
    "reviewed": true,
    "addedAt": 1782104776746,
@@ -399,5 +363,43 @@
   "announce": "",
   "defaultVisibility": "private",
   "siteOpen": true
- }
+ },
+ "unlinked": [
+  {
+   "id": "profile-manager-redesigned-2",
+   "name": "Claude Manager",
+   "desc": "It is broken. sorry",
+   "icon": "⛓️",
+   "category": "tracking-helper",
+   "file": "tools/profile_manager_redesigned (2).html",
+   "autoDetected": true,
+   "reviewed": true,
+   "addedAt": 1781791063313,
+   "visibility": "public"
+  },
+  {
+   "id": "kmap-solver-1",
+   "name": "kmap_solver (1)",
+   "desc": "",
+   "icon": "🛠️",
+   "category": "",
+   "file": "tools/kmap_solver (1).html",
+   "autoDetected": true,
+   "reviewed": true,
+   "addedAt": 1781816056856,
+   "visibility": "public"
+  },
+  {
+   "id": "ai-model-lab",
+   "name": "ai-model-lab",
+   "desc": "Test any of free hosted AI model from any providor",
+   "icon": "🪐",
+   "category": "tools",
+   "file": "tools/ai-model-lab.html",
+   "autoDetected": true,
+   "reviewed": true,
+   "addedAt": 1782104776746,
+   "visibility": "public"
+  }
+ ]
 }
