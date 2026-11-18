@@ -1,6 +1,6 @@
 {
  "v": 3,
- "updated": "2026-11-18T01:18:23.769Z",
+ "updated": "2026-11-18T08:55:52.471Z",
  "tools": [],
  "archived": [],
  "categories": [
@@ -37,6 +37,11 @@
   },
   {
    "name": "tracking-helper",
+   "home": false,
+   "defaultIcons": []
+  },
+  {
+   "name": "imortant",
    "home": false,
    "defaultIcons": []
   }
