@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-Map Studio Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN SYSTEM — EDA / PCB AESTHETIC
+   ============================================================ */
+:root {
+  --cell: 68px;
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 14px;
+  --trans: 0.18s cubic-bezier(0.4,0,0.2,1);
+}
+
+[data-theme="dark"] {
+  --bg:       #0d1117;
+  --bg2:      #111820;
+  --surface:  #161d28;
+  --surface2: #1c2535;
+  --surface3: #222e42;
+  --border:   #2a3a52;
+  --border2:  #344a68;
+  --text:     #dde6f0;
+  --text2:    #8aa4c0;
+  --text3:    #4a6480;
+  --accent:   #4d9de0;
+  --accent2:  #2e7dbf;
+  --green:    #3ec97a;
+  --red:      #e05a5a;
+  --orange:   #e0924d;
+  --yellow:   #d4b84a;
+  --pcb:      #0a1410;
+  --pcb2:     #0f1c14;
+  --grid-line: rgba(77,157,224,0.04);
+  --glow:     0 0 24px rgba(77,157,224,0.10);
+  --shadow:   0 8px 32px rgba(0,0,0,0.55);
+}
+
+[data-theme="light"] {
+  --bg:       #f0f4f8;
+  --bg2:      #e8edf4;
+  --surface:  #ffffff;
+  --surface2: #f4f7fb;
+  --surface3: #e6ecf5;
+  --border:   #c8d4e4;
+  --border2:  #aabcd4;
+  --text:     #1a2840;
+  --text2:    #3d5a7a;
+  --text3:    #7a9ab8;
+  --accent:   #2a7abf;
+  --accent2:  #1d5c96;
+  --green:    #217a50;
+  --red:      #c03838;
+  --orange:   #b86020;
+  --yellow:   #8a7020;
+  --pcb:      #eef4ec;
+  --pcb2:     #deecd8;
+  --grid-line: rgba(42,122,191,0.05);
+  --glow:     0 0 24px rgba(42,122,191,0.10);
+  --shadow:   0 8px 32px rgba(26,40,64,0.12);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body {
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow:hidden;
+  transition:background var(--trans),color var(--trans);
+}
+
+/* PCB grid background */
+body::before {
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);
+  background-size:32px 32px;
+  pointer-events:none;z-index:0;
+}
+
+/* ── LAYOUT ── */
+.app { display:flex;height:100vh;position:relative;z-index:1; }
+
+/* ── SIDEBAR LEFT ── */
+.sidebar {
+  width:280px;min-width:280px;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  transition:background var(--trans),border-color var(--trans);
+  box-shadow:4px 0 20px rgba(0,0,0,0.2);
+}
+
+.sidebar-header {
+  padding:16px 20px 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface2);
+}
+.logo-mark {
+  width:32px;height:32px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;font-weight:600;color:#fff;
+  flex-shrink:0;
+  box-shadow:0 0 16px rgba(200,146,42,0.35);
+}
+.logo-name { font-size:15px;font-weight:600;letter-spacing:-0.3px; }
+.logo-name span { color:var(--accent); }
+.logo-version {
+  margin-left:auto;
+  font-size:9px;font-family:'JetBrains Mono',monospace;
+  color:var(--text3);background:var(--surface3);
+  padding:2px 7px;border-radius:20px;border:1px solid var(--border2);
+}
+
+.sidebar-body { flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 0; }
+.sidebar-body::-webkit-scrollbar{width:3px}
+.sidebar-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+.s-section { padding:10px 16px 14px; }
+.s-section + .s-section { border-top:1px solid var(--border); }
+.s-label {
+  font-size:9.5px;font-weight:600;letter-spacing:1.8px;
+  color:var(--text3);text-transform:uppercase;
+  margin-bottom:10px;
+  display:flex;align-items:center;gap:6px;
+}
+.s-label::after {
+  content:'';flex:1;height:1px;background:var(--border);
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;
+  border-radius:var(--radius);transition:all var(--trans);
+  white-space:nowrap;position:relative;overflow:hidden;
+}
+.btn::after {
+  content:'';position:absolute;inset:0;
+  background:rgba(255,255,255,0);
+  transition:background 0.15s;
+}
+.btn:hover::after{background:rgba(255,255,255,0.07)}
+.btn:active{transform:scale(0.97)}
+.btn:disabled{opacity:0.3;cursor:not-allowed;transform:none!important}
+
+.btn-accent{background:linear-gradient(135deg,var(--accent),#6b4010);color:#fff;font-size:12.5px;padding:9px 14px;width:100%;font-weight:600;}
+[data-theme="light"] .btn-accent{color:#fff}
+.btn-violet{background:linear-gradient(135deg,#8b5c10,#5c3008);color:#fff;font-size:12.5px;padding:9px 14px;width:100%;font-weight:600;}
+.btn-green{background:linear-gradient(135deg,#7a8a10,#4a6008);color:#fff;font-size:12.5px;padding:9px 14px;width:100%;font-weight:600;}
+[data-theme="light"] .btn-green{color:#fff}
+.btn-red{background:linear-gradient(135deg,var(--red),#6b1808);color:#fff;font-size:12.5px;padding:9px 14px;width:100%;font-weight:600;}
+.btn-orange{background:linear-gradient(135deg,var(--orange),#7c3808);color:#fff;font-size:12.5px;padding:9px 14px;width:100%;font-weight:600;}
+[data-theme="light"] .btn-orange{color:#fff}
+.btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--border2);font-size:12px;padding:7px 12px;font-weight:600;}
+.btn-ghost:hover{background:var(--surface3);color:var(--text);border-color:var(--text3)}
+.btn-sm{font-size:11.5px;padding:6px 11px;}
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+
+/* ── SEGMENT CONTROL ── */
+.seg-ctrl {
+  display:flex;background:var(--surface3);border:1px solid var(--border2);
+  border-radius:var(--radius);overflow:hidden;margin-bottom:8px;
+}
+.seg-ctrl button {
+  flex:1;padding:8px 6px;border:none;cursor:pointer;
+  font-family:'Inter',sans-serif;font-weight:600;font-size:11.5px;
+  color:var(--text3);background:transparent;transition:all var(--trans);
+}
+.seg-ctrl button.active{background:var(--accent);color:#fff;border-radius:calc(var(--radius) - 1px);font-weight:600;}
+.seg-ctrl button.active.pos{background:var(--red)}
+
+/* ── INPUTS ── */
+.field-row { display:flex;gap:6px;align-items:center;margin-bottom:7px; }
+.field-lbl {
+  font-size:10px;font-weight:600;color:var(--text3);
+  font-family:'JetBrains Mono',monospace;
+  min-width:22px;text-align:center;
+}
+.field-row select,.field-row input[type=text] {
+  background:var(--surface2);border:1px solid var(--border2);
+  color:var(--text);border-radius:var(--radius-sm);
+  padding:7px 10px;font-family:'JetBrains Mono',monospace;
+  font-size:12px;outline:none;transition:border-color var(--trans),box-shadow var(--trans);
+  width:100%;
+}
+.field-row select.mini{width:56px;flex-shrink:0}
+.field-row select:focus,.field-row input:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(77,157,224,0.15);
+}
+[data-theme="light"] .field-row select:focus,
+[data-theme="light"] .field-row input:focus{
+  box-shadow:0 0 0 3px rgba(42,122,191,0.15);
+}
+
+/* Chip strip */
+.chips {
+  display:flex;flex-wrap:wrap;gap:4px;min-height:28px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:5px;margin-top:3px;
+}
+.chip {
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  background:var(--surface3);border:1px solid var(--border2);
+  color:var(--text2);padding:2px 7px;border-radius:10px;
+}
+.chip.dc{border-color:var(--orange);color:var(--orange);background:rgba(255,171,64,0.08)}
+
+/* ── RIGHT PANEL ── */
+.right-panel {
+  width:240px;min-width:240px;
+  background:var(--surface);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  box-shadow:-4px 0 20px rgba(0,0,0,0.15);
+  transition:background var(--trans);
+}
+.rp-header {
+  padding:14px 16px 12px;
+  border-bottom:1px solid var(--border);
+  background:var(--surface2);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.rp-title{font-size:13px;font-weight:600}
+.rp-count {
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  background:var(--accent);color:#fff;
+  padding:2px 8px;border-radius:12px;
+  min-width:22px;text-align:center;
+}
+[data-theme="light"] .rp-count{color:#fff}
+.rp-body{flex:1;overflow-y:auto;padding:10px;}
+.rp-body::-webkit-scrollbar{width:3px}
+.rp-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+.group-card {
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:var(--radius);padding:9px 10px;margin-bottom:6px;
+  cursor:pointer;transition:all var(--trans);
+  display:flex;align-items:center;gap:8px;
+  animation:slideIn 0.2s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+.group-card:hover{border-color:var(--red);background:var(--surface3)}
+.g-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.g-info{flex:1;overflow:hidden}
+.g-mints{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-meta{font-size:9.5px;color:var(--text3);margin-top:1px}
+.g-del{color:var(--text3);font-size:14px;width:20px;text-align:center;flex-shrink:0;opacity:0;transition:opacity var(--trans)}
+.group-card:hover .g-del{opacity:1;color:var(--red)}
+
+.empty-state{text-align:center;padding:28px 12px;color:var(--text3);font-size:11.5px;font-family:'JetBrains Mono',monospace;line-height:1.7}
+.empty-icon{font-size:28px;display:block;margin-bottom:8px;opacity:0.5}
+
+/* Stats */
+.stat-row{display:flex;gap:6px;margin-bottom:8px}
+.stat-box{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;text-align:center}
+.stat-val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:var(--accent)}
+.stat-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+
+/* ── CENTER MAP AREA ── */
+.map-area {
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;overflow:auto;
+  padding:24px 20px 20px;
+  gap:16px;
+  background:var(--bg2);
+  transition:background var(--trans);
+}
+.map-area::-webkit-scrollbar{width:6px;height:6px}
+.map-area::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* Toolbar above map */
+.map-toolbar {
+  display:flex;align-items:center;gap:10px;
+  width:100%;max-width:900px;
+  padding:8px 12px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+.map-toolbar-left{display:flex;align-items:center;gap:8px;flex:1}
+.map-toolbar-right{display:flex;align-items:center;gap:8px}
+.tb-label{
+  font-size:11px;font-weight:600;color:var(--text2);
+  font-family:'JetBrains Mono',monospace;
+  background:var(--surface2);border:1px solid var(--border2);
+  padding:4px 10px;border-radius:20px;
+  white-space:nowrap;
+}
+.tb-label.sop{border-color:var(--accent);color:var(--accent)}
+.tb-label.pos{border-color:var(--red);color:var(--red)}
+.tb-sep{width:1px;height:20px;background:var(--border2)}
+
+/* ── K-MAP CONTAINER ── */
+.kmap-shell {
+  position:relative;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--radius-lg);
+  padding:20px 24px 24px;
+  box-shadow:var(--shadow),var(--glow);
+  max-width:100%;
+  overflow:visible;
+}
+.kmap-shell.pcb-mode {
+  background:var(--pcb);
+  border-color:rgba(77,157,224,0.2);
+  box-shadow:0 0 40px rgba(77,157,224,0.08),var(--shadow);
+}
+
+/* K-Map Table */
+.kmt { border-collapse:collapse; }
+.kmt td,.kmt th { padding:0;vertical-align:middle;text-align:center; }
+
+/* Cell */
+.kmc {
+  width:var(--cell);height:var(--cell);
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  cursor:pointer;
+  position:relative;
+  display:table-cell;vertical-align:middle;
+  transition:background var(--trans),border-color var(--trans),box-shadow var(--trans);
+  user-select:none;
+}
+.kmc:hover:not(.kmc-locked){
+  background:var(--surface3);
+  border-color:var(--accent);
+  z-index:2;
+}
+.kmc.kmc-locked{cursor:default}
+.kmc.kmc-locked:hover{background:var(--surface2)}
+.kmc.v1{background:rgba(77,157,224,0.10);border-color:rgba(77,157,224,0.40)}
+.kmc.vX{background:rgba(224,146,77,0.10);border-color:rgba(224,146,77,0.35)}
+.kmc.sel{
+  background:rgba(77,157,224,0.22)!important;
+  border-color:var(--accent)!important;
+  box-shadow:inset 0 0 0 2px var(--accent);
+  z-index:3;
+}
+
+.cell-val {
+  display:block;font-size:18px;font-weight:600;
+  font-family:'JetBrains Mono',monospace;
+  line-height:1;pointer-events:none;
+  transition:color var(--trans);
+}
+.cv0{color:var(--text3)}
+.cv1{color:var(--green)}
+.cvX{color:var(--orange)}
+
+.cell-idx {
+  position:absolute;bottom:3px;right:5px;
+  font-size:9px;color:var(--text3);
+  font-family:'JetBrains Mono',monospace;
+  pointer-events:none;
+  transition:color var(--trans);
+}
+
+/* Axis labels */
+.ax-var {
+  font-size:12.5px;font-weight:600;padding:4px 8px;
+  font-family:'JetBrains Mono',monospace;
+  white-space:nowrap;
+}
+.ax-var.col-var{color:var(--accent)}
+.ax-var.row-var{color:var(--orange);writing-mode:vertical-rl;text-align:center}
+
+.ax-gray {
+  font-size:10.5px;color:var(--text3);padding:3px 6px;min-width:28px;
+  font-family:'JetBrains Mono',monospace;
+}
+
+.sub-header {
+  font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;
+  color:var(--red);
+  background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.2);
+  border-radius:4px;padding:3px 8px;text-align:center;
+  margin-bottom:4px;display:inline-block;
+}
+
+/* Group overlay canvas */
+.group-canvas {
+  position:absolute;top:0;left:0;
+  pointer-events:none;
+  border-radius:var(--radius-lg);
+  overflow:visible;
+}
+
+/* ── EQUATION BAR ── */
+.eq-bar {
+  width:100%;max-width:900px;
+  background:linear-gradient(135deg,rgba(77,157,224,0.10),rgba(77,157,224,0.04));
+  border:1px solid rgba(77,157,224,0.30);
+  border-radius:var(--radius);padding:12px 16px;
+  display:none;align-items:center;gap:12px;
+  animation:eqIn 0.3s ease;
+}
+@keyframes eqIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.eq-bar.show{display:flex}
+.eq-label{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--accent);text-transform:uppercase;flex-shrink:0}
+.eq-text {
+  flex:1;font-family:'JetBrains Mono',monospace;
+  font-size:15px;font-weight:600;color:var(--accent);
+  overflow-x:auto;white-space:nowrap;
+}
+.eq-text::-webkit-scrollbar{height:2px}
+.eq-text::-webkit-scrollbar-thumb{background:var(--accent)}
+.eq-actions{display:flex;gap:6px;flex-shrink:0}
+
+/* ── MINTERM HINT ── */
+.map-hint {
+  font-size:10.5px;color:var(--text3);font-family:'JetBrains Mono',monospace;
+  display:flex;align-items:center;gap:16px;
+}
+.hint-item{display:flex;align-items:center;gap:5px}
+.hint-swatch{width:10px;height:10px;border-radius:2px}
+
+/* ── MODALS ── */
+.backdrop {
+  position:fixed;inset:0;background:rgba(0,0,0,0.75);
+  backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  z-index:1000;opacity:0;pointer-events:none;
+  transition:opacity 0.2s;
+}
+.backdrop.open{opacity:1;pointer-events:all}
+.modal {
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--radius-lg);padding:24px;
+  width:92%;max-width:660px;max-height:88vh;
+  overflow-y:auto;
+  transform:translateY(24px) scale(0.97);
+  transition:transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:0 40px 80px rgba(0,0,0,0.6),0 0 40px rgba(0,212,255,0.05);
+}
+.backdrop.open .modal{transform:none}
+.modal::-webkit-scrollbar{width:4px}
+.modal::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-size:16px;font-weight:700}
+.modal-close{
+  background:var(--surface2);border:1px solid var(--border2);
+  color:var(--text2);width:30px;height:30px;border-radius:7px;
+  cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;
+  transition:all var(--trans);
+}
+.modal-close:hover{background:var(--red);color:#fff;border-color:transparent}
+
+/* Truth table */
+.tt-wrap{overflow:auto;max-height:56vh;border-radius:var(--radius);border:1px solid var(--border)}
+.tt{border-collapse:collapse;width:100%;font-family:'JetBrains Mono',monospace;font-size:12px}
+.tt th{
+  background:var(--surface3);padding:10px 16px;
+  border-bottom:2px solid var(--border2);
+  color:var(--text2);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;
+  position:sticky;top:0;z-index:1;
+}
+.tt td{padding:7px 16px;text-align:center;border-bottom:1px solid var(--border);color:var(--text2)}
+.tt tr:hover td{background:var(--surface2)}
+.tt .r1{color:var(--green);font-weight:600;background:rgba(200,146,42,0.07)}
+.tt .rX{color:var(--orange);font-weight:600;background:rgba(255,171,64,0.04)}
+
+/* Circuit canvas */
+#ckt-canvas{
+  background:var(--surface2);
+  border-radius:var(--radius);
+  display:block;width:100%;
+  border:1px solid var(--border);
+}
+
+/* ── TOAST ── */
+.toast-wrap{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:7px;z-index:2000}
+.toast{
+  background:var(--surface2);border:1px solid var(--border2);
+  border-left:3px solid var(--accent);
+  border-radius:10px;padding:11px 15px;font-size:12.5px;
+  color:var(--text);min-width:200px;max-width:300px;
+  box-shadow:var(--shadow);
+  animation:tin 0.25s ease;
+  font-family:'JetBrains Mono',monospace;
+  display:flex;align-items:center;gap:8px;
+}
+.toast.ok{border-left-color:var(--green)}
+.toast.err{border-left-color:var(--red)}
+.toast.warn{border-left-color:var(--orange)}
+@keyframes tin{from{transform:translateX(16px);opacity:0}to{opacity:1;transform:none}}
+
+/* ── THEME TOGGLE ── */
+.theme-btn{
+  background:var(--surface2);border:1px solid var(--border2);
+  color:var(--text2);width:30px;height:30px;border-radius:7px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:14px;transition:all var(--trans);flex-shrink:0;
+}
+.theme-btn:hover{background:var(--accent);color:#fff;border-color:transparent}
+
+/* ── STATUS BAR ── */
+.statusbar{
+  border-top:1px solid var(--border);
+  background:var(--surface2);
+  padding:5px 16px;
+  display:flex;gap:20px;align-items:center;
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);
+  flex-shrink:0;
+}
+.sb-item span{color:var(--text2)}
+.sb-dot{width:6px;height:6px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 6px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ── PCB TOGGLE ── */
+.pcb-btn{
+  font-size:10px;font-family:'JetBrains Mono',monospace;
+  background:var(--surface2);border:1px solid var(--border2);
+  color:var(--text3);padding:4px 9px;border-radius:4px;
+  cursor:pointer;transition:all var(--trans);
+}
+.pcb-btn.on{border-color:var(--green);color:var(--green);background:rgba(200,146,42,0.08)}
+.pcb-btn:hover{background:var(--surface3)}
+
+/* ── SIMPLIFICATION SCORE ── */
+.score-bar{
+  width:100%;max-width:900px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:10px 16px;
+  display:flex;align-items:center;gap:16px;
+  font-size:11px;
+}
+.score-item{display:flex;align-items:center;gap:6px;color:var(--text2)}
+.score-val{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px;color:var(--accent)}
+.score-bar-track{flex:1;height:4px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.score-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--orange));border-radius:4px;transition:width 0.5s ease}
+
+/* ── CONFETTI (solve success) ── */
+.confetti-piece{
+  position:fixed;top:-10px;
+  width:8px;height:8px;
+  border-radius:1px;
+  pointer-events:none;z-index:9999;
+  animation:confettiFall linear forwards;
+}
+@keyframes confettiFall{
+  to{transform:translateY(105vh) rotate(720deg);opacity:0}
+}
+
+/* Animations */
+@keyframes popIn{from{transform:scale(0.85);opacity:0}to{opacity:1;transform:none}}
+.pop-in{animation:popIn 0.18s ease}
+
+/* Generating blink */
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.35}}
+.gen-blink{animation:blink 0.9s infinite}
+
+/* Map section containers for 5/6 var */
+.multi-map{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+.map-section{display:flex;flex-direction:column;align-items:center;gap:4px}
+
+/* Scrollbar for map area */
+.map-scroll{overflow:auto;display:flex;justify-content:center}
+
+/* Confirm modal btns */
+.confirm-btns{display:flex;gap:8px;margin-top:16px}
+.confirm-btns .btn{flex:1}
+</style>
+</head>
+<body>
+
+<div class="app">
+<!-- ══════════════════════════════════════
+     SIDEBAR LEFT
+══════════════════════════════════════ -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-mark">K</div>
+    <div class="logo-name">K-Map <span>Studio</span></div>
+    <div class="logo-version">v3.0</div>
+  </div>
+
+  <div class="sidebar-body">
+
+    <!-- MODE -->
+    <div class="s-section">
+      <div class="s-label">Mode</div>
+      <div class="seg-ctrl">
+        <button class="active" id="btn-sop" onclick="setMode(false)">⊕ Minterm SOP</button>
+        <button id="btn-pos" onclick="setMode(true)">⊗ Maxterm POS</button>
+      </div>
+      <div class="btn-grid">
+        <button class="btn btn-violet btn-sm" id="gen-btn" onclick="generateProblem()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          Generate
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="resetAll()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- VARIABLES -->
+    <div class="s-section">
+      <div class="s-label">Variables</div>
+      <div class="field-row">
+        <span class="field-lbl">#</span>
+        <select id="var-n" class="mini" onchange="handleVarChange()">
+          <option>2</option><option>3</option><option value="4" selected>4</option>
+          <option>5</option><option>6</option>
+        </select>
+        <input type="text" id="var-names" value="A,B,C,D" placeholder="A,B,C,D" oninput="updateVarNames()">
+      </div>
+    </div>
+
+    <!-- TERMS INPUT -->
+    <div class="s-section">
+      <div class="s-label">Terms</div>
+      <div class="field-row">
+        <select id="term-sym" class="mini" onchange="applyTerms()">
+          <option value="m">Σm</option><option value="M">ΠM</option>
+        </select>
+        <input type="text" id="term-in" placeholder="0, 1, 3, 7..." oninput="applyTerms()">
+      </div>
+      <div class="field-row">
+        <span class="field-lbl" style="color:var(--orange)">d</span>
+        <input type="text" id="dc-in" placeholder="Don't Cares: 2, 6..." oninput="applyTerms()">
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <!-- GROUPING -->
+    <div class="s-section">
+      <div class="s-label">Grouping</div>
+      <button class="btn btn-green" id="lock-btn" onclick="toggleLock()" style="margin-bottom:7px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Click to Lock &amp; Group
+      </button>
+      <button class="btn btn-violet" id="grp-btn" onclick="makeGroup()" disabled>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Make Group (Enter)
+      </button>
+    </div>
+
+    <!-- TOOLS -->
+    <div class="s-section">
+      <div class="s-label">Tools</div>
+      <div class="btn-grid" style="margin-bottom:6px">
+        <button class="btn btn-ghost btn-sm" id="undo-btn" onclick="undo()" disabled>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+          Undo
+        </button>
+        <button class="btn btn-ghost btn-sm" id="redo-btn" onclick="redo()" disabled>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
+          Redo
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="showTT()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+          Truth Table
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="clearGroups()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          Clear Groups
+        </button>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="exportImage()" style="width:100%;margin-bottom:4px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Export PNG
+      </button>
+      <button class="btn btn-ghost btn-sm" id="pcb-btn" onclick="togglePCB()" style="width:100%">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M6 12h4M14 12h4M12 6v4M12 14v4"/><circle cx="12" cy="12" r="2"/></svg>
+        PCB Theme
+      </button>
+    </div>
+
+    <!-- SOLVE -->
+    <div class="s-section">
+      <div class="s-label">Auto Solve</div>
+      <button class="btn btn-accent" id="eq-btn" onclick="craftEq()" style="margin-bottom:6px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h7"/><path d="M15 17l3 3 5-5" stroke-width="2.2"/></svg>
+        Craft Equation
+      </button>
+      <button class="btn btn-violet" id="solve-btn" onclick="autoSolve()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Auto Solve
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Status Bar (inside sidebar bottom) -->
+  <div class="statusbar">
+    <div class="sb-item"><div class="sb-dot"></div></div>
+    <div class="sb-item">Cells: <span id="sb-cells">0</span></div>
+    <div class="sb-item">Ones: <span id="sb-ones">0</span></div>
+    <div class="sb-item">DCs: <span id="sb-dcs">0</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MAIN MAP AREA
+══════════════════════════════════════ -->
+<div class="map-area" id="map-area">
+
+  <!-- Toolbar -->
+  <div class="map-toolbar" style="max-width:900px;width:100%">
+    <div class="map-toolbar-left">
+      <span class="tb-label sop" id="mode-badge">SOP · Minterm</span>
+      <div class="tb-sep"></div>
+      <span class="tb-label" id="var-badge">4 Variables</span>
+      <div class="tb-sep"></div>
+      <span class="tb-label" id="var-names-badge">A B C D</span>
+    </div>
+    <div class="map-toolbar-right">
+      <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme" id="theme-btn">
+        <svg id="theme-icon-dark" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- K-Map Shell -->
+  <div class="kmap-shell" id="kmap-shell">
+    <div id="kmap-mount"></div>
+    <canvas class="group-canvas" id="grp-canvas"></canvas>
+  </div>
+
+  <!-- Legend -->
+  <div class="map-hint">
+    <span class="hint-item"><span class="hint-swatch" style="background:var(--green);opacity:0.5"></span>1 = Minterm</span>
+    <span class="hint-item"><span class="hint-swatch" style="background:var(--orange);opacity:0.5"></span>X = Don't Care</span>
+    <span class="hint-item"><span class="hint-swatch" style="background:var(--text3);opacity:0.5"></span>0 = Maxterm</span>
+    <span style="margin-left:auto;color:var(--text3)">Click cell to cycle 0→1→X · Lock + select → group</span>
+  </div>
+
+  <!-- Simplification score bar -->
+  <div class="score-bar" id="score-bar" style="display:none">
+    <div class="score-item">Reduction: <span class="score-val" id="sc-reduction">—</span></div>
+    <div class="score-item" style="flex:1">
+      <div class="score-bar-track"><div class="score-bar-fill" id="sc-bar" style="width:0%"></div></div>
+    </div>
+    <div class="score-item">Literals: <span class="score-val" id="sc-literals">—</span></div>
+    <div class="score-item">Gates: <span class="score-val" id="sc-gates">—</span></div>
+  </div>
+
+  <!-- Equation display -->
+  <div class="eq-bar" id="eq-bar">
+    <span class="eq-label">F(x)</span>
+    <div class="eq-text" id="eq-text"></div>
+    <div class="eq-actions">
+      <button class="btn btn-ghost btn-sm" onclick="showCircuit()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Circuit
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="closeEq()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════
+     RIGHT PANEL
+══════════════════════════════════════ -->
+<div class="right-panel">
+  <div class="rp-header">
+    <span class="rp-title">Groups</span>
+    <span class="rp-count" id="grp-count">0</span>
+  </div>
+  <div class="rp-body" id="grp-list">
+    <span class="empty-state"><span class="empty-icon">⊞</span>No groups yet.<br>Lock the map, then<br>select cells &amp; group.</span>
+  </div>
+  <!-- Stats -->
+  <div style="padding:10px;border-top:1px solid var(--border)">
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-val" id="st-total">0</div><div class="stat-lbl">Total</div></div>
+      <div class="stat-box"><div class="stat-val" id="st-ones" style="color:var(--green)">0</div><div class="stat-lbl">Ones</div></div>
+      <div class="stat-box"><div class="stat-val" id="st-dc" style="color:var(--orange)">0</div><div class="stat-lbl">DCs</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ TRUTH TABLE MODAL ══════ -->
+<div class="backdrop" id="tt-modal">
+  <div class="modal">
+    <div class="modal-hd">
+      <span class="modal-title">Truth Table</span>
+    <button class="modal-close" onclick="closeModal('tt-modal')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    </div>
+    <div class="tt-wrap"><table class="tt" id="tt-tbl"></table></div>
+  </div>
+</div>
+
+<!-- ══════ CIRCUIT MODAL ══════ -->
+<div class="backdrop" id="ckt-modal">
+  <div class="modal" style="max-width:720px">
+    <div class="modal-hd">
+      <span class="modal-title">Logic Circuit</span>
+      <button class="modal-close" onclick="closeModal('ckt-modal')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <canvas id="ckt-canvas" width="680" height="420"></canvas>
+    <div style="margin-top:12px;font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;text-align:center">
+      Level-1: AND/OR gates per term · Level-2: Final OR/AND gate
+    </div>
+  </div>
+</div>
+
+<!-- ══════ CONFIRM MODAL ══════ -->
+<div class="backdrop" id="conf-modal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-hd">
+      <span class="modal-title" id="conf-title">Confirm</span>
+      <button class="modal-close" onclick="closeModal('conf-modal')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p id="conf-msg" style="color:var(--text2);font-size:13.5px;line-height:1.6"></p>
+    <div class="confirm-btns">
+      <button class="btn btn-red" onclick="doConfirm()">Yes, Continue</button>
+      <button class="btn btn-ghost" onclick="closeModal('conf-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT ENGINE
+══════════════════════════════════════ -->
+<script>
+/* ── STATE ── */
+const S = {
+  n: 4, vars: ['A','B','C','D'],
+  cells: [],          // {mt, state:'0'|'1'|'X'}
+  groups: [],         // [mt[], ...]
+  locked: false,
+  maxterm: false,
+  sel: new Set(),
+  undo: [], redo: [],
+  genTerms: [], genDCs: [],
+  genTimer: null, solveTimer: null,
+  generating: false,
+  solveQ: [],
+  eqTerms: null,
+  pcb: false,
+};
+
+const GRAY  = ['00','01','11','10'];
+const GM    = [0,1,3,2];
+const COLORS = [
+  '#c04828','#c8922a','#d4782a','#b8a030',
+  '#8b5c10','#a07020','#7a5818','#c05020',
+  '#d4b030','#9c6018','#e09030','#b06820',
+  '#cc5030','#a08020','#d4a028'
+];
+const DB = {
+  "3":[
+    {m:[0,1,2,3],d:[],desc:"Simple Pair"},
+    {m:[0,2,4,6],d:[],desc:"Four Corners"},
+    {m:[1,2,4,7],d:[],desc:"XOR Logic"},
+    {m:[3,5,6,7],d:[],desc:"Majority Voter"},
+    {m:[0,1,4,5],d:[],desc:"Column Pair"},
+  ],
+  "4":[
+    {m:[0,1,2,3,4,5,6,7],d:[],desc:"Half Map Coverage"},
+    {m:[0,2,8,10],d:[1,3,9,11],desc:"Corners + Don't Cares"},
+    {m:[5,7,13,15],d:[],desc:"Center Block"},
+    {m:[0,1,2,4,5,6,8,9,12,13,14],d:[],desc:"Complex Overlap"},
+    {m:[0,2,5,7,8,10,13,15],d:[],desc:"Checkerboard"},
+    {m:[1,3,5,7,9,11,13,15],d:[],desc:"All Odd Minterms"},
+    {m:[3,7,11,15],d:[],desc:"Right Column"},
+    {m:[0,4,8,12],d:[],desc:"Left Column"},
+    {m:[0,1,4,5,8,9,12,13],d:[],desc:"Column Pairs"},
+    {m:[2,3,6,7,10,11,14,15],d:[],desc:"Right Half"},
+  ],
+  "5":[
+    {m:[0,1,2,3,16,17,18,19],d:[],desc:"Variable A=0 Block"},
+    {m:[31],d:[0,1,2,4,8,16],desc:"Single Minterm + DCs"},
+    {m:[0,2,8,10,16,18,24,26],d:[],desc:"Even Minterms Block"},
+  ]
+};
+
+/* ── UTILS ── */
+const $ = id => document.getElementById(id);
+const nums = s => s.split(',').map(x=>x.trim()).filter(x=>x).map(Number).filter(x=>!isNaN(x));
+const cell = mt => S.cells.find(c=>c.mt===mt);
+const isPow2 = n => n>0 && (n&(n-1))===0;
+
+/* ── RENDER K-MAP ── */
+function renderMap() {
+  S.groups=[]; S.cells=[]; S.sel.clear();
+  const mount = $('kmap-mount');
+  mount.innerHTML = '';
+
+  const n=S.n, vs=S.vars;
+  if      (n===2) render2(mount,vs);
+  else if (n===3) render3(mount,vs);
+  else if (n===4) render4(mount,vs);
+  else if (n===5) render5(mount,vs);
+  else            render6(mount,vs);
+
+  updateBadges(); updateStats(); renderGroups();
+  closeEq(); updateGroupPanel();
+  applyTermsToMap();
+  
+  // Resize canvas
+  setTimeout(resizeGroupCanvas, 50);
+}
+
+function makeCell(mt) {
+  S.cells.push({mt, state:'0'});
+  const td = document.createElement('td');
+  td.className = 'kmc';
+  td.dataset.mt = mt;
+  if (S.locked) td.classList.add('kmc-locked');
+  td.innerHTML = `<span class="cell-val cv0" id="cv${mt}">0</span><span class="cell-idx">${mt}</span>`;
+  td.addEventListener('click', ()=>onCell(mt));
+  return td;
+}
+
+function axTd(txt, cls='ax-gray', colspan=1, rowspan=1) {
+  const td = document.createElement('td');
+  td.innerHTML = `<span class="${cls}">${txt}</span>`;
+  if (colspan>1) td.colSpan=colspan;
+  if (rowspan>1) td.rowSpan=rowspan;
+  return td;
+}
+
+function buildTable(rows, cols, offset, rowV, colV, grayRows, grayCols, sub='') {
+  const div = document.createElement('div');
+  div.className = 'map-section';
+  if (sub) { const s=document.createElement('div'); s.className='sub-header'; s.textContent=sub; div.appendChild(s); }
+  const tbl = document.createElement('table');
+  tbl.className = 'kmt';
+
+  // Row 0: top-left corner + colVar label
+  let tr = tbl.insertRow();
+  tr.appendChild(axTd('','',(sub?1:1)));  // corner spacer for row-var col
+  tr.appendChild(axTd('','', 1));          // spacer for gray col
+  const colVarTd = axTd(`<span class="ax-var col-var">${colV}</span>`,'',grayCols.length);
+  colVarTd.innerHTML = `<span class="ax-var col-var">${colV}</span>`;
+  tr.appendChild(colVarTd);
+
+  // Row 1: col gray codes
+  tr = tbl.insertRow();
+  tr.appendChild(axTd('','')); // rowVar col
+  tr.appendChild(axTd('','')); // grayRow col
+  for (const g of grayCols) tr.appendChild(axTd(g));
+
+  // Data rows
+  const rowVarTd = document.createElement('td');
+  rowVarTd.rowSpan = grayRows.length;
+  rowVarTd.innerHTML = `<span class="ax-var row-var">${rowV}</span>`;
+
+  for (let r=0; r<grayRows.length; r++) {
+    tr = tbl.insertRow();
+    if (r===0) tr.appendChild(rowVarTd);
+    tr.appendChild(axTd(grayRows[r]));
+    for (let c=0; c<grayCols.length; c++) {
+      const mt = offset + GM[r % 4] * cols + GM[c % grayCols.length];
+      // For 2-var: no gray code mapping needed beyond simple r*cols+c
+      tr.appendChild(makeCell(mt));
+    }
+  }
+  tbl.style.borderCollapse='collapse';
+  div.appendChild(tbl);
+  return div;
+}
+
+function render2(mount, vs) {
+  const tbl=document.createElement('table'); tbl.className='kmt';
+  let tr=tbl.insertRow(); tr.appendChild(axTd('')); const h=axTd(`<span class="ax-var col-var">${vs[1]}</span>`,'',2); h.innerHTML=`<span class="ax-var col-var">${vs[1]}</span>`; tr.appendChild(h);
+  tr=tbl.insertRow(); tr.appendChild(axTd('')); for(let c=0;c<2;c++) tr.appendChild(axTd(c));
+  const rv=document.createElement('td'); rv.rowSpan=2; rv.innerHTML=`<span class="ax-var row-var">${vs[0]}</span>`;
+  for(let r=0;r<2;r++){
+    tr=tbl.insertRow(); if(r===0)tr.appendChild(rv);
+    tr.appendChild(axTd(r));
+    for(let c=0;c<2;c++) tr.appendChild(makeCell(r*2+c));
+  }
+  mount.appendChild(tbl); applyTermsToMap();
+}
+
+function render3(mount, vs) {
+  const tbl=document.createElement('table'); tbl.className='kmt';
+  const colV=`${vs[1]}${vs[2]}`, rowV=vs[0];
+  let tr=tbl.insertRow(); tr.appendChild(axTd('')); tr.appendChild(axTd(''));
+  const h=axTd('','',4); h.innerHTML=`<span class="ax-var col-var">${colV}</span>`; tr.appendChild(h);
+  tr=tbl.insertRow(); tr.appendChild(axTd('')); tr.appendChild(axTd(''));
+  for(const g of GRAY) tr.appendChild(axTd(g));
+  const rv=document.createElement('td'); rv.rowSpan=2; rv.innerHTML=`<span class="ax-var row-var">${rowV}</span>`;
+  for(let r=0;r<2;r++){
+    tr=tbl.insertRow(); if(r===0)tr.appendChild(rv);
+    tr.appendChild(axTd(r));
+    for(let c=0;c<4;c++) tr.appendChild(makeCell(r*4+GM[c]));
+  }
+  mount.appendChild(tbl); applyTermsToMap();
+}
+
+function render4(mount, vs) {
+  const tbl=document.createElement('table'); tbl.className='kmt';
+  const colV=`${vs[2]}${vs[3]}`, rowV=`${vs[0]}${vs[1]}`;
+  let tr=tbl.insertRow(); tr.appendChild(axTd('')); tr.appendChild(axTd(''));
+  const h=axTd('','',4); h.innerHTML=`<span class="ax-var col-var">${colV}</span>`; tr.appendChild(h);
+  tr=tbl.insertRow(); tr.appendChild(axTd('')); tr.appendChild(axTd(''));
+  for(const g of GRAY) tr.appendChild(axTd(g));
+  const rv=document.createElement('td'); rv.rowSpan=4; rv.innerHTML=`<span class="ax-var row-var">${rowV}</span>`;
+  for(let r=0;r<4;r++){
+    tr=tbl.insertRow(); if(r===0)tr.appendChild(rv);
+    tr.appendChild(axTd(GRAY[r]));
+    for(let c=0;c<4;c++) tr.appendChild(makeCell(GM[r]*4+GM[c]));
+  }
+  mount.appendChild(tbl); applyTermsToMap();
+}
+
+function render5(mount, vs) {
+  const rowV=`${vs[1]}${vs[2]}`, colV=`${vs[3]}${vs[4]}`;
+  const wrap=document.createElement('div'); wrap.className='multi-map';
+  for(let h=0;h<2;h++){
+    const tbl=document.createElement('table'); tbl.className='kmt';
+    const sub=document.createElement('div'); sub.className='map-section';
+    const lbl=document.createElement('div'); lbl.className='sub-header';
+    lbl.textContent=`${vs[0]}=${h}`; sub.appendChild(lbl);
+    let tr=tbl.insertRow(); tr.appendChild(axTd('')); tr.appendChild(axTd(''));
+    const hd=axTd('','',4); hd.innerHTML=`<span class="ax-var col-var">${colV}</span>`; tr.appendChild(hd);
+    tr=tbl.insertRow(); tr.appendChild(axTd('')); tr.appendChild(axTd(''));
+    for(const g of GRAY) tr.appendChild(axTd(g));
+    const rv=document.createElement('td'); rv.rowSpan=4; rv.innerHTML=`<span class="ax-var row-var">${rowV}</span>`;
+    for(let r=0;r<4;r++){
+      tr=tbl.insertRow(); if(r===0)tr.appendChild(rv);
+      tr.appendChild(axTd(GRAY[r]));
+      for(let c=0;c<4;c++) tr.appendChild(makeCell(h*16+GM[r]*4+GM[c]));
+    }
+    sub.appendChild(tbl); wrap.appendChild(sub);
+  }
+  mount.appendChild(wrap); applyTermsToMap();
+}
+
+function render6(mount, vs) {
+  const rowV=`${vs[2]}${vs[3]}`, colV=`${vs[4]}${vs[5]}`;
+  const combs=['00','01','11','10'], offs=[0,16,48,32];
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:20px';
+  for(let q=0;q<4;q++){
+    const tbl=document.createElement('table'); tbl.className='kmt';
+    const sec=document.createElement('div'); sec.className='map-section';
+    const lbl=document.createElement('div'); lbl.className='sub-header';
+    lbl.textContent=`${vs[0]}${vs[1]}=${combs[q]}`; sec.appendChild(lbl);
+    let tr=tbl.insertRow(); tr.appendChild(axTd('')); tr.appendChild(axTd(''));
+    const hd=axTd('','',4); hd.innerHTML=`<span class="ax-var col-var">${colV}</span>`; tr.appendChild(hd);
+    tr=tbl.insertRow(); tr.appendChild(axTd('')); tr.appendChild(axTd(''));
+    for(const g of GRAY) tr.appendChild(axTd(g));
+    const rv=document.createElement('td'); rv.rowSpan=4; rv.innerHTML=`<span class="ax-var row-var">${rowV}</span>`;
+    for(let r=0;r<4;r++){
+      tr=tbl.insertRow(); if(r===0)tr.appendChild(rv);
+      tr.appendChild(axTd(GRAY[r]));
+      for(let c=0;c<4;c++) tr.appendChild(makeCell(offs[q]+GM[r]*4+GM[c]));
+    }
+    sec.appendChild(tbl); wrap.appendChild(sec);
+  }
+  mount.appendChild(wrap); applyTermsToMap();
+}
+
+/* ── CELL INTERACTION ── */
+function onCell(mt) {
+  if (S.locked) {
+    S.sel.has(mt) ? S.sel.delete(mt) : S.sel.add(mt);
+    refreshCell(mt); updateGroupBtn(); return;
+  }
+  saveUndo();
+  const c=cell(mt), states=['0','1','X'];
+  c.state=states[(states.indexOf(c.state)+1)%3];
+  refreshCell(mt); updateStats();
+}
+
+function refreshCell(mt) {
+  const el=document.querySelector(`[data-mt="${mt}"]`);
+  if(!el) return;
+  const c=cell(mt);
+  el.className='kmc';
+  if(S.locked) el.classList.add('kmc-locked');
+  if(S.sel.has(mt)) el.classList.add('sel');
+  if(c.state==='1') el.classList.add('v1');
+  if(c.state==='X') el.classList.add('vX');
+  const cv=$(`cv${mt}`);
+  if(cv){cv.textContent=c.state;cv.className=`cell-val cv${c.state}`}
+}
+
+function refreshAll() { S.cells.forEach(c=>refreshCell(c.mt)); }
+
+/* ── TERMS → MAP ── */
+function applyTerms() {
+  if(S.locked && !S.generating){toast('Unlock the map first','warn');return;}
+  applyTermsToMap(); updateChips();
+}
+
+function applyTermsToMap() {
+  const lim=1<<S.n;
+  const ms=nums($('term-in').value).filter(x=>x<lim);
+  const ds=nums($('dc-in').value).filter(x=>x<lim);
+  const mSet=new Set(ms), dSet=new Set(ds);
+  S.cells.forEach(c=>{
+    c.state = dSet.has(c.mt)?'X': mSet.has(c.mt)?'1':'0';
+    refreshCell(c.mt);
+  });
+  updateStats();
+}
+
+function updateChips() {
+  const lim=1<<S.n;
+  const ms=nums($('term-in').value).filter(x=>x<lim);
+  const ds=nums($('dc-in').value).filter(x=>x<lim);
+  const strip=$('chips');
+  strip.innerHTML='';
+  ms.forEach(m=>{const ch=document.createElement('span');ch.className='chip';ch.textContent=m;strip.appendChild(ch)});
+  ds.forEach(d=>{const ch=document.createElement('span');ch.className='chip dc';ch.textContent=`d${d}`;strip.appendChild(ch)});
+}
+
+/* ── STATS ── */
+function updateStats() {
+  const ones=S.cells.filter(c=>c.state==='1').length;
+  const dcs=S.cells.filter(c=>c.state==='X').length;
+  $('sb-cells').textContent=S.cells.length;
+  $('sb-ones').textContent=ones;
+  $('sb-dcs').textContent=dcs;
+  $('st-total').textContent=S.cells.length;
+  $('st-ones').textContent=ones;
+  $('st-dc').textContent=dcs;
+}
+
+/* ── LOCK ── */
+function toggleLock() {
+  S.locked=!S.locked; S.sel.clear(); refreshAll(); updateLockUI();
+}
+function updateLockUI() {
+  const btn=$('lock-btn'), gbtn=$('grp-btn');
+  if(S.locked){
+    btn.innerHTML='🔒 Locked — Click to Unlock';btn.className='btn btn-red';
+    gbtn.disabled=false;
+  } else {
+    btn.innerHTML='🔓 Click to Lock &amp; Group';btn.className='btn btn-green';
+    gbtn.disabled=true;
+  }
+}
+function updateGroupBtn() {
+  const btn=$('grp-btn'); if(!S.locked) return;
+  if(S.sel.size===0){btn.innerHTML='⊞ Make Group (Enter)';btn.className='btn btn-violet';return;}
+  const selArr=[...S.sel].sort((a,b)=>a-b);
+  const matchIdx=S.groups.findIndex(g=>{const gs=[...g].sort((a,b)=>a-b);return gs.length===selArr.length&&gs.every((v,i)=>v===selArr[i])});
+  if(matchIdx!==-1){btn.innerHTML='✖ Remove Group';btn.className='btn btn-red';}
+  else{btn.innerHTML='⊞ Make Group (Enter)';btn.className='btn btn-violet';}
+  btn.disabled=false;
+}
+
+/* ── GROUPING ── */
+function makeGroup() {
+  if(S.sel.size===0){toast('Select cells first','warn');return;}
+  const selArr=[...S.sel].sort((a,b)=>a-b);
+  // Check remove
+  const idx=S.groups.findIndex(g=>{const gs=[...g].sort((a,b)=>a-b);return gs.length===selArr.length&&gs.every((v,i)=>v===selArr[i])});
+  if(idx!==-1){
+    S.groups.splice(idx,1);S.sel.clear();refreshAll();updateGroupBtn();
+    updateGroupPanel();renderGroups();closeEq();toast('Group removed','ok');return;
+  }
+  // Validate states
+  for(const m of selArr){
+    const c=cell(m);
+    if(S.maxterm&&c.state==='1'){toast('POS mode: only 0 and X allowed in groups','err');return;}
+    if(!S.maxterm&&c.state==='0'){toast('SOP mode: only 1 and X allowed in groups','err');return;}
+  }
+  // Validate power of 2
+  if(!isPow2(selArr.length)){toast(`Group size must be power of 2 (got ${selArr.length})`,'err');return;}
+  // Validate adjacency
+  const n=S.n, k=Math.log2(selArr.length);
+  let vb=0;
+  for(let b=0;b<n;b++){const bits=selArr.map(m=>(m>>b)&1);if(bits.some(x=>x!==bits[0]))vb++;}
+  if(vb!==k){toast('Invalid shape — adjacency rule violated','err');return;}
+
+  S.groups.push(selArr);S.sel.clear();refreshAll();updateGroupBtn();
+  updateGroupPanel();renderGroups();closeEq();
+  toast(`Group of ${selArr.length} added ✓`,'ok');
+}
+
+function clearGroups(){S.groups=[];S.sel.clear();refreshAll();updateGroupBtn();updateGroupPanel();renderGroups();closeEq();}
+
+/* ── GROUP PANEL ── */
+function updateGroupPanel() {
+  const list=$('grp-list');
+  $('grp-count').textContent=S.groups.length;
+  if(!S.groups.length){
+    list.innerHTML='<span class="empty-state"><span class="empty-icon">⊞</span>No groups yet.<br>Lock the map, then<br>select cells &amp; group.</span>';
+    $('score-bar').style.display='none';
+    return;
+  }
+  list.innerHTML='';
+  S.groups.forEach((g,i)=>{
+    const color=COLORS[i%COLORS.length];
+    const card=document.createElement('div');card.className='group-card';
+    card.innerHTML=`<div class="g-dot" style="background:${color}"></div>
+      <div class="g-info">
+        <div class="g-mints">m(${g.join(', ')})</div>
+        <div class="g-meta">${g.length} cells · group ${i+1}</div>
+      </div>
+      <span class="g-del" title="Remove">✕</span>`;
+    card.querySelector('.g-del').onclick=e=>{
+      e.stopPropagation();S.groups.splice(i,1);
+      updateGroupPanel();renderGroups();closeEq();toast('Group removed');
+    };
+    list.appendChild(card);
+  });
+}
+
+/* ── GROUP OVERLAY (Canvas) ── */
+function resizeGroupCanvas(){
+  const shell=$('kmap-shell');
+  const canvas=$('grp-canvas');
+  canvas.width=shell.offsetWidth;canvas.height=shell.offsetHeight;
+  renderGroups();
+}
+
+function renderGroups(){
+  const canvas=$('grp-canvas');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const shellRect=$('kmap-shell').getBoundingClientRect();
+
+  S.groups.forEach((group,gi)=>{
+    const color=COLORS[gi%COLORS.length];
+    const cellEls=group.map(m=>document.querySelector(`[data-mt="${m}"]`)).filter(Boolean);
+    if(!cellEls.length) return;
+    const clusters=findClusters(cellEls,shellRect);
+    clusters.forEach(cluster=>{
+      const pad=4;
+      const xs=cluster.map(r=>r.x), ys=cluster.map(r=>r.y);
+      const x=Math.min(...xs)-pad, y=Math.min(...ys)-pad;
+      const x2=Math.max(...cluster.map(r=>r.x+r.w))+pad;
+      const y2=Math.max(...cluster.map(r=>r.y+r.h))+pad;
+      const w=x2-x, h=y2-y;
+      ctx.save();
+      // Fill
+      ctx.fillStyle=color+'22';
+      roundRect(ctx,x,y,w,h,11); ctx.fill();
+      // Stroke
+      ctx.strokeStyle=color;ctx.lineWidth=2.5;
+      if(clusters.length>1){ctx.setLineDash([7,4]);}
+      roundRect(ctx,x,y,w,h,11); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    });
+  });
+}
+
+function findClusters(cellEls, shellRect){
+  const rects=cellEls.map(el=>{
+    const r=el.getBoundingClientRect();
+    return{x:r.left-shellRect.left,y:r.top-shellRect.top,w:r.width,h:r.height,el};
+  });
+  const visited=new Set(), clusters=[];
+  const tol=8;
+  function touching(a,b){
+    return(Math.abs(a.x-b.x)<a.w+tol&&Math.abs(a.y-b.y)<tol)||
+           (Math.abs(a.y-b.y)<a.h+tol&&Math.abs(a.x-b.x)<tol);
+  }
+  for(const r of rects){
+    if(visited.has(r)) continue;
+    const cluster=[r]; visited.add(r);
+    const q=[r];
+    while(q.length){
+      const cur=q.shift();
+      for(const other of rects){
+        if(!visited.has(other)&&touching(cur,other)){
+          visited.add(other);cluster.push(other);q.push(other);
+        }
+      }
+    }
+    clusters.push(cluster);
+  }
+  return clusters;
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath();
+}
+
+/* ── QM SOLVER ── */
+function qmSolve(ones,dcs,n){
+  const terms=[...new Set([...ones,...dcs])].sort((a,b)=>a-b);
+  if(!terms.length) return [];
+  let groups={};
+  for(const t of terms){
+    const bin=t.toString(2).padStart(n,'0');
+    const cnt=bin.split('').filter(b=>b==='1').length;
+    if(!groups[cnt]) groups[cnt]=[];
+    groups[cnt].push([bin,[t]]);
+  }
+  const pis=[];
+  while(true){
+    const ng={}, marked=new Set();
+    const keys=Object.keys(groups).map(Number).sort((a,b)=>a-b);
+    for(let i=0;i<keys.length-1;i++){
+      if(keys[i+1]!==keys[i]+1) continue;
+      for(const i1 of groups[keys[i]]){
+        for(const i2 of groups[keys[i+1]]){
+          let diff=0,idx=-1;
+          for(let b=0;b<n;b++) if(i1[0][b]!==i2[0][b]){diff++;idx=b;}
+          if(diff===1){
+            marked.add(i1[0]);marked.add(i2[0]);
+            const nb=i1[0].split('').map((c,j)=>j===idx?'-':c).join('');
+            const nm=[...new Set([...i1[1],...i2[1]])].sort((a,b)=>a-b);
+            const cnt=nb.split('').filter(c=>c==='1').length;
+            if(!ng[cnt]) ng[cnt]=[];
+            if(!ng[cnt].some(x=>x[0]===nb)) ng[cnt].push([nb,nm]);
+          }
+        }
+      }
+    }
+    for(const k of Object.keys(groups)){
+      for(const imp of groups[k]){
+        if(!marked.has(imp[0])&&!pis.some(x=>x[0]===imp[0])) pis.push(imp);
+      }
+    }
+    if(!Object.keys(ng).length) break;
+    groups=ng;
+  }
+  if(!ones.length) return [];
+  let needed=new Set(ones); const final=[];
+  pis.sort((a,b)=>b[1].length-a[1].length);
+  while(needed.size){
+    let best=null,bc=-1;
+    for(const pi of pis){
+      const cov=pi[1].filter(m=>needed.has(m)).length;
+      if(cov>bc){bc=cov;best=pi;}
+    }
+    if(!best||bc===0) break;
+    final.push(best[1]);
+    for(const m of best[1]) needed.delete(m);
+  }
+  return final;
+}
+
+/* ── AUTO SOLVE ── */
+function autoSolve(){
+  const btn=$('solve-btn');
+  if(S.solveTimer){
+    clearInterval(S.solveTimer);S.solveTimer=null;
+    while(S.solveQ.length) S.groups.push(S.solveQ.shift());
+    updateGroupPanel();renderGroups();
+    craftEq(true);btn.innerHTML='❌ Clear Solution';btn.className='btn btn-red';
+    return;
+  }
+  if(btn.innerHTML.includes('Clear')){
+    clearGroups();btn.innerHTML='🪄 Auto Solve';btn.className='btn btn-violet';closeEq();return;
+  }
+  S.groups=[];updateGroupPanel();renderGroups();closeEq();
+  const ones=[],dcs=[],zeros=[];
+  S.cells.forEach(c=>{if(c.state==='1')ones.push(c.mt);else if(c.state==='0')zeros.push(c.mt);else dcs.push(c.mt);});
+  const targets=S.maxterm?zeros:ones;
+  if(!targets.length){toast('Nothing to solve','warn');return;}
+  const solved=qmSolve(targets,dcs,S.n);
+  S.solveQ=solved.slice();
+  btn.innerHTML='⏩ Do Fast';btn.className='btn btn-orange';
+  S.solveTimer=setInterval(()=>{
+    if(S.solveQ.length){S.groups.push(S.solveQ.shift());updateGroupPanel();renderGroups();}
+    else{
+      clearInterval(S.solveTimer);S.solveTimer=null;
+      craftEq(true);btn.innerHTML='❌ Clear Solution';btn.className='btn btn-red';
+      confetti();
+    }
+  },700);
+}
+
+/* ── CRAFT EQUATION ── */
+function craftEq(silent=false){
+  const btn=$('eq-btn');
+  if(!S.groups.length){if(!silent)toast('Create groups first','warn');return;}
+  const covered=new Set(S.groups.flat());
+  const missing=S.cells.filter(c=>S.maxterm?c.state==='0'&&!covered.has(c.mt):c.state==='1'&&!covered.has(c.mt));
+  if(missing.length&&!silent){toast(`Uncovered cells: ${missing.map(c=>c.mt).join(', ')}`,'err');return;}
+
+  const n=S.n, vs=S.vars.slice(0,n);
+  const terms=[], rawTerms=[];
+  for(const g of S.groups){
+    const bins=g.map(m=>m.toString(2).padStart(n,'0'));
+    const parts=[],rp=[];
+    for(let i=0;i<n;i++){
+      const bits=bins.map(b=>b[i]);
+      if(bits.every(b=>b==='0')){if(S.maxterm){parts.push(vs[i]);rp.push(vs[i]);}else{parts.push(`${vs[i]}'`);rp.push(`${vs[i]}'`);}}
+      else if(bits.every(b=>b==='1')){if(S.maxterm){parts.push(`${vs[i]}'`);rp.push(`${vs[i]}'`);}else{parts.push(vs[i]);rp.push(vs[i]);}}
+    }
+    if(!parts.length){terms.push(S.maxterm?'0':'1');}
+    else{terms.push(S.maxterm?`(${parts.join(' + ')})`:parts.join(''));rawTerms.push(rp);}
+  }
+  const eq=`F = ${terms.join(S.maxterm?' · ':' + ')}`;
+  $('eq-text').textContent=eq;
+  $('eq-bar').classList.add('show');
+  S.eqTerms=rawTerms;
+  btn.innerHTML='⚡ Draw Circuit';btn.className='btn btn-green';
+
+  // Score
+  const lits=rawTerms.flat().length;
+  const gates=rawTerms.length+(rawTerms.length>1?1:0);
+  const total=S.cells.length;
+  const ones=S.cells.filter(c=>c.state==='1').length;
+  const reduction=ones>0?Math.round((1-rawTerms.flat().length/Math.max(ones*n,1))*100):0;
+  const clampedR=Math.max(0,Math.min(100,reduction));
+  $('sc-reduction').textContent=`${clampedR}%`;
+  $('sc-literals').textContent=lits;
+  $('sc-gates').textContent=gates;
+  $('sc-bar').style.width=`${clampedR}%`;
+  $('score-bar').style.display='flex';
+}
+
+function closeEq(){
+  $('eq-bar').classList.remove('show');
+  $('eq-btn').innerHTML='ƒ Craft Equation';$('eq-btn').className='btn btn-accent';
+  S.eqTerms=null;
+  $('score-bar').style.display='none';
+}
+
+/* ── TRUTH TABLE ── */
+function showTT(){
+  const n=S.n, vs=S.vars.slice(0,n);
+  const tbl=$('tt-tbl'); tbl.innerHTML='';
+  const thead=tbl.createTHead(), hr=thead.insertRow();
+  vs.forEach(v=>{const th=document.createElement('th');th.textContent=v;hr.appendChild(th);});
+  const thf=document.createElement('th');thf.textContent='F';hr.appendChild(thf);
+  const sm={};S.cells.forEach(c=>sm[c.mt]=c.state);
+  const tbody=tbl.createTBody();
+  for(let i=0;i<(1<<n);i++){
+    const tr=tbody.insertRow(), bin=i.toString(2).padStart(n,'0');
+    for(const b of bin){const td=tr.insertCell();td.textContent=b;}
+    const s=sm[i]||'0', td=tr.insertCell();td.textContent=s;
+    if(s==='1') td.className='r1'; if(s==='X') td.className='rX';
+  }
+  openModal('tt-modal');
+}
+
+/* ── CIRCUIT DRAWING ── */
+function showCircuit(){
+  if(!S.eqTerms||!S.eqTerms.length){toast('Generate equation first','warn');return;}
+  openModal('ckt-modal');
+  setTimeout(drawCircuit,80);
+}
+
+function drawCircuit(){
+  const canvas=$('ckt-canvas');
+  const W=canvas.width, H=canvas.height;
+  const ctx=canvas.getContext('2d');
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=isDark?'#1e2535':'#f5f8ff';ctx.fillRect(0,0,W,H);
+
+  const terms=S.eqTerms, isPos=S.maxterm, nT=terms.length;
+  const allVars=[...new Set(terms.flat().map(v=>v.replace("'",'')))]
+    .sort((a,b)=>S.vars.indexOf(a)-S.vars.indexOf(b));
+  const nV=allVars.length;
+
+  const MARGIN_L=50, MARGIN_T=50;
+  const RAIL_GAP=Math.min(52,180/Math.max(nV-1,1));
+  const TERM_GAP=Math.min(75,(H-MARGIN_T*2-40)/Math.max(nT,1));
+  const GATE_X=MARGIN_L+nV*RAIL_GAP+20;
+  const FINAL_GATE_X=GATE_X+120;
+
+  const varX={};
+  allVars.forEach((v,i)=>{varX[v]=MARGIN_L+i*RAIL_GAP;});
+
+  // Colors
+  const COL_RAIL   = isDark?'#2a3350':'#d0d8f0';
+  const COL_WIRE   = isDark?'#8892b0':'#4a5a80';
+  const COL_DOT    = isDark?'#ff4d6d':'#dd2244';
+  const COL_AND    = isDark?'#d4a028':'#8b5c10';
+  const COL_OR     = isDark?'#c04828':'#8b2210';
+  const COL_NOT    = isDark?'#ffab40':'#cc6600';
+  const COL_GATE_FILL = isDark?'rgba(30,37,53,0.9)':'rgba(245,248,255,0.95)';
+  const COL_TEXT   = isDark?'#e2e8f8':'#1a2040';
+  const COL_OUT    = isDark?'#c8922a':'#6b4010';
+  const COL_F_FILL = isDark?'rgba(200,146,42,0.12)':'rgba(0,100,200,0.1)';
+
+  ctx.font=`bold 12px IBM Plex Mono, monospace`;
+  ctx.textAlign='center';
+
+  /* Draw rails */
+  allVars.forEach((v,i)=>{
+    const x=varX[v];
+    // Label box
+    ctx.fillStyle=isDark?'#252d40':'#eaeef8';
+    ctx.strokeStyle=isDark?'#354060':'#b8c4e0';ctx.lineWidth=1;
+    roundRect(ctx,x-16,MARGIN_T-30,32,22,4);ctx.fill();ctx.stroke();
+    ctx.fillStyle=COL_TEXT;ctx.fillText(v,x,MARGIN_T-14);
+    // Rail line (dashed)
+    ctx.strokeStyle=COL_RAIL;ctx.lineWidth=1.5;
+    ctx.setLineDash([5,5]);
+    ctx.beginPath();ctx.moveTo(x,MARGIN_T);ctx.lineTo(x,H-MARGIN_T);ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  const gateOuts=[];
+
+  terms.forEach((term,ti)=>{
+    const cY=MARGIN_T+30+ti*TERM_GAP;
+    const nIn=term.length;
+
+    // Gate body dimensions
+    const gH=Math.max(38, nIn*14+8);
+
+    if(nIn===1){
+      /* BUFFER / NOT */
+      const ve=term[0], base=ve.replace("'",''), isPrime=ve.includes("'");
+      const rx=varX[base]||MARGIN_L;
+      const iy=cY;
+
+      // Dot on rail
+      ctx.fillStyle=COL_DOT;
+      ctx.beginPath();ctx.arc(rx,iy,4,0,Math.PI*2);ctx.fill();
+
+      // Wire to gate
+      ctx.strokeStyle=COL_WIRE;ctx.lineWidth=1.8;
+      ctx.beginPath();ctx.moveTo(rx,iy);ctx.lineTo(GATE_X,iy);ctx.stroke();
+
+      if(isPrime){
+        // NOT gate
+        const gx=GATE_X, gy=iy;
+        ctx.fillStyle=COL_GATE_FILL;ctx.strokeStyle=COL_NOT;ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(gx,gy-11);ctx.lineTo(gx+24,gy);ctx.lineTo(gx,gy+11);ctx.closePath();
+        ctx.fill();ctx.stroke();
+        // Bubble
+        ctx.fillStyle=COL_GATE_FILL;ctx.strokeStyle=COL_NOT;
+        ctx.beginPath();ctx.arc(gx+28,gy,4.5,0,Math.PI*2);ctx.fill();ctx.stroke();
+        // Output wire
+        ctx.strokeStyle=COL_WIRE;ctx.lineWidth=1.8;
+        ctx.beginPath();ctx.moveTo(gx+32.5,gy);ctx.lineTo(GATE_X+70,iy);ctx.stroke();
+        gateOuts.push({x:GATE_X+70,y:iy});
+      } else {
+        ctx.beginPath();ctx.moveTo(rx,iy);ctx.lineTo(GATE_X+70,iy);ctx.stroke();
+        gateOuts.push({x:GATE_X+70,y:iy});
+      }
+
+    } else {
+      /* AND / OR gate */
+      const gx=GATE_X, cy_gate=cY;
+
+      // Draw input wires first
+      term.forEach((ve,j)=>{
+        const base=ve.replace("'",''), isPrime=ve.includes("'");
+        const rx=varX[base]||MARGIN_L;
+        const pinY=cy_gate+(j-(nIn-1)/2)*14;
+
+        ctx.fillStyle=COL_DOT;
+        ctx.beginPath();ctx.arc(rx,pinY,4,0,Math.PI*2);ctx.fill();
+
+        if(isPrime){
+          ctx.strokeStyle=COL_WIRE;ctx.lineWidth=1.8;
+          ctx.beginPath();ctx.moveTo(rx,pinY);ctx.lineTo(gx-14,pinY);ctx.stroke();
+          // NOT bubble
+          ctx.fillStyle=COL_GATE_FILL;ctx.strokeStyle=COL_NOT;ctx.lineWidth=1.5;
+          ctx.beginPath();ctx.arc(gx-9,pinY,5,0,Math.PI*2);ctx.fill();ctx.stroke();
+          // Wire from bubble into gate
+          ctx.strokeStyle=COL_WIRE;ctx.lineWidth=1.8;
+          ctx.beginPath();ctx.moveTo(gx-4,pinY);ctx.lineTo(gx+22,pinY);ctx.stroke();
+        } else {
+          ctx.strokeStyle=COL_WIRE;ctx.lineWidth=1.8;
+          ctx.beginPath();ctx.moveTo(rx,pinY);ctx.lineTo(gx+22,pinY);ctx.stroke();
+        }
+      });
+
+      // Draw gate body ON TOP of wires
+      const top=cy_gate-gH/2, bot=cy_gate+gH/2;
+      if(isPos){
+        drawORGate(ctx,gx,cy_gate,gH,COL_GATE_FILL,COL_OR);
+      } else {
+        drawANDGate(ctx,gx,cy_gate,gH,COL_GATE_FILL,COL_AND);
+      }
+
+      // Output wire FROM gate tip
+      const tipX=gx+68;
+      ctx.strokeStyle=COL_WIRE;ctx.lineWidth=1.8;
+      ctx.beginPath();ctx.moveTo(tipX,cy_gate);ctx.lineTo(GATE_X+70,cy_gate);ctx.stroke();
+      gateOuts.push({x:GATE_X+70,y:cy_gate});
+    }
+  });
+
+  /* Final output stage */
+  if(gateOuts.length===0) return;
+
+  if(gateOuts.length===1){
+    const pt=gateOuts[0];
+    ctx.strokeStyle=COL_WIRE;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(pt.x,pt.y);ctx.lineTo(pt.x+50,pt.y);ctx.stroke();
+    // Output dot
+    ctx.fillStyle=COL_OUT;ctx.beginPath();ctx.arc(pt.x+50,pt.y,5,0,Math.PI*2);ctx.fill();
+    // F label
+    ctx.fillStyle=COL_F_FILL;ctx.strokeStyle=COL_OUT;ctx.lineWidth=1.5;
+    roundRect(ctx,pt.x+56,pt.y-13,28,26,5);ctx.fill();ctx.stroke();
+    ctx.fillStyle=COL_OUT;ctx.font='bold 15px Syne,sans-serif';ctx.textAlign='left';
+    ctx.fillText('F',pt.x+63,pt.y+5);
+  } else {
+    const midY=MARGIN_T+30+(nT-1)*TERM_GAP/2;
+    const fgx=FINAL_GATE_X;
+    const fgH=Math.max(40,nT*12+10);
+
+    // Routing wires to final gate
+    gateOuts.forEach((pt,k)=>{
+      const pinY=midY+(k-(nT-1)/2)*12;
+      const midX=pt.x+15+k*5;
+      ctx.strokeStyle=COL_WIRE;ctx.lineWidth=1.8;
+      ctx.beginPath();
+      ctx.moveTo(pt.x,pt.y);
+      ctx.lineTo(midX,pt.y);
+      ctx.lineTo(midX,pinY);
+      ctx.lineTo(fgx+22,pinY);
+      ctx.stroke();
+    });
+
+    // Final gate body
+    if(isPos){
+      drawANDGate(ctx,fgx,midY,fgH,COL_GATE_FILL,COL_AND);
+    } else {
+      drawORGate(ctx,fgx,midY,fgH,COL_GATE_FILL,COL_OR);
+    }
+
+    // Final output wire — from gate tip
+    const tipX=fgx+68;
+    const outX=tipX+50;
+    ctx.strokeStyle=COL_WIRE;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(tipX,midY);ctx.lineTo(outX,midY);ctx.stroke();
+    // Output dot
+    ctx.fillStyle=COL_OUT;ctx.beginPath();ctx.arc(outX,midY,5,0,Math.PI*2);ctx.fill();
+    // F label
+    ctx.fillStyle=COL_F_FILL;ctx.strokeStyle=COL_OUT;ctx.lineWidth=1.5;
+    roundRect(ctx,outX+8,midY-13,28,26,5);ctx.fill();ctx.stroke();
+    ctx.fillStyle=COL_OUT;ctx.font='bold 15px Syne,sans-serif';ctx.textAlign='left';
+    ctx.fillText('F',outX+16,midY+5);
+  }
+}
+
+function drawANDGate(ctx,x,y,h,fill,stroke){
+  const top=y-h/2, bot=y+h/2;
+  ctx.fillStyle=fill;ctx.strokeStyle=stroke;ctx.lineWidth=2.2;
+  ctx.beginPath();
+  ctx.moveTo(x,top);
+  ctx.lineTo(x+28,top);
+  ctx.arc(x+28,y,h/2,-Math.PI/2,Math.PI/2);
+  ctx.lineTo(x,bot);
+  ctx.closePath();
+  ctx.fill();ctx.stroke();
+}
+
+function drawORGate(ctx,x,y,h,fill,stroke){
+  const top=y-h/2, bot=y+h/2;
+  ctx.fillStyle=fill;ctx.strokeStyle=stroke;ctx.lineWidth=2.2;
+  ctx.beginPath();
+  ctx.moveTo(x,top);
+  ctx.quadraticCurveTo(x+18,y,x,bot);
+  ctx.quadraticCurveTo(x+28,bot,x+68,y);
+  ctx.quadraticCurveTo(x+28,top,x,top);
+  ctx.closePath();
+  ctx.fill();ctx.stroke();
+}
+
+/* ── MODE ── */
+function setMode(isMaxterm){
+  S.maxterm=isMaxterm;
+  $('btn-sop').className=isMaxterm?'':'active';
+  $('btn-pos').className=isMaxterm?'active pos':'';
+  $('mode-badge').textContent=isMaxterm?'POS · Maxterm':'SOP · Minterm';
+  $('mode-badge').className=isMaxterm?'tb-label pos':'tb-label sop';
+  closeEq();
+}
+
+/* ── VARIABLE CHANGE ── */
+function updateVarNames(){
+  const text=$('var-names').value.trim();
+  const n=S.n;
+  let parts=text.includes(',')?text.split(',').map(s=>s.trim()):text.split('').filter(c=>c.trim());
+  while(parts.length<n) parts.push('?');
+  S.vars=parts.slice(0,n);
+  updateBadges(); renderMap();
+}
+
+function handleVarChange(){
+  const newN=parseInt($('var-n').value);
+  if(newN===S.n) return;
+  const hasData=S.cells.some(c=>c.state!=='0')||S.groups.length>0;
+  const doChange=()=>{
+    S.n=newN;
+    const defs=['A','B','C','D','E','F'];
+    S.vars=defs.slice(0,newN);
+    $('var-names').value=S.vars.join(',');
+    $('term-in').value='';$('dc-in').value='';$('chips').innerHTML='';
+    S.locked=false;updateLockUI();
+    S.undo=[];S.redo=[];updateHistBtns();
+    renderMap();updateBadges();
+  };
+  if(hasData) confirm('Changing variable count will clear all data. Continue?',doChange);
+  else doChange();
+}
+
+function updateBadges(){
+  $('var-badge').textContent=`${S.n} Variables`;
+  $('var-names-badge').textContent=S.vars.slice(0,S.n).join(' ');
+}
+
+/* ── GENERATE PROBLEM ── */
+function generateProblem(){
+  if(S.generating){
+    clearInterval(S.genTimer);S.genTimer=null;
+    const t=[...S.genTerms], d=[...S.genDCs];
+    S.genTerms=[];S.genDCs=[];
+    const et=$('term-in').value.trim(), ed=$('dc-in').value.trim();
+    $('term-in').value=[...nums(et),...t].join(', ');
+    $('dc-in').value=[...nums(ed),...d].join(', ');
+    finalizeGen(); return;
+  }
+  saveUndo();S.generating=true;
+  $('gen-btn').innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Do Fast';
+  setCtrl(false);$('gen-btn').disabled=false;
+  $('term-in').value='';$('dc-in').value='';$('chips').innerHTML='';
+  closeEq();S.groups=[];updateGroupPanel();renderGroups();
+
+  const n=S.n, lim=1<<n, key=String(n);
+  let mints,dcs;
+  if(DB[key]&&Math.random()<0.75){
+    const p=DB[key][Math.floor(Math.random()*DB[key].length)];
+    mints=p.m;dcs=p.d;toast(`📚 ${p.desc}`,'ok');
+  } else {
+    const num=Math.floor(Math.random()*(lim/2))+Math.floor(lim/4);
+    const chosen=Array.from({length:lim},(_,i)=>i).sort(()=>Math.random()-0.5).slice(0,num);
+    if(Math.random()>0.5){const nd=Math.max(1,Math.floor(num*0.25));dcs=chosen.slice(0,nd);mints=chosen.slice(nd);}
+    else{mints=chosen;dcs=[];}
+  }
+  S.genTerms=[...mints];S.genDCs=[...dcs];
+  const delay=Math.min(400,Math.max(60,3500/Math.max(mints.length+dcs.length,1)));
+  S.genTimer=setInterval(genStep,delay);
+}
+
+function genStep(){
+  if(S.genTerms.length){
+    const t=S.genTerms.shift();
+    const cur=$('term-in').value.trim();
+    $('term-in').value=cur?`${cur}, ${t}`:`${t}`;
+  } else if(S.genDCs.length){
+    const d=S.genDCs.shift();
+    const cur=$('dc-in').value.trim();
+    $('dc-in').value=cur?`${cur}, ${d}`:`${d}`;
+  } else { finalizeGen();return; }
+  applyTermsToMap();updateChips();
+}
+
+function finalizeGen(){
+  if(S.genTimer){clearInterval(S.genTimer);S.genTimer=null;}
+  S.generating=false;setCtrl(true);
+  $('gen-btn').innerHTML='🎲 Generate';
+  applyTermsToMap();updateChips();
+  if(!S.locked) toggleLock();
+}
+
+/* ── UNDO/REDO ── */
+function snap(){return{cells:S.cells.map(c=>({...c}))}}
+function saveUndo(){S.undo.push(snap());if(S.undo.length>30)S.undo.shift();S.redo=[];updateHistBtns();}
+function restore(sn){sn.cells.forEach(sc=>{const c=cell(sc.mt);if(c)c.state=sc.state;});S.groups=[];S.sel.clear();updateGroupPanel();renderGroups();refreshAll();closeEq();}
+function undo(){if(!S.undo.length)return;S.redo.push(snap());restore(S.undo.pop());updateHistBtns();}
+function redo(){if(!S.redo.length)return;S.undo.push(snap());restore(S.redo.pop());updateHistBtns();}
+function updateHistBtns(){$('undo-btn').disabled=!S.undo.length;$('redo-btn').disabled=!S.redo.length;}
+
+/* ── RESET ── */
+function resetAll(){
+  confirm('Reset everything?',()=>{
+    const defs=['A','B','C','D','E','F'];
+    S.vars=defs.slice(0,S.n);$('var-names').value=S.vars.join(',');
+    $('term-in').value='';$('dc-in').value='';$('chips').innerHTML='';
+    S.locked=false;updateLockUI();S.undo=[];S.redo=[];updateHistBtns();
+    S.maxterm=false;setMode(false);
+    $('solve-btn').innerHTML='🪄 Auto Solve';$('solve-btn').className='btn btn-violet';
+    renderMap();toast('Map reset','ok');
+  });
+}
+
+/* ── CONTROLS ENABLED ── */
+function setCtrl(on){
+  ['var-n','var-names','term-in','dc-in','lock-btn','solve-btn','eq-btn','btn-sop','btn-pos'].forEach(id=>{
+    const el=$(id);if(el)el.disabled=!on;
+  });
+  $('grp-btn').disabled=!on||!S.locked;
+}
+
+/* ── THEME ── */
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme',isDark?'light':'dark');
+  $('theme-btn').textContent=isDark?'🌙':'☀️';
+  setTimeout(()=>{renderGroups();if(S.eqTerms)setTimeout(drawCircuit,50);},50);
+}
+
+/* ── PCB THEME ── */
+function togglePCB(){
+  S.pcb=!S.pcb;
+  $('kmap-shell').classList.toggle('pcb-mode',S.pcb);
+  $('pcb-btn').classList.toggle('on',S.pcb);
+  $('pcb-btn').textContent=S.pcb?'🟢 PCB On':'🟢 PCB Theme';
+}
+
+/* ── EXPORT ── */
+function exportImage(){
+  const shell=$('kmap-shell');
+  const W=shell.offsetWidth, H=shell.offsetHeight;
+  const exp=document.createElement('canvas');
+  exp.width=W+40;exp.height=H+40;
+  const ctx=exp.getContext('2d');
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  ctx.fillStyle=isDark?'#141008':'#f5ecd6';
+  ctx.fillRect(0,0,exp.width,exp.height);
+  // Use html2canvas fallback message
+  toast('Screenshot: use browser print/screenshot (Ctrl+Shift+P)','warn');
+}
+
+/* ── MODALS ── */
+function openModal(id){$(id).classList.add('open')}
+function closeModal(id){$(id).classList.remove('open')}
+let _confirmCb=null;
+function confirm(msg,cb){$('conf-msg').textContent=msg;_confirmCb=cb;openModal('conf-modal');}
+function doConfirm(){closeModal('conf-modal');if(_confirmCb){_confirmCb();_confirmCb=null;}}
+document.querySelectorAll('.backdrop').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')}));
+
+/* ── TOAST ── */
+function toast(msg,type=''){
+  const wrap=$('toasts');
+  const el=document.createElement('div');el.className=`toast ${type}`;
+  const icons={ok:'✓',err:'✕',warn:'⚠'};
+  el.textContent=`${icons[type]||'ℹ'} ${msg}`;
+  wrap.appendChild(el);
+  setTimeout(()=>{el.style.animation='tin 0.25s ease reverse';setTimeout(()=>el.remove(),250);},2600);
+}
+
+/* ── CONFETTI ── */
+function confetti(){
+  const colors=['#c8922a','#d4782a','#c04828','#d4b030','#a07020'];
+  for(let i=0;i<28;i++){
+    const el=document.createElement('div');el.className='confetti-piece';
+    el.style.cssText=`left:${Math.random()*100}vw;background:${colors[i%colors.length]};
+      animation-duration:${0.9+Math.random()*1.2}s;animation-delay:${Math.random()*0.4}s;
+      transform:rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),2400);
+  }
+}
+
+/* ── KEYBOARD ── */
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}
+  if((e.ctrlKey||e.metaKey)&&(e.key==='y'||(e.shiftKey&&e.key==='z'))){e.preventDefault();redo();}
+  if(e.key==='Enter'&&S.locked) makeGroup();
+  if(e.key==='Escape') document.querySelectorAll('.backdrop.open').forEach(m=>m.classList.remove('open'));
+  if(e.key==='l'||e.key==='L') toggleLock();
+});
+
+/* ── RESIZE OBSERVER ── */
+const ro=new ResizeObserver(()=>{resizeGroupCanvas();});
+ro.observe($('kmap-shell'));
+
+/* ── INIT ── */
+renderMap();
+</script>
+</body>
+</html>

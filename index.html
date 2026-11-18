@@ -858,11 +858,6 @@
         <div class="theme-row" style="flex-direction:column;align-items:stretch;gap:10px">
           <div id="statsLine" style="font-size:0.8rem;color:var(--text-muted)"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-ghost btn-sm" onclick="exportBackup()">⬇ Export backup</button>
-            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFileInput').click()">⬆ Import backup</button>
-            <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importBackup(event)" />
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-ghost btn-sm" onclick="hardRefreshApp()" title="Clears app cache and reloads fresh, like relaunching">🔄 Hard refresh app</button>
             <button class="btn btn-sm" style="background:rgba(var(--red-rgb),0.12);border:1px solid rgba(var(--red-rgb),0.35);color:var(--red)" onclick="hardResetApp()" title="Delete ALL data and start fresh">🗑 Hard reset</button>
           </div>
@@ -1035,7 +1030,7 @@ function saveExtraTools() {
       localStorage.setItem('tb_extra_tools', JSON.stringify(stripped));
       showToast('⚠️ Storage limit hit — some large tools lost inline code. Re-add them.', 5000);
     } catch (e2) {
-      showToast('✗ Could not save tools — localStorage full. Export backup first!', 6000);
+      showToast('✗ Could not save tools — localStorage full. Remove large tools first!', 6000);
     }
   }
   _afterSave();
@@ -1952,7 +1947,7 @@ function saveEditTool() {
 // ═══════════════════════════════════════════════════════
 //  BACKUP — export / import full app state as JSON
 // ═══════════════════════════════════════════════════════
-function exportBackup() {
+function exportBackup() { return; /* removed */
   const backup = {
     version: 2,
     exportedAt: new Date().toISOString(),
@@ -1974,7 +1969,7 @@ function exportBackup() {
   setStatus('data-status','success','✓ Backup downloaded');
 }
 
-function importBackup(e) {
+function importBackup(e) { return; /* removed: the site data lives in GitHub now */
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
@@ -2385,7 +2380,8 @@ const strip=t=>{const o=Object.assign({},t);delete o.code;delete o.lastOpened;de
 const sha256=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');
 
 // ── Private vault: AES-GCM, key from passphrase (PBKDF2). Only ciphertext ever reaches GitHub ──
-let K=null,VM=null,VP=null,vmNew=false;
+let K=null,VM=null,VP=null,vmNew=false,UNL=[];
+const PD=new Set(JSON.parse(LS.getItem('tb_gh_pd')||'[]')),savePD=()=>LS.setItem('tb_gh_pd',JSON.stringify([...PD]));
 async function derive(pw,salt){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
 async function encT(t){const iv=crypto.getRandomValues(new Uint8Array(12)),ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},K,new TextEncoder().encode(t)));return JSON.stringify({v:1,iv:toB64(iv),ct:toB64(ct)})}
 async function decT(s){const o=JSON.parse(s);return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:fromB64(o.iv)},K,fromB64(o.ct)))}
@@ -2402,6 +2398,8 @@ function askPass(title,msg,again){return new Promise(res=>{const o=document.crea
   document.body.appendChild(o);const g=s=>o.querySelector(s);g('#pw1').focus();const done=v=>{o.remove();res(v)};g('#pw-c').onclick=()=>done(null);
   const ok=()=>{const a=g('#pw1').value;if(!a){g('#pw-err').textContent='Enter the passphrase';return}if(again){if(a.length<8){g('#pw-err').textContent='Use at least 8 characters';return}if(a!==g('#pw2').value){g('#pw-err').textContent='The two passphrases do not match';return}}done(a)};
   g('#pw-o').onclick=ok;o.addEventListener('keydown',e=>{if(e.key==='Enter')ok();if(e.key==='Escape')done(null)})})}
+function askYes(title,msg,yes,no){return new Promise(res=>{const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px';
+  o.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;max-width:430px;width:100%;color:var(--text)"><div style="font-weight:700;margin-bottom:6px">'+esc(title)+'</div><div class="field-hint" style="margin-bottom:14px;line-height:1.55">'+esc(msg)+'</div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-ghost btn-sm" id="yn-n">'+esc(no)+'</button><button class="btn btn-primary btn-sm" id="yn-y">'+esc(yes)+'</button></div></div>';document.body.appendChild(o);const d=v=>{o.remove();res(v)};o.querySelector('#yn-n').onclick=()=>d(false);o.querySelector('#yn-y').onclick=()=>d(true)})}
 async function ensureVault(){if(K)return true;
   if(!VM){const p=await askPass('Create your private vault','Private tools are encrypted with this passphrase before they are uploaded. If you forget it they cannot be recovered. Use at least 8 characters.',true);if(!p)return false;await createVault(p);showToast('🔒 Vault created',3000);return true}
   for(let i=0;i<3;i++){const p=await askPass('Unlock private vault','Enter your vault passphrase to see and edit private tools.',false);if(!p)return false;if(await unlockVault(p))return true;showToast('✗ Wrong passphrase',2500)}return false}
@@ -2427,19 +2425,24 @@ async function sync(){if(busy){again=true;return}busy=true;badge('syncing');
       if(isPriv(t)){t.file='vault/'+t.id+'.enc';files.push({path:t.file,text:await encT(t.code)})}
       else{if(!t.file||t.file.startsWith('vault/'))t.file='tools/'+t.id+'.html';files.push({path:t.file,text:t.code})}done.push(t)}
     const pubT=TOOLS.filter(t=>!isPriv(t)),pubA=ARCHIVED.filter(t=>!isPriv(t)),priT=TOOLS.filter(isPriv),priA=ARCHIVED.filter(isPriv);
+    const lastN=+LS.getItem('tb_gh_lastn')||0;
+    if(lastN>=4&&pubT.length<lastN*0.5&&!await askYes('Save a much smaller library?','This would reduce your public tools from '+lastN+' to '+pubT.length+'. If that is not what you wanted, press Cancel, then use Admin > Publishing > Reload from GitHub.','Save anyway','Cancel'))throw new Error('Save cancelled. Nothing was changed on GitHub.');
     const cur=norm(pubT,pubA,CATEGORIES,DEFAULT_CATEGORY),libChanged=cur!==LS.getItem('tb_gh_lastlib');
-    if(libChanged)files.push({path:'library.json',text:JSON.stringify({v:3,updated:new Date().toISOString(),tools:pubT.map(strip),archived:pubA.map(strip),categories:CATEGORIES,defaultCategory:DEFAULT_CATEGORY||'',settings:SET},null,1)});
+    if(libChanged)files.push({path:'library.json',text:JSON.stringify({v:3,updated:new Date().toISOString(),tools:pubT.map(strip),archived:pubA.map(strip),categories:CATEGORIES,defaultCategory:DEFAULT_CATEGORY||'',settings:SET,unlinked:UNL},null,1)});
     let vh=null;
     if(K){const vj=JSON.stringify({tools:priT.map(strip),archived:priA.map(strip)});vh=await sha256(vj);
       if(vh!==LS.getItem('tb_gh_lastvault')||done.some(isPriv)||vmNew)files.push({path:'vault/library.enc',text:await encT(vj)});
       if(vmNew)files.push({path:'vault/meta.json',text:JSON.stringify(VM)})}
     const usedP=new Set([...pubT,...pubA].map(t=>t.file).filter(Boolean)),usedV=new Set([...priT,...priA].map(t=>t.file).filter(Boolean));
-    const dels=[];JSON.parse(LS.getItem('tb_gh_known')||'[]').forEach(f=>{if(!usedP.has(f)&&!usedV.has(f))dels.push(f)});
+    let dels=[];JSON.parse(LS.getItem('tb_gh_known')||'[]').forEach(f=>{if(!usedP.has(f)&&!usedV.has(f))dels.push(f)});
     if(K)JSON.parse(LS.getItem('tb_gh_knownv')||'[]').forEach(f=>{if(!usedV.has(f)&&!usedP.has(f))dels.push(f)});
+    dels=[...new Set(dels)];const risky=dels.filter(f=>!PD.has(f));
+    if(risky.length&&!await askYes('Delete '+risky.length+' file'+(risky.length>1?'s':'')+' from GitHub?','No tool uses these files any more: '+risky.slice(0,5).join(', ')+(risky.length>5?' …':'')+'. Deleting is permanent, only the repository history keeps a copy. Keep them if you are not sure.','Delete','Keep files'))dels=dels.filter(f=>PD.has(f));
     if(!files.length&&!dels.length){LS.removeItem('tb_gh_dirty');return}
-    await commit(files,[...new Set(dels)],'Update toolbox'+(done.length?' ('+done.map(t=>t.name).slice(0,3).join(', ')+')':''));
+    await commit(files,dels,'Update toolbox'+(done.length?' ('+done.map(t=>t.name).slice(0,3).join(', ')+')':''));
     done.forEach(t=>{t.code=null;delete t._codeLost});vmNew=false;
     LS.setItem('tb_gh_known',JSON.stringify([...usedP]));if(K){LS.setItem('tb_gh_knownv',JSON.stringify([...usedV]));LS.setItem('tb_gh_lastvault',vh)}LS.setItem('tb_gh_lastlib',cur);
+    dels.forEach(f=>PD.delete(f));savePD();LS.setItem('tb_gh_lastn',String(pubT.length));
     saveExtraTools();saveArchived();LS.removeItem('tb_gh_dirty');LS.setItem('tb_gh_last',String(Date.now()));
     showToast('✓ Saved to GitHub'+(done.length?' · new files go live in about a minute':''),3800)});
     badge('ok');renderAll();admRender()
@@ -2453,7 +2456,7 @@ function normalize(){[...TOOLS,...ARCHIVED].forEach(t=>{if(!t.visibility)t.visib
 function applyLib(lib){
   const old={};try{JSON.parse(LS.getItem('tb_extra_tools')||'[]').forEach(t=>old[t.id]=t.lastOpened)}catch{}
   (lib.tools||[]).forEach(t=>{if(old[t.id])t.lastOpened=old[t.id]});
-  SET=Object.assign({},DEF,lib.settings||{});LS.setItem('tb_site',JSON.stringify(SET));
+  UNL=lib.unlinked||[];SET=Object.assign({},DEF,lib.settings||{});LS.setItem('tb_gh_lastn',String((lib.tools||[]).filter(t=>!isPriv(t)).length));LS.setItem('tb_site',JSON.stringify(SET));
   LS.setItem('tb_extra_tools',JSON.stringify(isAdmin()?(lib.tools||[]):(lib.tools||[]).filter(t=>!isPriv(t))));LS.setItem('tb_archived_tools',JSON.stringify(isAdmin()?(lib.archived||[]):[]));
   LS.setItem('tb_categories',JSON.stringify(lib.categories||[]));LS.setItem('tb_default_category',lib.defaultCategory||'');
   LS.setItem('tb_gh_known',JSON.stringify([...(lib.tools||[]),...(lib.archived||[])].map(t=>t.file).filter(Boolean)));
@@ -2469,7 +2472,7 @@ async function scanRepo(silent){
   try{const r=await api('GET','contents/tools?ref='+cfg().branch);if(!r.ok){if(!silent&&r.status!==404)showToast('✗ '+await why(r),4500);return}
     const files=(await r.json()).filter(f=>f.type==='file'&&/\.html?$/i.test(f.name)).map(f=>f.name);
     const known=new Set([...TOOLS,...ARCHIVED].map(t=>t.file));let n=0;
-    files.forEach(fn=>{const p='tools/'+fn;if(known.has(p))return;const base=fn.replace(/\.html?$/i,'');let id=base.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'tool',u=id,c=2;
+    files.forEach(fn=>{const p='tools/'+fn;if(known.has(p))return;const ui=UNL.findIndex(x=>x.file===p);if(ui>=0){TOOLS.push(Object.assign({},UNL[ui],{visibility:'public'}));UNL.splice(ui,1);n++;return}const base=fn.replace(/\.html?$/i,'');let id=base.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'tool',u=id,c=2;
       while(TOOLS.find(t=>t.id===u)||ARCHIVED.find(t=>t.id===u))u=id+'-'+c++;
       TOOLS.push({id:u,name:base,desc:'',icon:'🛠️',category:DEFAULT_CATEGORY,file:p,autoDetected:true,reviewed:false,addedAt:Date.now(),visibility:'public'});n++});
     if(n){saveExtraTools();renderAll();admRender();showToast('✓ '+n+' new tool'+(n>1?'s':'')+' found in the repo (public, because the file is already public)',4500)}else if(!silent)showToast('ℹ️ No new files in tools/',2500)
@@ -2479,13 +2482,15 @@ window.autoScanOnLaunch=async function(){};
 const _after=_afterSave;window._afterSave=_afterSave=function(){try{_after()}catch{}schedule()};
 // open private tools: decrypt on the fly, never stored
 const _open=window.openTool;
-window.openTool=function(id){const t=TOOLS.find(x=>x.id===id);if(!t||!isPriv(t)||t.code)return _open(id);
+window.openTool=function(id){const t=TOOLS.find(x=>x.id===id);if(t&&!isPriv(t)&&!t.code&&t.file){fetch(t.file+'?_t='+Date.now(),{method:'HEAD',cache:'no-store'}).then(r=>{if(r.status===404)showToast('✗ This tool\'s file is missing in the repo: '+t.file,6500)}).catch(()=>{})}
+  if(!t||!isPriv(t)||t.code)return _open(id);
   (async()=>{try{if(!await ensureVault())return;const raw=await readRepo(t.file).catch(()=>null)||await readPages(t.file);const html=await decT(raw);sup=true;t.code=html;_open(id);t.code=null;sup=false;saveExtraTools()}catch(e){sup=false;t.code=null;showToast('✗ Could not open private tool: '+e.message,4500)}})()};
 async function fetchCode(t){if(t.code)return t.code;if(isPriv(t)){const raw=await readRepo(t.file).catch(()=>null)||await readPages(t.file);return decT(raw)}return readPages(t.file)}
 async function setVis(ids,vis){if(!isAdmin())return 0;if(vis==='private'&&!await ensureVault())return 0;let n=0;
   for(const id of ids){const t=[...TOOLS,...ARCHIVED].find(x=>x.id===id);if(!t||(t.visibility||'public')===vis)continue;
     if(isPriv(t)&&!K){showToast('Unlock the vault first',2500);return n}
     try{t.code=await fetchCode(t)}catch(e){showToast('✗ '+t.name+': '+e.message,4500);continue}
+    if(t.file){PD.add(t.file);savePD()}
     t.visibility=vis;t.file=vis==='private'?'vault/'+t.id+'.enc':'tools/'+t.id+'.html';n++}
   saveExtraTools();saveArchived();renderAll();admRender();if(n)showToast(n+' tool'+(n>1?'s':'')+' now '+vis+(vis==='private'?' (encrypted)':''),3000);return n}
 window.toggleVisibility=function(id){const t=TOOLS.find(x=>x.id===id);if(t)setVis([id],isPriv(t)?'public':'private')};
@@ -2539,7 +2544,7 @@ function archive(ids){let n=0;ids.forEach(id=>{const t=TOOLS.find(x=>x.id===id);
 function tTools(){const cats=categoryNames(),q=ADM.q.toLowerCase();
   const L=TOOLS.filter(t=>(ADM.cat==='*'||(ADM.cat===''?!t.category:t.category===ADM.cat))&&(ADM.vis==='*'||(t.visibility||'public')===ADM.vis)&&((t.name||'')+' '+(t.desc||'')).toLowerCase().includes(q));
   const nPri=TOOLS.filter(isPriv).length,lockedNote=(VM&&!K)?'<div class="adm-note">🔒 Your vault is locked, so private tools are hidden here. <a href="#" data-a="unlock" style="color:var(--accent)">Unlock</a></div>':'';
-  return lockedNote+'<div class="adm-stats">'+[['Tools',TOOLS.length],['Public',TOOLS.length-nPri],['Private',nPri],['No category',TOOLS.filter(t=>!t.category).length],['Archived',ARCHIVED.length]].map(x=>'<div><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join('')+'</div>'
+  return lockedNote+(UNL.length?'<div class="adm-note">⏳ '+UNL.length+' tool'+(UNL.length>1?'s are':' is')+' waiting for '+(UNL.length>1?'their files':'its file')+': '+UNL.map(u=>esc(u.name)+' ('+esc(u.file)+')').join(', ')+'. Push each file to that exact path and it reconnects with its saved name, icon and category.</div>':'')+'<div class="adm-stats">'+[['Tools',TOOLS.length],['Public',TOOLS.length-nPri],['Private',nPri],['No category',TOOLS.filter(t=>!t.category).length],['Archived',ARCHIVED.length]].map(x=>'<div><b>'+x[1]+'</b><span>'+x[0]+'</span></div>').join('')+'</div>'
   +'<div class="adm-bar"><input type="text" id="adm-q" placeholder="Search tools…" value="'+esc(ADM.q)+'"><select id="adm-fc">'+opt('*','All categories',ADM.cat==='*')+opt('','No category',ADM.cat==='')+cats.map(c=>opt(c,c,ADM.cat===c)).join('')+'</select><select id="adm-fv">'+opt('*','Public + private',ADM.vis==='*')+opt('public','Public only',ADM.vis==='public')+opt('private','Private only',ADM.vis==='private')+'</select></div>'
   +(ADM.sel.size?'<div class="adm-bulk"><b>'+ADM.sel.size+' selected</b><select id="adm-bc">'+opt('','Set category…')+cats.map(c=>opt(c,c)).join('')+opt('__none','No category')+'</select><button class="btn btn-ghost btn-sm" data-a="bpub">Make public</button><button class="btn btn-ghost btn-sm" data-a="bpri">Make private</button><button class="btn btn-ghost btn-sm" data-a="bpin">Pin</button><button class="btn btn-ghost btn-sm" data-a="barc">Archive</button><button class="btn btn-ghost btn-sm" data-a="bclr">Clear</button></div>':'')
   +'<div style="overflow-x:auto"><table><thead><tr><th><input type="checkbox" data-a="selall" '+(L.length&&L.every(t=>ADM.sel.has(t.id))?'checked':'')+'></th><th>Tool</th><th>Category</th><th>Visibility</th><th></th></tr></thead><tbody>'
@@ -2555,7 +2560,8 @@ function tPriv(){const st=K?'unlocked':VM?'locked':'none';
 function tSite(){return '<div class="adm-card"><h3>Site</h3><div class="adm-row"><label>Title</label><input type="text" id="as-title" value="'+esc(SET.title)+'"></div><div class="adm-row"><label>Tagline</label><input type="text" id="as-tag" value="'+esc(SET.tagline)+'"></div><div class="adm-row"><label>Announcement</label><input type="text" id="as-ann" value="'+esc(SET.announce)+'" placeholder="Shown to every visitor"></div><div class="adm-row"><label>Visitors can enter</label><select id="as-open">'+opt('1','Yes, site is open',SET.siteOpen!==false)+opt('0','No, show a closed message',SET.siteOpen===false)+'</select></div><button class="btn btn-primary btn-sm" data-a="savesite">Save site settings</button></div>'}
 function tPub(){const c=cfg(),url='https://'+c.owner.toLowerCase()+'.github.io/'+c.repo+'/',last=LS.getItem('tb_gh_last');
   return '<div class="adm-card"><h3>Publishing</h3><p>Site: <a href="'+esc(url)+'" target="_blank" style="color:var(--accent)">'+esc(url)+'</a><br>Repository: <a href="https://github.com/'+esc(c.owner+'/'+c.repo)+'" target="_blank" style="color:var(--accent)">'+esc(c.owner+'/'+c.repo)+'</a> · <a href="https://github.com/'+esc(c.owner+'/'+c.repo)+'/commits/'+esc(c.branch)+'" target="_blank" style="color:var(--accent)">history (undo any change)</a><br>Last save from this browser: '+(last?new Date(+last).toLocaleString():'none yet')+'<br>Website build: <b id="adm-build">'+esc(ADM.build||'checking…')+'</b></p>'
-  +'<div class="adm-row"><button class="btn btn-primary btn-sm" data-a="syncnow">Save everything to GitHub now</button><button class="btn btn-ghost btn-sm" data-a="reload">Reload from GitHub</button><button class="btn btn-ghost btn-sm" data-a="disc">Disconnect this browser</button></div></div>'}
+  +'<div class="adm-row"><button class="btn btn-primary btn-sm" data-a="syncnow">Save everything to GitHub now</button><button class="btn btn-ghost btn-sm" data-a="reload">Reload from GitHub</button><button class="btn btn-ghost btn-sm" data-a="disc">Disconnect this browser</button></div></div>'
+  +'<div class="adm-card"><h3>Adding tools with git</h3><p>Copy an .html file into <b>tools/</b> and push. GitHub registers it automatically and the site updates in about a minute. Optional details: put <code>&lt;meta name="toolbox-name" content="..."&gt;</code>, <code>toolbox-desc</code>, <code>toolbox-icon</code>, <code>toolbox-category</code> in the file\'s head, or add a file <b>tools/yourfile.meta.json</b> like <code>{"name":"My tool","desc":"...","icon":"🛠️","category":"edu"}</code>. Files added with git are public. Use this panel to make a tool private.</p></div>'}
 function admRender(){const el=$('adm');if(!el||!el.classList.contains('open'))return;const T=[['tools','Tools'],['cats','Categories'],['priv','Privacy'],['site','Site'],['publish','Publishing']];
   el.innerHTML='<div class="adm-top"><b style="font-size:1rem">🛡 Admin panel</b><div class="adm-tabs">'+T.map(x=>'<button data-tab="'+x[0]+'" class="'+(ADM.tab===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</div><button class="btn btn-ghost btn-sm" data-a="close">Close</button></div><div class="adm-body">'+({tools:tTools,cats:tCats,priv:tPriv,site:tSite,publish:tPub}[ADM.tab])()+'</div>'}
 async function pubStatus(){try{const j=await rj('GET','pages/builds/latest');ADM.build=j.status==='built'?'live ✓ (updated '+new Date(j.updated_at).toLocaleTimeString()+')':j.status;}catch(e){ADM.build='unknown'}const b=$('adm-build');if(b)b.textContent=ADM.build}

@@ -1,0 +1,236 @@
+
+<style>
+  .ctrl-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .ctrl-label { font-size: 13px; color: var(--color-text-secondary); width: 160px; flex-shrink: 0; }
+  .ctrl-val { font-size: 13px; font-weight: 500; color: var(--color-text-primary); min-width: 80px; text-align: right; }
+  .metric { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 14px; }
+  .milestone-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .milestone-row:last-child { border-bottom: none; }
+  .ms-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .breakdown-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .breakdown-row:last-child { border-bottom: none; }
+</style>
+
+<h2 class="sr-only">১ কোটি টাকা সঞ্চয় calculator — মাসিক সঞ্চয় ও সুদের হার দিয়ে সময় বের করুন</h2>
+
+<div style="padding: 1rem 0 0;">
+
+  <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 1rem;">
+    <div class="ctrl-row">
+      <span class="ctrl-label">মাসিক সঞ্চয়</span>
+      <input type="range" id="monthly" min="1000" max="100000" step="1000" value="10000" style="flex:1;" oninput="calc()">
+      <span class="ctrl-val" id="monthly-lbl">৳ ১০,০০০</span>
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">বার্ষিক return (%)</span>
+      <input type="range" id="rate" min="5" max="25" step="1" value="10" style="flex:1;" oninput="calc()">
+      <span class="ctrl-val" id="rate-lbl">১০%</span>
+    </div>
+    <div class="ctrl-row" style="margin-bottom:0;">
+      <span class="ctrl-label">শুরুতে আছে</span>
+      <input type="range" id="initial" min="0" max="500000" step="5000" value="0" style="flex:1;" oninput="calc()">
+      <span class="ctrl-val" id="initial-lbl">৳ ০</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 1rem;">
+    <div class="metric">
+      <p style="font-size: 12px; color: var(--color-text-secondary); margin: 0 0 4px;">১ কোটিতে পৌঁছাতে</p>
+      <p style="font-size: 22px; font-weight: 500; margin: 0; color: var(--color-text-primary);" id="years-to-crore">—</p>
+    </div>
+    <div class="metric">
+      <p style="font-size: 12px; color: var(--color-text-secondary); margin: 0 0 4px;">মোট জমা দেবেন</p>
+      <p style="font-size: 22px; font-weight: 500; margin: 0; color: var(--color-text-primary);" id="total-deposited">—</p>
+    </div>
+    <div class="metric">
+      <p style="font-size: 12px; color: var(--color-text-secondary); margin: 0 0 4px;">সুদ থেকে আসবে</p>
+      <p style="font-size: 22px; font-weight: 500; margin: 0; color: #1D9E75;" id="interest-earned">—</p>
+    </div>
+    <div class="metric">
+      <p style="font-size: 12px; color: var(--color-text-secondary); margin: 0 0 4px;">সুদের অবদান</p>
+      <p style="font-size: 22px; font-weight: 500; margin: 0; color: #185FA5;" id="interest-pct">—</p>
+    </div>
+  </div>
+
+  <div style="position: relative; width: 100%; height: 260px; margin-bottom: 1rem;">
+    <canvas id="growthChart" role="img" aria-label="Stacked area chart showing savings growth over time toward 1 crore">Savings growth toward 1 crore taka over time.</canvas>
+  </div>
+  <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 1rem;">
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;border-radius:2px;background:#378ADD;display:inline-block;"></span>মোট জমা (নিজে দেওয়া)</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;border-radius:2px;background:#1D9E75;display:inline-block;"></span>সুদ/return থেকে আসা</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:4px;height:14px;border-left:2px dashed #E24B4A;display:inline-block;"></span>১ কোটি লক্ষ্য</span>
+  </div>
+
+  <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem;">
+    <p style="margin: 0 0 10px; font-size: 13px; font-weight: 500; color: var(--color-text-primary);">Milestone যখন পৌঁছাবেন</p>
+    <div id="milestones"></div>
+  </div>
+
+  <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 16px;" id="insight-box">
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+let chart = null;
+
+function fmt(n) {
+  if (n >= 10000000) return (n/10000000).toFixed(2) + ' কোটি';
+  if (n >= 100000) return (n/100000).toFixed(1) + ' লাখ';
+  if (n >= 1000) return (n/1000).toFixed(0) + ' হাজার';
+  return Math.round(n).toString();
+}
+
+function calc() {
+  const monthly = parseInt(document.getElementById('monthly').value);
+  const rate = parseInt(document.getElementById('rate').value);
+  const initial = parseInt(document.getElementById('initial').value);
+
+  document.getElementById('monthly-lbl').textContent = '৳ ' + monthly.toLocaleString('en-IN');
+  document.getElementById('rate-lbl').textContent = rate + '%';
+  document.getElementById('initial-lbl').textContent = '৳ ' + initial.toLocaleString('en-IN');
+
+  const target = 10000000;
+  const mr = rate / 100 / 12;
+
+  let balance = initial;
+  let totalDeposited = initial;
+  let months = 0;
+  const maxMonths = 600;
+
+  const balances = [initial];
+  const deposited = [initial];
+
+  while (balance < target && months < maxMonths) {
+    balance = balance * (1 + mr) + monthly;
+    months++;
+    totalDeposited += monthly;
+    balances.push(Math.round(balance));
+    deposited.push(totalDeposited);
+  }
+
+  const years = months / 12;
+  const interestEarned = Math.round(balance - totalDeposited);
+  const interestPct = ((interestEarned / balance) * 100).toFixed(0);
+
+  if (months >= maxMonths) {
+    document.getElementById('years-to-crore').textContent = '৫০+ বছর';
+  } else {
+    const y = Math.floor(years);
+    const m = Math.round((years - y) * 12);
+    document.getElementById('years-to-crore').textContent = y + ' বছর ' + (m > 0 ? m + ' মাস' : '');
+  }
+  document.getElementById('total-deposited').textContent = '৳ ' + fmt(totalDeposited);
+  document.getElementById('interest-earned').textContent = '৳ ' + fmt(interestEarned);
+  document.getElementById('interest-pct').textContent = interestPct + '%';
+
+  const step = Math.max(1, Math.ceil(balances.length / 40));
+  const labels = [];
+  const bData = [];
+  const dData = [];
+  for (let i = 0; i < balances.length; i += step) {
+    labels.push((i/12).toFixed(1) + 'y');
+    bData.push(balances[i]);
+    dData.push(deposited[i]);
+  }
+  if (balances.length % step !== 0) {
+    const last = balances.length - 1;
+    labels.push((last/12).toFixed(1) + 'y');
+    bData.push(balances[last]);
+    dData.push(deposited[last]);
+  }
+
+  const interestData = bData.map((b, i) => Math.max(0, b - dData[i]));
+
+  if (chart) {
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = dData;
+    chart.data.datasets[1].data = interestData;
+    chart.options.plugins.annotation = { annotations: { target: { type: 'line', yMin: target, yMax: target, borderColor: '#E24B4A', borderWidth: 1.5, borderDash: [5,4] } } };
+    chart.update('none');
+  } else {
+    const ctx = document.getElementById('growthChart').getContext('2d');
+    chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'নিজে জমা', data: dData, backgroundColor: '#378ADD', stack: 'a', borderWidth: 0 },
+          { label: 'সুদ/return', data: interestData, backgroundColor: '#1D9E75', stack: 'a', borderWidth: 0 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => items[0].label + ' সময়ে',
+              label: (item) => item.dataset.label + ': ৳' + Math.round(item.raw).toLocaleString('en-IN')
+            }
+          }
+        },
+        scales: {
+          x: { stacked: true, ticks: { maxTicksLimit: 8, color: '#888780', font: { size: 11 } }, grid: { display: false } },
+          y: {
+            stacked: true,
+            ticks: {
+              color: '#888780',
+              font: { size: 11 },
+              callback: v => {
+                if (v >= 10000000) return (v/10000000).toFixed(1) + 'cr';
+                if (v >= 100000) return (v/100000).toFixed(0) + 'L';
+                if (v >= 1000) return (v/1000).toFixed(0) + 'k';
+                return v;
+              }
+            },
+            grid: { color: 'rgba(136,135,128,0.12)' }
+          }
+        }
+      }
+    });
+  }
+
+  const milestoneTargets = [1000000, 2500000, 5000000, 7500000, 10000000];
+  const milestoneLabels = ['১০ লাখ', '২৫ লাখ', '৫০ লাখ', '৭৫ লাখ', '১ কোটি'];
+  const milestoneColors = ['#85B7EB', '#378ADD', '#1D9E75', '#0F6E56', '#E24B4A'];
+  let msHtml = '';
+  for (let i = 0; i < milestoneTargets.length; i++) {
+    let bal = initial, dep = initial, mo = 0;
+    while (bal < milestoneTargets[i] && mo < maxMonths) {
+      bal = bal * (1 + mr) + monthly;
+      dep += monthly;
+      mo++;
+    }
+    const y = Math.floor(mo/12), m = mo % 12;
+    const reached = mo < maxMonths;
+    msHtml += `<div class="milestone-row">
+      <div class="ms-dot" style="background:${milestoneColors[i]};"></div>
+      <span style="font-size:13px;font-weight:500;color:var(--color-text-primary);width:60px;">${milestoneLabels[i]}</span>
+      <span style="font-size:13px;color:var(--color-text-secondary);flex:1;">${reached ? y + ' বছর' + (m>0?' '+m+' মাস':'') : '৫০+ বছর'}</span>
+      <span style="font-size:12px;color:var(--color-text-secondary);">${reached ? '(মাসে ৳'+dep.toLocaleString('en-IN')+' জমা)' : ''}</span>
+    </div>`;
+  }
+  document.getElementById('milestones').innerHTML = msHtml;
+
+  let insight = '';
+  if (months >= maxMonths) {
+    insight = `<p style="margin:0;font-size:13px;color:#854F0B;line-height:1.6;"><strong>মাসে ৳${monthly.toLocaleString('en-IN')} দিয়ে ${rate}% return এ ৫০ বছরেও ১ কোটি হবে না।</strong> হয় সঞ্চয় বাড়াতে হবে, নাহয় higher return এর investment খুঁজতে হবে।</p>`;
+    document.getElementById('insight-box').style.background = '#FAEEDA';
+    document.getElementById('insight-box').style.borderLeft = '3px solid #BA7517';
+  } else if (years <= 7) {
+    insight = `<p style="margin:0;font-size:13px;color:#27500A;line-height:1.6;"><i class="ti ti-check" style="font-size:15px;vertical-align:-2px;margin-right:4px;"></i> দারুণ! <strong>${Math.floor(years)} বছরে ১ কোটি সম্ভব।</strong> মনে রাখবেন — শেষ দিকের বছরগুলোতে সুদ সবচেয়ে বেশি কাজ করে। এটাই compounding এর magic।</p>`;
+    document.getElementById('insight-box').style.background = '#EAF3DE';
+    document.getElementById('insight-box').style.borderLeft = '3px solid #3B6D11';
+  } else {
+    insight = `<p style="margin:0;font-size:13px;color:#0C447C;line-height:1.6;"><strong>${Math.floor(years)} বছর মনে হচ্ছে অনেক দীর্ঘ।</strong> কিন্তু income বাড়লে সঞ্চয় বাড়ান। মাসে ৳${(monthly*2).toLocaleString('en-IN')} জমালে সময় প্রায় অর্ধেক হয়ে যায়।</p>`;
+    document.getElementById('insight-box').style.background = '#E6F1FB';
+    document.getElementById('insight-box').style.borderLeft = '3px solid #185FA5';
+  }
+  document.getElementById('insight-box').style.borderRadius = '0 8px 8px 0';
+  document.getElementById('insight-box').innerHTML = insight;
+}
+
+calc();
+</script>

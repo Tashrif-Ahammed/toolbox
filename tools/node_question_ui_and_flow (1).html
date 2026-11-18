@@ -1,0 +1,277 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.wrap{padding:1rem 0}
+.sec{margin-bottom:2rem}
+.sec-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.phone-frame{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:1.5rem}
+.chat-win{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden}
+.chat-header{padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;gap:8px}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--color-text-info);flex-shrink:0}
+.chat-name{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.chat-status{font-size:11px;color:var(--color-text-success)}
+.chat-body{padding:14px;display:flex;flex-direction:column;gap:10px;min-height:200px}
+.bubble-wrap{display:flex;gap:8px;align-items:flex-end}
+.bubble-wrap.user{flex-direction:row-reverse}
+.bubble{max-width:72%;padding:8px 12px;border-radius:var(--border-radius-lg);font-size:13px;line-height:1.55}
+.bubble.node{background:var(--color-background-secondary);color:var(--color-text-primary);border-bottom-left-radius:4px}
+.bubble.user{background:var(--color-background-info);color:var(--color-text-info);border-bottom-right-radius:4px}
+.bubble-time{font-size:10px;color:var(--color-text-tertiary);margin-top:3px}
+.chips-wrap{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 10px}
+.chip{font-size:12px;padding:6px 14px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;transition:all .12s}
+.chip:hover{background:var(--color-background-secondary);border-color:var(--color-border-primary);color:var(--color-text-primary)}
+.chip.yes{border-color:var(--color-border-success);color:var(--color-text-success);background:var(--color-background-success)}
+.chip.no{border-color:var(--color-border-danger);color:var(--color-text-danger);background:var(--color-background-danger)}
+.chip.once{border-color:var(--color-border-warning);color:var(--color-text-warning);background:var(--color-background-warning)}
+.chip.info{border-color:var(--color-border-info);color:var(--color-text-info);background:var(--color-background-info)}
+.chat-input-row{display:flex;gap:8px;padding:10px 14px;border-top:0.5px solid var(--color-border-tertiary);align-items:center}
+.chat-input-row input{flex:1;font-size:13px;padding:7px 12px;border-radius:20px}
+.send-btn{width:32px;height:32px;border-radius:50%;background:var(--color-background-info);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.send-btn i{color:var(--color-text-info);font-size:16px}
+
+.flow-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem}
+.flow-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px 14px}
+.fc-title{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.fc-body{font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+.chip-examples{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.chip-ex{font-size:11px;padding:3px 10px;border-radius:14px;border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);background:var(--color-background-secondary)}
+
+.q-flow{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:1rem}
+.qf-title{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:10px}
+.qf-step{display:flex;gap:10px;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px;align-items:flex-start}
+.qf-step:last-child{border:none;padding-bottom:0}
+.qf-num{width:20px;height:20px;border-radius:50%;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--color-text-secondary);flex-shrink:0;margin-top:1px}
+.qf-content{flex:1}
+.qf-actor{font-weight:500;color:var(--color-text-primary)}
+.qf-desc{color:var(--color-text-secondary);margin-top:2px;line-height:1.5}
+.dest-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dest-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px}
+.dc-title{font-size:11px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.dc-list{font-size:11px;color:var(--color-text-secondary);line-height:1.7}
+.pq-box{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px 14px;margin-bottom:8px}
+.pq-title{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px}
+.pq-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+.pq-row:last-child{border:none;padding-bottom:0}
+.pq-worker{color:var(--color-text-secondary)}
+.pq-q{color:var(--color-text-primary);flex:1;padding:0 10px}
+.pq-pri{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500;white-space:nowrap}
+.pri-h{background:var(--color-background-danger);color:var(--color-text-danger)}
+.pri-m{background:var(--color-background-warning);color:var(--color-text-warning)}
+.pri-l{background:var(--color-background-secondary);color:var(--color-text-tertiary)}
+</style>
+
+<h2 class="sr-only">NODE question UI mockup, chip types, question manager flow, and data destination routing</h2>
+<div class="wrap">
+
+<div class="sec">
+  <div class="sec-label">Chat UI mockup — quick reply chips in action</div>
+  <div class="phone-frame">
+    <div class="chat-win">
+      <div class="chat-header">
+        <div class="avatar">N</div>
+        <div><div class="chat-name">NODE</div><div class="chat-status">online</div></div>
+      </div>
+      <div class="chat-body">
+        <div class="bubble-wrap user">
+          <div>
+            <div class="bubble user">কাল physics class test আছে chapter 3 থেকে।</div>
+            <div class="bubble-time" style="text-align:right">11:42 PM</div>
+          </div>
+        </div>
+        <div class="bubble-wrap">
+          <div>
+            <div class="bubble node">বুঝলাম। Test কটায়?</div>
+            <div class="bubble-time">11:42 PM</div>
+          </div>
+        </div>
+      </div>
+      <div class="chips-wrap">
+        <div class="chip info">সকাল ৮টায়</div>
+        <div class="chip info">সকাল ১০টায়</div>
+        <div class="chip info">দুপুর ১টায়</div>
+        <div class="chip info">সময় জানি না</div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" placeholder="লিখুন বা উপর থেকে select করুন...">
+        <button class="send-btn" aria-label="send"><i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="phone-frame">
+    <div class="chat-win">
+      <div class="chat-header">
+        <div class="avatar">N</div>
+        <div><div class="chat-name">NODE</div><div class="chat-status">online</div></div>
+      </div>
+      <div class="chat-body">
+        <div class="bubble-wrap">
+          <div>
+            <div class="bubble node">তুমি আগে বলেছিলে finance বিষয়ে আর জিজ্ঞেস না করতে। আজকের খরচটা note করব?</div>
+            <div class="bubble-time">6:32 PM</div>
+          </div>
+        </div>
+      </div>
+      <div class="chips-wrap">
+        <div class="chip yes"><i class="ti ti-check" style="font-size:12px;margin-right:4px" aria-hidden="true"></i>হ্যাঁ, note করো</div>
+        <div class="chip no"><i class="ti ti-x" style="font-size:12px;margin-right:4px" aria-hidden="true"></i>না, থাকুক</div>
+        <div class="chip once"><i class="ti ti-clock" style="font-size:12px;margin-right:4px" aria-hidden="true"></i>শুধু এবার</div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" placeholder="লিখুন বা উপর থেকে select করুন...">
+        <button class="send-btn" aria-label="send"><i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="phone-frame">
+    <div class="chat-win">
+      <div class="chat-header">
+        <div class="avatar">N</div>
+        <div><div class="chat-name">NODE</div><div class="chat-status">online</div></div>
+      </div>
+      <div class="chat-body">
+        <div class="bubble-wrap user">
+          <div>
+            <div class="bubble user">আজ ১৫০ টাকা রিকশায় খরচ হলো।</div>
+            <div class="bubble-time" style="text-align:right">3:15 PM</div>
+          </div>
+        </div>
+        <div class="bubble-wrap">
+          <div>
+            <div class="bubble node">Log করলাম। Category confirm করো?</div>
+            <div class="bubble-time">3:15 PM</div>
+          </div>
+        </div>
+      </div>
+      <div class="chips-wrap">
+        <div class="chip info">Transport</div>
+        <div class="chip info">Food</div>
+        <div class="chip info">Study</div>
+        <div class="chip info">Other</div>
+        <div class="chip info">Skip</div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" placeholder="লিখুন বা উপর থেকে select করুন...">
+        <button class="send-btn" aria-label="send"><i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-label">Chip types — কোন situation-এ কোন ধরনের chips</div>
+  <div class="flow-grid">
+    <div class="flow-card">
+      <div class="fc-title"><i class="ti ti-check" style="color:var(--color-text-success);font-size:14px" aria-hidden="true"></i> Yes/No confirmation</div>
+      <div class="fc-body">Preference override, permission ask, or binary decision। সবসময় ৩টা: হ্যাঁ, না, শুধু এবার।</div>
+      <div class="chip-examples">
+        <div class="chip-ex" style="color:var(--color-text-success)">হ্যাঁ করো</div>
+        <div class="chip-ex" style="color:var(--color-text-danger)">না থাকুক</div>
+        <div class="chip-ex" style="color:var(--color-text-warning)">শুধু এবার</div>
+      </div>
+    </div>
+    <div class="flow-card">
+      <div class="fc-title"><i class="ti ti-clock" style="color:var(--color-text-info);font-size:14px" aria-hidden="true"></i> Time picker chips</div>
+      <div class="fc-body">Worker-এর context দেখে probable সময়গুলো suggest করে। User type না করে click করলেই হয়।</div>
+      <div class="chip-examples">
+        <div class="chip-ex">সকাল ৮টা</div>
+        <div class="chip-ex">দুপুর ১টা</div>
+        <div class="chip-ex">বিকেল ৫টা</div>
+        <div class="chip-ex">রাত ১০টা</div>
+        <div class="chip-ex">জানি না</div>
+      </div>
+    </div>
+    <div class="flow-card">
+      <div class="fc-title"><i class="ti ti-list" style="color:var(--color-text-primary);font-size:14px" aria-hidden="true"></i> Category chips</div>
+      <div class="fc-body">Finance, task type, subject — fixed list থেকে choose। Worker নিজেই most-likely option টা প্রথমে রাখে।</div>
+      <div class="chip-examples">
+        <div class="chip-ex">Food</div>
+        <div class="chip-ex">Transport</div>
+        <div class="chip-ex">Study</div>
+        <div class="chip-ex">Utility</div>
+        <div class="chip-ex">Other</div>
+      </div>
+    </div>
+    <div class="flow-card">
+      <div class="fc-title"><i class="ti ti-dots" style="color:var(--color-text-secondary);font-size:14px" aria-hidden="true"></i> Skip / Defer chips</div>
+      <div class="fc-body">Data optional হলে বা user busy থাকলে। Worker blank রেখে দেয়, পরে আবার ask করবে।</div>
+      <div class="chip-examples">
+        <div class="chip-ex">Skip করো</div>
+        <div class="chip-ex">পরে বলব</div>
+        <div class="chip-ex">মনে নেই</div>
+        <div class="chip-ex">আর জিজ্ঞেস না</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-label">QuestionController — কীভাবে প্রশ্ন allow করে এবং priority ঠিক করে</div>
+  <div class="pq-box">
+    <div class="pq-title">Question queue — একসাথে ৩ worker জমা দিয়েছে, শুধু ১টাই যাবে</div>
+    <div class="pq-row">
+      <span class="pq-worker">W016</span>
+      <span class="pq-q">Exam-এর সময় কোনটা?</span>
+      <span class="pq-pri pri-h">HIGH — exam কাল</span>
+    </div>
+    <div class="pq-row">
+      <span class="pq-worker">W029</span>
+      <span class="pq-q">খরচের category কী?</span>
+      <span class="pq-pri pri-m">MEDIUM — same session</span>
+    </div>
+    <div class="pq-row">
+      <span class="pq-worker">W068</span>
+      <span class="pq-q">কাল কয়টায় ঘুমিয়েছিলে?</span>
+      <span class="pq-pri pri-l">LOW — routine fill</span>
+    </div>
+  </div>
+  <div class="q-flow">
+    <div class="qf-title">QuestionController এর সিদ্ধান্ত প্রক্রিয়া</div>
+    <div class="qf-step">
+      <div class="qf-num">1</div>
+      <div class="qf-content"><span class="qf-actor">Worker</span> → QuestionController-কে বলে: "আমার এই field-এর data দরকার, এই question করো।" সাথে priority hint দেয়: urgency, deadline, context।</div>
+    </div>
+    <div class="qf-step">
+      <div class="qf-num">2</div>
+      <div class="qf-content"><span class="qf-actor">QuestionController</span> queue-এ add করে। Priority calculate করে: কাল deadline আছে? User কি এখন active? এই topic-এ preference NEVER আছে? সব check করে।</div>
+    </div>
+    <div class="qf-step">
+      <div class="qf-num">3</div>
+      <div class="qf-content"><span class="qf-actor">PreferenceManager</span> দেখায় — এই worker বা topic block আছে? থাকলে queue থেকে সরিয়ে দেয়। NEVER state-এ থাকলে confirmation question-এ replace করে।</div>
+    </div>
+    <div class="qf-step">
+      <div class="qf-num">4</div>
+      <div class="qf-content"><span class="qf-actor">QuestionController</span> highest priority question-টা select করে। Worker-এর context দেখে probable chips তৈরি করে। Response-এ question + chips attach করে পাঠায়।</div>
+    </div>
+    <div class="qf-step">
+      <div class="qf-num">5</div>
+      <div class="qf-content"><span class="qf-actor">User</span> chip click করে বা type করে answer দেয়। QuestionController সেই answer টা সঠিক worker-এ route করে। Worker তার field fill করে task complete করে।</div>
+    </div>
+    <div class="qf-step">
+      <div class="qf-num">6</div>
+      <div class="qf-content"><span class="qf-actor">QuestionController</span> queue-এর বাকি items দেখে — পরের response-এ পরের priority question পাঠাবে। User কখনো ২টা question একসাথে দেখবে না।</div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-label">Data destination routing — answer কোথায় যাবে কে ঠিক করে</div>
+  <div class="dest-grid">
+    <div class="dest-card">
+      <div class="dc-title"><i class="ti ti-file-text" style="font-size:14px" aria-hidden="true"></i> Worker নিজে route করে</div>
+      <div class="dc-list">Worker জানে তার data কোথায় যাবে। W029 (finance) জানে data যাবে finance.json-এ। W016 (exam) জানে data যাবে schedules.json-এ। এটাই default।</div>
+    </div>
+    <div class="dest-card">
+      <div class="dc-title"><i class="ti ti-share" style="font-size:14px" aria-hidden="true"></i> WorkerCollaborator route করে</div>
+      <div class="dc-list">একই data দুই worker-এর কাজে লাগে। Class routine — W005 (class alert) এবং W013 (sleep advisor) দুজনেই চায়। Collaborator একবার fetch করে দুজনকে দেয়।</div>
+    </div>
+    <div class="dest-card">
+      <div class="dc-title"><i class="ti ti-database" style="font-size:14px" aria-hidden="true"></i> StorageSyncManager route করে</div>
+      <div class="dc-list">যেকোনো Storage.set() call হলে SyncManager-এ event যায়। সে FileWriteQueue-তে add করে। একটা একটা করে write হয়। Race condition impossible।</div>
+    </div>
+  </div>
+</div>
+
+</div>

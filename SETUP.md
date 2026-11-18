@@ -38,3 +38,17 @@ token শুধু ওই ব্রাউজারে থাকে। অন্�
 - নতুন ফাইল সবার কাছে লাইভ হতে ১-২ মিনিট লাগে।
 - Pages এ ঘণ্টায় ১০টার মতো বিল্ডের নরম সীমা আছে। ঘন ঘন বদল করলে মাঝে মাঝে দেরি হতে পারে।
 - `server-loop.bat`, `run-hidden.vbs` আর `data` শর্টকাট এখন লাগবে না।
+
+
+## Admin panel and private tools
+Open the dashboard as admin and press **Admin** (top bar). Tools tab: set category and Public/Private per tool or in bulk. Categories tab: rename, reorder, delete. Privacy tab: create or unlock the vault. Private tools are encrypted in your browser before upload (AES-GCM). If you forget the vault passphrase they cannot be recovered. A tool that was public once stays in the repository history.
+
+
+## Adding tools (three ways)
+1. **Admin panel:** Add Tool in the dashboard (it commits for you).
+2. **Setup file:** copy .html files into the `Toolbox-GitHub\tools` folder (or a folder named `tools` next to Toolbox-Setup.bat) and run Toolbox-Setup.bat again.
+3. **git push:** put the file in `tools/` and push. A GitHub Action registers it and republishes in about a minute.
+
+Optional details for a pushed file: `<meta name="toolbox-name|toolbox-desc|toolbox-icon|toolbox-category" content="...">` in its head, or a sidecar `tools/yourfile.meta.json`:
+`{"name":"My tool","desc":"What it does","icon":"🛠️","category":"edu"}`.
+If a file is deleted, its card is parked as "waiting" (details kept) and comes back when a file with the same path returns. Files added by git are public; make a tool private from the Admin panel (it is encrypted in the browser).

@@ -1,0 +1,2765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NODE — AI Model Benchmark Test Suite</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #18181f;
+    --border: #2a2a38;
+    --accent: #7c6aff;
+    --accent2: #ff6a6a;
+    --accent3: #6affb8;
+    --accent4: #ffd06a;
+    --text: #e8e8f0;
+    --text2: #888898;
+    --text3: #55556a;
+
+    --cat-routing: #7c6aff;
+    --cat-extract: #ff6a6a;
+    --cat-natural: #6affb8;
+    --cat-offline: #ffd06a;
+    --cat-multi: #ff9d6a;
+    --cat-proactive: #6ab8ff;
+    --cat-memory: #d06aff;
+    --cat-conflict: #ff6ab8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'IBM Plex Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 40px 48px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(124,106,255,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .header-tag {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  h1 span {
+    color: var(--accent);
+  }
+  .header-sub {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text2);
+    max-width: 600px;
+    line-height: 1.7;
+  }
+  .header-meta {
+    margin-top: 20px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .meta-pill {
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: calc(100vh - 160px);
+  }
+
+  /* ── SIDEBAR ── */
+  nav {
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    position: sticky;
+    top: 0;
+    height: calc(100vh - 160px);
+    overflow-y: auto;
+  }
+  .nav-section {
+    padding: 0 20px;
+    margin-bottom: 6px;
+  }
+  .nav-label {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 12px 0 6px;
+    display: block;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--text2);
+    transition: all 0.15s;
+    text-decoration: none;
+    margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--surface2); color: var(--text); }
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .nav-count {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--text3);
+    background: var(--surface2);
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+
+  /* ── MAIN CONTENT ── */
+  main {
+    padding: 32px 40px;
+    max-width: 1100px;
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+  .stat {
+    background: var(--surface);
+    padding: 16px 20px;
+    text-align: center;
+  }
+  .stat-n {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-l {
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* ── CATEGORY SECTION ── */
+  .category {
+    margin-bottom: 56px;
+  }
+  .cat-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cat-badge {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 2px;
+    font-weight: 600;
+  }
+  .cat-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .cat-desc {
+    font-size: 11px;
+    color: var(--text2);
+    margin-left: auto;
+    max-width: 320px;
+    text-align: right;
+    line-height: 1.5;
+  }
+
+  /* ── TEST CARD ── */
+  .test-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .test-card:hover { border-color: var(--accent); }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .card-head:hover { background: #1e1e28; }
+
+  .card-id {
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.15em;
+    flex-shrink: 0;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+  }
+  .card-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+  .tag {
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid currentColor;
+    opacity: 0.7;
+  }
+  .chevron {
+    color: var(--text3);
+    font-size: 14px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .card-body {
+    display: none;
+    padding: 0;
+  }
+  .card-body.open { display: block; }
+  .test-card.expanded .chevron { transform: rotate(180deg); }
+
+  /* ── BLOCKS ── */
+  .block {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .block:last-child { border-bottom: none; }
+  .block-label {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .block-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .role-block {
+    background: rgba(124,106,255,0.05);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text2);
+    white-space: pre-wrap;
+  }
+
+  .prompt-block {
+    background: var(--bg);
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+    white-space: pre-wrap;
+    font-family: 'IBM Plex Mono', monospace;
+    position: relative;
+  }
+  .prompt-block .bangla {
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 14px;
+  }
+
+  .expected-block {
+    background: rgba(106,255,184,0.04);
+    border-left: 3px solid var(--accent3);
+    padding: 12px 16px;
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text2);
+    white-space: pre-wrap;
+  }
+
+  .scoring-block {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 8px;
+  }
+  .score-criterion {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 11px;
+  }
+  .score-criterion .pts {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent4);
+    float: right;
+  }
+  .score-criterion .label { color: var(--text); font-weight: 500; margin-bottom: 3px; }
+  .score-criterion .desc { color: var(--text2); font-size: 10px; line-height: 1.5; clear: both; }
+
+  .difficulty {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .diff-easy { background: rgba(106,255,184,0.1); color: var(--accent3); border: 1px solid rgba(106,255,184,0.25); }
+  .diff-medium { background: rgba(255,208,106,0.1); color: var(--accent4); border: 1px solid rgba(255,208,106,0.25); }
+  .diff-hard { background: rgba(255,106,106,0.1); color: var(--accent2); border: 1px solid rgba(255,106,106,0.25); }
+  .diff-extreme { background: rgba(208,106,255,0.1); color: var(--cat-memory); border: 1px solid rgba(208,106,255,0.25); }
+
+  .copy-btn {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+  .copy-btn.copied { background: var(--accent3); color: #000; border-color: var(--accent3); }
+
+  /* ── CATEGORY COLORS ── */
+  .cat-routing .cat-badge { background: rgba(124,106,255,0.15); color: var(--cat-routing); border: 1px solid rgba(124,106,255,0.3); }
+  .cat-extract .cat-badge { background: rgba(255,106,106,0.15); color: var(--cat-extract); border: 1px solid rgba(255,106,106,0.3); }
+  .cat-natural .cat-badge { background: rgba(106,255,184,0.15); color: var(--cat-natural); border: 1px solid rgba(106,255,184,0.3); }
+  .cat-offline .cat-badge { background: rgba(255,208,106,0.15); color: var(--cat-offline); border: 1px solid rgba(255,208,106,0.3); }
+  .cat-multi .cat-badge { background: rgba(255,157,106,0.15); color: var(--cat-multi); border: 1px solid rgba(255,157,106,0.3); }
+  .cat-proactive .cat-badge { background: rgba(106,184,255,0.15); color: var(--cat-proactive); border: 1px solid rgba(106,184,255,0.3); }
+  .cat-memory .cat-badge { background: rgba(208,106,255,0.15); color: var(--cat-memory); border: 1px solid rgba(208,106,255,0.3); }
+  .cat-conflict .cat-badge { background: rgba(255,106,184,0.15); color: var(--cat-conflict); border: 1px solid rgba(255,106,184,0.3); }
+
+  .cat-routing .test-card:hover { border-color: var(--cat-routing); }
+  .cat-extract .test-card:hover { border-color: var(--cat-extract); }
+  .cat-natural .test-card:hover { border-color: var(--cat-natural); }
+  .cat-offline .test-card:hover { border-color: var(--cat-offline); }
+  .cat-multi .test-card:hover { border-color: var(--cat-multi); }
+  .cat-proactive .test-card:hover { border-color: var(--cat-proactive); }
+  .cat-memory .test-card:hover { border-color: var(--cat-memory); }
+  .cat-conflict .test-card:hover { border-color: var(--cat-conflict); }
+
+  /* ── EXPAND ALL BTN ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .toolbar-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 7px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    transition: all 0.15s;
+  }
+  .toolbar-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--accent); }
+  .toolbar-info {
+    font-size: 11px;
+    color: var(--text3);
+    margin-left: auto;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  /* ── SECTION ANCHOR ── */
+  .section-anchor { scroll-margin-top: 20px; }
+
+  code {
+    background: var(--surface2);
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-size: 0.9em;
+    color: var(--accent4);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-tag">NODE · AI Model Benchmark Suite · v1.0</div>
+  <h1>Test Prompts for<br><span>NODE Evaluation</span></h1>
+  <p class="header-sub">Stand-alone prompt tests to benchmark how well any AI model understands NODE's architecture — worker routing, data extraction, natural language output, offline handling, and proactive intelligence.</p>
+  <div class="header-meta">
+    <span class="meta-pill">8 Categories</span>
+    <span class="meta-pill">40 Test Cases</span>
+    <span class="meta-pill">Bangla + English</span>
+    <span class="meta-pill">May 2026</span>
+  </div>
+</header>
+
+<div class="layout">
+<nav>
+  <div class="nav-section">
+    <span class="nav-label">Categories</span>
+    <a class="nav-item active" href="#routing">
+      <span class="nav-dot" style="background:var(--cat-routing)"></span> Worker Identification
+      <span class="nav-count">7</span>
+    </a>
+    <a class="nav-item" href="#extraction">
+      <span class="nav-dot" style="background:var(--cat-extract)"></span> Data Extraction
+      <span class="nav-count">6</span>
+    </a>
+    <a class="nav-item" href="#natural">
+      <span class="nav-dot" style="background:var(--cat-natural)"></span> Natural Language Output
+      <span class="nav-count">5</span>
+    </a>
+    <a class="nav-item" href="#offline">
+      <span class="nav-dot" style="background:var(--cat-offline)"></span> Offline Mode
+      <span class="nav-count">4</span>
+    </a>
+    <a class="nav-item" href="#multi">
+      <span class="nav-dot" style="background:var(--cat-multi)"></span> Multi-Intent Parsing
+      <span class="nav-count">5</span>
+    </a>
+    <a class="nav-item" href="#proactive">
+      <span class="nav-dot" style="background:var(--cat-proactive)"></span> Proactive Intelligence
+      <span class="nav-count">5</span>
+    </a>
+    <a class="nav-item" href="#memory">
+      <span class="nav-dot" style="background:var(--cat-memory)"></span> Context & Memory
+      <span class="nav-count">4</span>
+    </a>
+    <a class="nav-item" href="#conflict">
+      <span class="nav-dot" style="background:var(--cat-conflict)"></span> Conflict & Edge Cases
+      <span class="nav-count">4</span>
+    </a>
+  </div>
+  <div class="nav-section">
+    <span class="nav-label">Difficulty</span>
+    <div style="padding: 4px 10px; display: flex; flex-direction: column; gap: 6px;">
+      <span class="difficulty diff-easy">Easy — warm up</span>
+      <span class="difficulty diff-medium">Medium — core</span>
+      <span class="difficulty diff-hard">Hard — edge</span>
+      <span class="difficulty diff-extreme">Extreme — combined</span>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-n">40</div><div class="stat-l">Test Cases</div></div>
+    <div class="stat"><div class="stat-n">8</div><div class="stat-l">Categories</div></div>
+    <div class="stat"><div class="stat-n">124</div><div class="stat-l">Workers Covered</div></div>
+    <div class="stat"><div class="stat-n">3</div><div class="stat-l">Languages</div></div>
+  </div>
+
+  <div class="toolbar">
+    <button class="toolbar-btn" onclick="expandAll()">Expand All</button>
+    <button class="toolbar-btn" onclick="collapseAll()">Collapse All</button>
+    <span class="toolbar-info">Click any card header to expand · Click copy to copy prompt</span>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       CATEGORY 1 — WORKER IDENTIFICATION / ROUTING
+       ═══════════════════════════════════════════════════════ -->
+  <div class="category cat-routing section-anchor" id="routing">
+    <div class="cat-header">
+      <span class="cat-badge">01</span>
+      <span class="cat-title">Worker Identification & Routing</span>
+      <span class="cat-desc">Can the model correctly identify which NODE worker (W001–W122) should handle a given user message?</span>
+    </div>
+
+    <!-- R-01 -->
+    <div class="test-card" id="R01">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">R-01</span>
+        <span class="card-title">Simple Expense Detection</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-routing)">routing</span>
+          <span class="difficulty diff-easy" style="font-size:9px;padding:2px 7px">Easy</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are the job_router module of NODE — a personal AI assistant system. Your ONLY job is to read a user message and return the single correct worker ID from the NODE worker registry that should handle this message.
+
+Return ONLY the worker ID string (e.g. "W029"). No explanation. No punctuation. Just the ID.
+
+Worker Registry (relevant subset):
+- W029: Logs expenses when user mentions spending money (rickshaw, lunch, bazar, taka khoroch, etc.)
+- W030: Logs income when user mentions earning or receiving money
+- W001: Sets a one-time reminder for a future time
+- W002: Sets a daily recurring reminder
+- W016: Saves exam/test information
+- W042: Saves a contact's phone number
+- W051: Adds a task or to-do item
+- W000: General conversation — use when no specific worker matches</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">aj rickshaw e 50 taka gelo, tারপর lunch e 120 taka</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">W029
+
+Reasoning: User is describing money spent (rickshaw 50tk + lunch 120tk). Both are expenses. W029 is the expense logger. Even though there are two separate expenses, both fall under W029 — the worker handles multiple expenses in one message.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">40</span><div class="label">Correct Worker ID</div><div class="desc">Returns exactly "W029" with no extra text</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">No hallucination</div><div class="desc">Does not invent non-existent workers or return multiple IDs</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Conciseness</div><div class="desc">Output is just "W029" — no explanation added when not asked</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- R-02 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">R-02</span>
+        <span class="card-title">Ambiguous Income vs Expense</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-routing)">routing</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are the job_router module of NODE. Identify the single correct worker for the user message. Return ONLY the worker ID.
+
+Worker Registry:
+- W029: Expense logger — user spent money
+- W030: Income logger — user received/earned money
+- W038: Loan/borrow tracker — money exchanged between people (lent or borrowed)
+- W000: General fallback</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">Karim ke 500 taka dilam, kal ferot dibe</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">W038
+
+Reasoning: "dilam...kal ferot dibe" — gave money with expectation of return = loan. Not an expense (W029) because money will be returned. Not income (W030). W038 is the loan/borrow tracker.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">50</span><div class="label">Correct W038 (not W029)</div><div class="desc">Model must distinguish "gave money to get back" from "spent money"</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">No W029 mistake</div><div class="desc">Returning W029 is the most common wrong answer — penalize</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Context understanding</div><div class="desc">Understands "ferot dibe" = will return = loan</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- R-03 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">R-03</span>
+        <span class="card-title">Exam vs Reminder Distinction</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-routing)">routing</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE's job_router. Return only the correct worker ID.
+
+Worker Registry:
+- W016: Saves exam data (class test, midterm, final — contains syllabus, subject, type info)
+- W001: One-time reminder (user wants to be reminded about something at a specific time)
+- W004: Exam countdown alert (auto-triggered, not user-initiated)
+- W000: General fallback</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">kal physics class test ache, chapter 3 theke</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">W016
+
+Reasoning: User is informing NODE about an upcoming exam — subject (physics), type (class test), syllabus (chapter 3), date (tomorrow). This is exam data to be stored, not a reminder request. W016 collects exam data. W001 would be correct if user said "remind me about physics test tomorrow."</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">50</span><div class="label">W016 not W001</div><div class="desc">Critical distinction: storing exam vs setting a reminder</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Syllabus recognition</div><div class="desc">Understands "chapter 3 theke" signals structured exam data</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Not W004</div><div class="desc">W004 is auto-triggered, not user-initiated</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- R-04 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">R-04</span>
+        <span class="card-title">Goodnight → Sleep Logger</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-routing)">routing</span>
+          <span class="tag" style="color:var(--cat-memory)">context</span>
+          <span class="difficulty diff-easy">Easy</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE's job_router. Return only the correct worker ID.
+
+Worker Registry:
+- W068: Sleep logger — detects sleep-start (goodnight, ghumabo) and sleep-end (good morning, uthе gelam)
+- W013: Sleep advisor — gives sleep advice and recommended wake time
+- W059: Evening wrap-up — summarizes the day (auto-triggered at 8pm)
+- W000: General fallback</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>good night, ghumiye porbo ekhon</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">W068
+
+Reasoning: "ghumiye porbo" = going to sleep now. This is a sleep-start signal for W068 (sleep logger). W013 (sleep advisor) would only be needed if the user hadn't already decided to sleep or if they're asking what time to sleep. Here the user is announcing sleep.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">50</span><div class="label">W068 correct</div><div class="desc">Bangla "ghumiye porbo" mapped to sleep-logger action</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">W013 not chosen</div><div class="desc">Not advice — this is a declaration of sleeping</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Mixed language handling</div><div class="desc">English + Bangla mix understood correctly</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- R-05 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">R-05</span>
+        <span class="card-title">Contact Save vs Contact Note</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-routing)">routing</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE's job_router. Return only the correct worker ID.
+
+Worker Registry:
+- W042: Saves a NEW contact (name + phone number)
+- W043: Looks up an existing contact (retrieves phone number)
+- W044: Adds a NOTE to an existing contact (extra info about someone already saved)
+- W000: General fallback</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">Rafi bhai somporkhe note rakho — CSE 3rd year, amar kache 500 taka debe</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">W044
+
+Reasoning: "note rakho" about someone already known (Rafi bhai) = adding contextual notes to an existing contact. No phone number is being saved (that would be W042). No lookup (that would be W043). W044 appends additional information to a saved contact.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">50</span><div class="label">W044 not W042</div><div class="desc">No phone number = not a new contact save</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">"note rakho" parsed</div><div class="desc">Bangla "note rakho" correctly identified as note-adding intent</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Not W043</div><div class="desc">Not a lookup — user is providing info, not requesting it</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- R-06 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">R-06</span>
+        <span class="card-title">General Chat — No Worker Match</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-routing)">routing</span>
+          <span class="difficulty diff-easy">Easy</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE's job_router. Return only the correct worker ID. If no specific data-capture worker matches, return W000.
+
+Worker Registry (abbreviated):
+- W029: Expense logger
+- W016: Exam data collector
+- W001: Reminder setter
+- W042: Contact saver
+- W051: Task adder
+- W000: General conversation fallback — ANY message that does not match a specific action worker</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">NODE tumi ki ki korte paro amake bolo</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">W000
+
+Reasoning: User is asking a conversational question about NODE's capabilities. No data is being saved, no reminder being set. This is pure general conversation → W000 handles it with an AI-generated response listing capabilities.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">60</span><div class="label">W000 returned</div><div class="desc">Correctly identified as non-data-capture conversation</div></div>
+            <div class="score-criterion"><span class="pts">40</span><div class="label">No false match</div><div class="desc">Did not force-fit into W051 (task) or W016 (exam) etc.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- R-07 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">R-07</span>
+        <span class="card-title">Commitment vs Reminder</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-routing)">routing</span>
+          <span class="difficulty diff-hard">Hard</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE's job_router. Return only the correct worker ID.
+
+Worker Registry:
+- W001: User wants NODE to remind THEM of something at a time
+- W006: User wants a reminder to call a specific person
+- W015: User wants to follow up with someone on a future date
+- W096: User made a promise/commitment TO another person that they want to track
+- W000: General fallback</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">Arif ke bolechi je shombar tar assignment e help korbo</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">W096
+
+Reasoning: "Arif ke bolechi" = I told Arif (past tense — already made a commitment). "help korbo" = I will help. This is tracking a commitment made to another person. NOT W001 (no "remind me" phrasing). NOT W006 (not a call reminder). W096 tracks promises and commitments to others.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">50</span><div class="label">W096 identified</div><div class="desc">"bolechi" = already promised = commitment tracker</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Not W001</div><div class="desc">User isn't asking to be reminded — they made a promise</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Tense awareness</div><div class="desc">Past tense "bolechi" vs future intent "bolbo" changes routing</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /routing -->
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       CATEGORY 2 — DATA EXTRACTION
+       ═══════════════════════════════════════════════════════ -->
+  <div class="category cat-extract section-anchor" id="extraction">
+    <div class="cat-header">
+      <span class="cat-badge">02</span>
+      <span class="cat-title">Data Extraction</span>
+      <span class="cat-desc">Can the model extract structured JSON data from natural Bangla/English conversation accurately?</span>
+    </div>
+
+    <!-- E-01 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">E-01</span>
+        <span class="card-title">Expense Extraction — Multiple in One</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-extract)">extraction</span>
+          <span class="tag" style="color:var(--cat-extract)">W029</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W029, the expense logger of NODE. Extract ALL expense entries from the user message as a JSON array.
+
+Return ONLY valid JSON. No explanation. No markdown. No backticks. Just the raw JSON array.
+
+Each expense object must have these fields:
+- amount: number (in taka)
+- category: one of ["food", "transport", "study", "utility", "entertainment", "other"]
+- note: string or null (brief description if mentioned)
+- date: "today" (since no specific date mentioned)
+
+If a category is ambiguous, use your best judgment. Extract ALL expenses mentioned, even if in a casual list.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">aj rickshaw e 60 taka, lunch e 150, boi kinlam 280 taka, ar rate CNG te boro 120 taka</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">[
+  {"amount": 60, "category": "transport", "note": "rickshaw", "date": "today"},
+  {"amount": 150, "category": "food", "note": "lunch", "date": "today"},
+  {"amount": 280, "category": "study", "note": "book purchase", "date": "today"},
+  {"amount": 120, "category": "transport", "note": "CNG evening", "date": "today"}
+]
+
+Notes: "boi kinlam" = bought a book → category:study. "rate" = evening/night. All 4 expenses extracted. Valid JSON array.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">40</span><div class="label">All 4 extracted</div><div class="desc">Missing any expense = deduct 10pts each</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Correct categories</div><div class="desc">"boi" = study, rickshaw/CNG = transport, lunch = food</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Valid JSON only</div><div class="desc">No markdown, no explanation in output</div></div>
+            <div class="score-criterion"><span class="pts">10</span><div class="label">Correct amounts</div><div class="desc">60, 150, 280, 120 — all numbers correct</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E-02 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">E-02</span>
+        <span class="card-title">Exam Data — Partial Info</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-extract)">extraction</span>
+          <span class="tag" style="color:var(--cat-extract)">W016</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W016, NODE's exam data collector. Extract exam data from the user message as a JSON object.
+
+Return ONLY valid JSON. No markdown. No explanation.
+
+Fields to extract:
+- subject: string (course/subject name)
+- type: one of ["class_test", "midterm", "final", "quiz", "other"]
+- date: "tomorrow" / "YYYY-MM-DD" / null if not mentioned
+- time: "HH:MM" in 24h format / null if not mentioned  
+- syllabus: string describing topics / null if not mentioned
+- prep_time_hrs: number / null if not mentioned
+
+Use null for any field not mentioned. Do NOT invent data.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">shombar chemistry midterm ache, chapter 4 ar 5 theke, bikel 3 tar dike</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">{
+  "subject": "Chemistry",
+  "type": "midterm",
+  "date": "shombar",
+  "time": "15:00",
+  "syllabus": "Chapter 4 and Chapter 5",
+  "prep_time_hrs": null
+}
+
+Notes: "shombar" = Saturday (day name, not resolved to a date since no current date context). "bikel 3 tar dike" = approximately 3pm = 15:00. prep_time_hrs not mentioned = null.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Correct subject/type</div><div class="desc">chemistry + midterm extracted correctly</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Time conversion</div><div class="desc">"bikel 3 tar dike" → "15:00" — Bangla time parsed</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Null for missing fields</div><div class="desc">prep_time_hrs correctly null — not invented</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Syllabus extracted</div><div class="desc">Chapter 4 and 5 captured from "chapter 4 ar 5 theke"</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E-03 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">E-03</span>
+        <span class="card-title">Time Expression Parsing — Bangla</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-extract)">extraction</span>
+          <span class="tag" style="color:var(--cat-extract)">date_time.js</span>
+          <span class="difficulty diff-hard">Hard</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE's date_time.js parser test. Convert these Bangla/Bengali time expressions to 24-hour HH:MM format. 
+
+Context: Current date is a Wednesday. "Kal" = tomorrow (Thursday). "Porshhu" = day after tomorrow.
+
+Return a JSON object with each expression as a key and its 24h time as the value. Use null if the time cannot be determined. Assume Bangladesh timezone (UTC+6).</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>Convert these: ["sokal 8 ta", "bikel 5 tar dike", "rate 10 ta", "dupure 1 ta", "sondha 7 ta", "৬টায়", "রাত ১১টায়"]</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">{
+  "sokal 8 ta": "08:00",
+  "bikel 5 tar dike": "17:00",
+  "rate 10 ta": "22:00",
+  "dupure 1 ta": "13:00",
+  "sondha 7 ta": "19:00",
+  "৬টায়": "06:00",
+  "রাত ১১টায়": "23:00"
+}
+
+Notes: Bangla numerals (৬, ১১) must be converted. "rate" = night, so 10 = 22:00 not 10:00. "sondha" = evening, so 7 = 19:00. "bikel" = afternoon, so 5 = 17:00.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Context-aware AM/PM</div><div class="desc">"rate 10 ta" = 22:00 not 10:00 — period words change the hour</div></div>
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Bangla numeral support</div><div class="desc">৬ = 6, ১১ = 11 — Unicode Bangla digits parsed</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">All 7 correct</div><div class="desc">-5pts for each wrong conversion</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E-04 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">E-04</span>
+        <span class="card-title">Contact Save — Validation</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-extract)">extraction</span>
+          <span class="tag" style="color:var(--cat-extract)">W042</span>
+          <span class="difficulty diff-easy">Easy</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W042, NODE's contact saver. Extract contact data from the user message as JSON.
+
+Fields:
+- name: string (full name as stated by user — preserve honorifics like "bhai", "sir", "apa")
+- phone: string (as given — preserve formatting)
+- relation: one of ["friend", "family", "teacher", "classmate", "other"]
+- notes: string or null (any extra info mentioned)
+
+Return ONLY valid JSON. Do NOT normalize or reformat the phone number.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">Rahim sir er number 017-1234-5678, amar math teacher, khub helpful</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">{
+  "name": "Rahim sir",
+  "phone": "017-1234-5678",
+  "relation": "teacher",
+  "notes": "khub helpful"
+}
+
+Notes: Honorific "sir" is preserved in the name. "math teacher" maps relation to "teacher". "khub helpful" is a note about this person.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Honorific preserved</div><div class="desc">"Rahim sir" not normalized to "Rahim"</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Correct relation</div><div class="desc">"math teacher" → relation: "teacher"</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Notes extracted</div><div class="desc">"khub helpful" saved as note</div></div>
+            <div class="score-criterion"><span class="pts">15</span><div class="label">Phone unchanged</div><div class="desc">Phone format not altered from user input</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E-05 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">E-05</span>
+        <span class="card-title">Task with Implicit Deadline</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-extract)">extraction</span>
+          <span class="tag" style="color:var(--cat-extract)">W051</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W051, NODE's task adder. Extract task data as JSON.
+
+Fields:
+- text: string (what needs to be done)
+- due_date: "today" / "tomorrow" / day name / null
+- priority: "high" / "medium" / "low" (infer from urgency words)
+- notes: string or null
+
+Return ONLY valid JSON. Infer priority from language cues ("obossoi", "jotil", "ektu" = urgency signals).</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">obossoi aj bank form ta joma dite hobe, ar ektu somoy hole boi ta return korte hobe library te</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">[
+  {
+    "text": "Bank form joma dao",
+    "due_date": "today",
+    "priority": "high",
+    "notes": null
+  },
+  {
+    "text": "Library te boi return koro",
+    "due_date": "today",
+    "priority": "low",
+    "notes": "when time allows"
+  }
+]
+
+Notes: "obossoi aj" = definitely today = high priority. "ektu somoy hole" = when time allows = low priority. Two separate tasks extracted from one message.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Two tasks extracted</div><div class="desc">Not one task — "ar" signals a second item</div></div>
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Priority inference</div><div class="desc">"obossoi" = high, "ektu somoy hole" = low</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Bangla task text</div><div class="desc">Task text is clear and actionable in Bengali/English</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E-06 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">E-06</span>
+        <span class="card-title">Finance Query Intent Parsing</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-extract)">extraction</span>
+          <span class="tag" style="color:var(--cat-extract)">W040</span>
+          <span class="difficulty diff-hard">Hard</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W040, NODE's finance query handler. Parse the user's natural language finance question and extract the query parameters as JSON.
+
+Fields:
+- query_type: "total_expense" / "total_income" / "category_total" / "person_total" / "balance" / "compare"
+- category: string or null (food, transport, etc.)
+- date_range: "today" / "this_week" / "this_month" / "last_month" / specific date string / null
+- person: string or null (for loan queries)
+
+Return ONLY valid JSON.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">ei mashe transport e mota moti koto taka gelo?</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">{
+  "query_type": "category_total",
+  "category": "transport",
+  "date_range": "this_month",
+  "person": null
+}
+
+Notes: "ei mashe" = this month. "transport e...koto taka gelo" = how much spent on transport. "mota moti" = approximately (doesn't change the query, just signals approximation is fine).</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">35</span><div class="label">category_total identified</div><div class="desc">Specific category question not general total</div></div>
+            <div class="score-criterion"><span class="pts">35</span><div class="label">"ei mashe" parsed</div><div class="desc">Bangla "ei mashe" → "this_month"</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">"mota moti" ignored</div><div class="desc">Filler word "mota moti" (roughly/approximately) doesn't change query structure</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /extraction -->
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       CATEGORY 3 — NATURAL LANGUAGE OUTPUT
+       ═══════════════════════════════════════════════════════ -->
+  <div class="category cat-natural section-anchor" id="natural">
+    <div class="cat-header">
+      <span class="cat-badge">03</span>
+      <span class="cat-title">Natural Language Output Generation</span>
+      <span class="cat-desc">Does the model generate warm, natural, Bangla-first responses in NODE's voice — not robotic confirmations?</span>
+    </div>
+
+    <!-- N-01 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">N-01</span>
+        <span class="card-title">Expense Confirmation — NODE Voice</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-natural)">output</span>
+          <span class="tag" style="color:var(--cat-natural)">W029</span>
+          <span class="difficulty diff-easy">Easy</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE — a personal AI assistant. You just saved the following expense data:
+{"amount": 150, "category": "food", "note": "lunch", "date": "today"}
+
+The running total for today is 430 taka. The monthly total is 3,280 taka.
+
+Respond in NODE's voice: warm, concise, conversational Bangla (mixed with English numbers/words is fine). Do NOT be robotic. Do NOT say "I have successfully saved". Do NOT use bullet points. Keep it to 2-3 sentences max. Use "তুমি" not "আপনি". Always confirm what was saved and share the updated total naturally.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message (context)</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>lunch e 150 taka khoroch</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good NODE voice:
+"Log korlam — lunch 150 taka। Aj mota moti 430 taka khoroch hoyeche।"
+
+✓ Also acceptable:
+"150 taka lunch er khoroch note kore niyechi। Aj 430 taka mota moti — ei mashe ekhon porjonto 3,280।"
+
+✗ Bad (robotic):
+"I have successfully logged your lunch expense of 150 taka. Today's total is 430 taka."
+
+✗ Bad (too formal):
+"আপনার লাঞ্চ খরচ সফলভাবে সংরক্ষণ করা হয়েছে।"
+
+Key: Casual Bangla, "তুমি" register, updated totals shared, no corporate-speak.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Casual Bangla tone</div><div class="desc">Not formal "আপনি" — uses "তুমি" register</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">No robotic phrases</div><div class="desc">No "successfully saved/logged/stored" phrasing</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Totals mentioned naturally</div><div class="desc">Today total (430) included in reply naturally</div></div>
+            <div class="score-criterion"><span class="pts">15</span><div class="label">Brevity</div><div class="desc">2-3 sentences max — not over-explaining</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- N-02 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">N-02</span>
+        <span class="card-title">Exam Confirmation + Missing Field Ask</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-natural)">output</span>
+          <span class="tag" style="color:var(--cat-natural)">W016</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE. You just saved this exam entry:
+{"subject": "Physics", "type": "class_test", "date": "tomorrow", "time": null, "syllabus": "Chapter 3"}
+
+The "time" field is missing. You need to ask for it but through QuestionController — meaning you confirm the save first, then attach ONE question at the end.
+
+Style: casual Bangla. Warm. "তুমি" register. No lists. The question should feel natural, not like a form. Suggest 3 quick reply chips at the end in format: [Chip 1] [Chip 2] [Chip 3]</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message (context)</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>kal physics class test ache chapter 3 theke</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good response:
+"Bujhlam — kal Physics class test, chapter 3 theke। Save korlam।
+Test ta ki sokal e naki bikel e?
+[সকালে] [বিকেলে] [জানি না]"
+
+✓ Key elements:
+1. Confirms what was understood (subject + date + syllabus)
+2. Asks ONE missing field (time) in natural Bangla
+3. Chips are context-appropriate (morning/evening/don't know)
+4. Friendly tone throughout
+
+✗ Bad:
+"Exam saved successfully. Please provide the time for the exam. Options: A) Morning B) Afternoon C) Unknown"</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Confirmation natural</div><div class="desc">What was saved is echoed back casually</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">ONE question only</div><div class="desc">Does not ask multiple questions simultaneously</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Chips provided</div><div class="desc">3 relevant quick-reply options in [bracket] format</div></div>
+            <div class="score-criterion"><span class="pts">15</span><div class="label">Bangla throughout</div><div class="desc">Response is primarily in Bangla, not English</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- N-03 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">N-03</span>
+        <span class="card-title">Empathetic Stress Response</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-natural)">output</span>
+          <span class="tag" style="color:var(--cat-natural)">W076</span>
+          <span class="difficulty diff-hard">Hard</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE — the user's personal quiet companion. You've detected stress signals in the following message. 
+
+Respond with genuine empathy. Rules:
+- Acknowledge the feeling first, don't jump to solutions
+- Do NOT use toxic positivity ("chin up!", "everything will be fine!")
+- Do NOT be robotic ("I detect that you are stressed")
+- Keep it short — 3-4 sentences max
+- Ask ONE gentle open question at the end
+- Use "তুমি" register, casual warm Bangla
+- Do NOT immediately list 5 tips for stress management</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">matha ekdom kaj korche na aj. eto kichhu korte hobe but kichhu e korte parchhi na</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good empathetic response:
+"Ei feeling ta khub koshtoker — sob ekta sange chape ashle brain o jeno freeze hoye jay।
+Ekhon ki shob theke boro chaap ta ki? Amar sthe bolte parba।"
+
+✓ What's right:
+- Validates the feeling ("khub koshtoker")
+- Uses a relatable metaphor (brain freezes)
+- ONE open question — invites sharing, not solution-jumping
+- No list of tips
+- Warm, personal, not clinical
+
+✗ Bad:
+"I understand you are feeling overwhelmed. Here are 5 tips to manage stress:
+1. Take deep breaths
+2. Make a to-do list..."</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Feeling acknowledged first</div><div class="desc">Validation before action — emotional intelligence</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">No toxic positivity</div><div class="desc">No "sab theek hoye jabe" / "chin up" type phrases</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">One open question</div><div class="desc">Gentle follow-up that invites, doesn't interrogate</div></div>
+            <div class="score-criterion"><span class="pts">15</span><div class="label">Brevity + warmth</div><div class="desc">Short, not a lecture. Warm, not clinical.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- N-04 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">N-04</span>
+        <span class="card-title">Morning Briefing Generation</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-natural)">output</span>
+          <span class="tag" style="color:var(--cat-natural)">W058</span>
+          <span class="difficulty diff-hard">Hard</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE's morning briefing generator (W058). Generate a personalized morning message based on the user context below.
+
+Tone: warm, concise, like a friend who knows your day. NOT a news anchor. NOT a corporate assistant.
+Format: flowing natural Bangla prose, 4-6 sentences, no bullet points, no headers.
+Include: most urgent item, today's schedule highlights, one weather note if relevant, one gentle motivational close.
+Language: Bangla primary, numbers/proper nouns in English is fine.
+
+USER CONTEXT:
+- Today: Wednesday, exam day (Chemistry midterm 10am)
+- Tasks: submit CS assignment before 5pm
+- Weather: light rain expected after 2pm
+- Current streak: 5 days study streak</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message (trigger)</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>[Morning brief auto-trigger — 7:30 AM]</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good morning brief:
+"Shubho shokal। Aj boro din — sokal 10 te Chemistry midterm। Ber howar age notes ta ekbar chokh buliye nao।
+Bikel 5 tar moddhe CS assignment ta o joma dite hobe, ei ta mone rakho।
+Dopurer por theke borsha hote pare, chhata niye ber hoyho।
+5 din dhore porchhile — chemistry te o seta dekhiye dao aaj। Shuru koro।"
+
+✓ What's right:
+- Exam is highlighted first (most urgent)
+- Assignment deadline mentioned
+- Weather warning integrated naturally
+- Streak mentioned as encouragement
+- Reads like a friend, not a calendar app
+
+✗ Bad:
+"Good morning! Here is your daily briefing:
+• Chemistry midterm: 10:00 AM
+• CS Assignment due: 5:00 PM
+• Weather: Rain expected after 2 PM"</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">30</span><div class="label">All 4 contexts used</div><div class="desc">Exam, assignment, weather, streak all woven in</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Prose not list</div><div class="desc">No bullet points — flowing conversational text</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Urgency prioritized</div><div class="desc">Exam (most urgent) mentioned first</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Human warmth</div><div class="desc">Feels like a caring companion, not a bot</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- N-05 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">N-05</span>
+        <span class="card-title">NEVER Preference Confirmation</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-natural)">output</span>
+          <span class="tag" style="color:var(--cat-natural)">preference_manager</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE. The user just said they never want to be asked about their prayer times again. You need to:
+1. Save this preference (NEVER state for W011)
+2. Confirm it naturally without being cold or dismissive
+3. Add a gentle note that they can change it anytime
+
+Tone: understanding, warm. Not apologetic-robotic. No "I have noted your preference." Max 2 sentences.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">prayer reminder gulo ar dite hobe na, ami nijei mone rakhi</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good:
+"Thik ache, ar prayer reminder debo na। Pore mone hole shudhu bolo — ebar theke enable kore debo।"
+
+✓ What's right:
+- Affirms decision without being cold ("Thik ache")
+- Notes it can be re-enabled easily
+- Short and respectful
+
+✗ Bad:
+"I have successfully noted your preference to disable prayer reminders. This setting has been saved to preferences.json under worker_states.W011 = 'NEVER'."
+
+✗ Also bad:
+"Oh no, that's unfortunate! Prayer reminders are so helpful! Are you sure?"</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">40</span><div class="label">Respectful acceptance</div><div class="desc">Not questioning or arguing the user's decision</div></div>
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Re-enable note</div><div class="desc">User reminded they can turn it back on</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">No tech-speak</div><div class="desc">No "preference saved" or "NEVER state" exposed to user</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /natural -->
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       CATEGORY 4 — OFFLINE MODE
+       ═══════════════════════════════════════════════════════ -->
+  <div class="category cat-offline section-anchor" id="offline">
+    <div class="cat-header">
+      <span class="cat-badge">04</span>
+      <span class="cat-title">Offline Mode Handling</span>
+      <span class="cat-desc">Does the model correctly simulate W404 offline mode — structured menu, data collection without AI, graceful degradation?</span>
+    </div>
+
+    <!-- O-01 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">O-01</span>
+        <span class="card-title">W404 Menu Generation</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-offline)">offline</span>
+          <span class="tag" style="color:var(--cat-offline)">W404</span>
+          <span class="difficulty diff-easy">Easy</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W404, NODE's offline handler. The AI (Gemini API) just failed — all 5 accounts returned network errors.
+
+Your job: Show the user a friendly offline menu in Bangla. List exactly 5 numbered options — only workers where offline.capable = true.
+
+Available offline workers:
+1. W084 — Note saver
+2. W001 — Reminder setter  
+3. W029 — Expense logger
+4. W020 — View today's schedule
+5. W102 — Timer
+
+Format: Short Bangla explanation of why AI is unavailable, then numbered list, then ask "Konotao korbe?" with number input instruction. Keep the tone calm, not alarming.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Trigger</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>[AI connection failed — all 5 Gemini accounts unreachable — W404 activated]</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good W404 menu:
+"AI ekhon nai (internet connection nai)। Ami tomar sathe achi — ei kaajgulo korte parbo:
+
+1. Note save koro
+2. Reminder jog koro
+3. Khoroch log koro
+4. Aj er schedule dekho
+5. Timer shuru koro
+
+Konotao korbe? (1–5 likho)"
+
+✓ Key elements:
+- Explains AI is unavailable (not "error occurred")
+- Exactly 5 numbered options
+- Options are in user-friendly Bengali, not worker IDs
+- Ends with clear instruction
+- Calm tone — not alarming
+
+✗ Bad: 
+"ERROR: AIRouter returned success:false. Falling back to W404 handler. Available workers with offline.capable=true: W001, W029, W084..."</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Correct 5 options</div><div class="desc">Exactly the 5 offline-capable workers listed</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">User-friendly labels</div><div class="desc">Worker names in plain Bangla, not W001/W029 codes</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Calm tone</div><div class="desc">Not alarming — offline is normal, handled gracefully</div></div>
+            <div class="score-criterion"><span class="pts">15</span><div class="label">Input instruction</div><div class="desc">Clear how to respond (type 1-5)</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- O-02 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">O-02</span>
+        <span class="card-title">Offline Expense Collection — No AI</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-offline)">offline</span>
+          <span class="tag" style="color:var(--cat-offline)">W029</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W029 running in OFFLINE mode (called from W404 after user selected option 3). NO AI is available. Collect expense data through a simple framed text conversation.
+
+Rules:
+- Ask ONE field at a time
+- Use numbered menus for category selection
+- Store responses as you go
+- After collecting all required fields, confirm save
+- Required fields: amount (number), category (menu: 1-Food 2-Transport 3-Study 4-Other)
+- Optional: note (can be skipped)
+
+Current state: Just started — no data collected yet.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User typed</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>3</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">NODE: "Khoroch koto taka?"
+
+[WAITING FOR AMOUNT INPUT]
+
+Then when user types "150":
+NODE: "Category ki?
+1. Food
+2. Transport  
+3. Study
+4. Other"
+
+Then when user types "1":
+NODE: "Kono note ache? (Skip korte Enter dao)"
+
+Then after note/skip:
+NODE: "Save korlam — Food 150 taka। AI firle confirm korbo।"
+
+Key: No AI call anywhere in this flow. Pure sequential question collection. Simple numbered menus.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">35</span><div class="label">One field at a time</div><div class="desc">Not asking amount + category in same message</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">No AI dependency</div><div class="desc">Simple text prompts — no AI inference needed</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Confirmation with AI note</div><div class="desc">"AI firle confirm korbo" — honest about limited mode</div></div>
+            <div class="score-criterion"><span class="pts">15</span><div class="label">Skip option available</div><div class="desc">Optional fields can be skipped</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- O-03 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">O-03</span>
+        <span class="card-title">AI Recovery Notification</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-offline)">offline</span>
+          <span class="tag" style="color:var(--cat-offline)">W404</span>
+          <span class="difficulty diff-easy">Easy</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W404. While in offline mode, the background poll detected that the AI (Gemini) is now back online. Notify the user that full functionality is restored.
+
+Tone: brief, matter-of-fact, slightly warm. Not overly excited. 1-2 sentences. Bangla. Then seamlessly hand back to normal mode by asking if they want to continue.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Trigger</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>[Background AI poll returned success — W404 deactivating]</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good:
+"AI fire esheche — shob kichu akhon normal।
+Ki korbo ekhon?"
+
+✓ Also acceptable:
+"Internet connection fire esheche। Abar full mode e achi। Bol ki dorkar।"
+
+Key: Brief announcement, transition back to normal mode, invite next action.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">50</span><div class="label">Brief recovery message</div><div class="desc">Not a long explanation — just the key fact</div></div>
+            <div class="score-criterion"><span class="pts">50</span><div class="label">Transition to normal</div><div class="desc">Opens door for next command seamlessly</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- O-04 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">O-04</span>
+        <span class="card-title">Offline — Request Not Capable</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-offline)">offline</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W404 in offline mode. User selected option 6 from the menu (not a valid offline option) OR they typed a message that maps to W076 (stress detector) which requires AI and is NOT offline capable.
+
+Handle this gracefully: explain this particular task needs AI, offer to add it to a queue, and remind them of what IS available offline. 1-3 sentences. Bangla.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>6</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good:
+"Ei kaajta AI chodara shombhob na। AI fire ashle kore nebo।
+Ekhon 1-5 er moddhe konotao choose koro।"
+
+Key: Honest about limitation, not apologetic, redirects to available options without listing all 5 again.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">50</span><div class="label">Honest limitation</div><div class="desc">"AI chodara shombhob na" — clear, not making up a workaround</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Redirect to options</div><div class="desc">Reminds user of what they can do</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">No crash/error</div><div class="desc">Graceful handling, not an error message</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /offline -->
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       CATEGORY 5 — MULTI-INTENT PARSING
+       ═══════════════════════════════════════════════════════ -->
+  <div class="category cat-multi section-anchor" id="multi">
+    <div class="cat-header">
+      <span class="cat-badge">05</span>
+      <span class="cat-title">Multi-Intent Message Parsing</span>
+      <span class="cat-desc">Can the model correctly parse ONE message containing MULTIPLE different intents and route/extract each correctly?</span>
+    </div>
+
+    <!-- M-01 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">M-01</span>
+        <span class="card-title">Expenses + Contact in One</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-multi)">multi-intent</span>
+          <span class="difficulty diff-hard">Hard</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE's job_router processing a message with potentially multiple intents. Identify ALL workers that should be called, in priority order.
+
+Return a JSON array of worker IDs to call. Maximum 3 workers. Prioritize the primary intent first.
+
+Worker options: W029 (expense), W042 (contact save), W051 (task), W016 (exam), W001 (reminder), W000 (general)</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">Rahim er kache theke 200 taka rickshaw fare niyechi, ar tar number 01700-123456 save kore rakho</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">["W038", "W042"]
+
+Reasoning:
+- "Rahim er kache theke 200 taka...niyechi" = borrowed 200 taka from Rahim = W038 (loan/borrow tracker, NOT W029 expense)
+- "tar number...save kore rakho" = save phone contact = W042
+
+Order: W038 first (financial data first), W042 second (contact save).
+
+NOTE: W029 would be wrong — "kache theke niyechi" = borrowed, not spent.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">40</span><div class="label">Both intents identified</div><div class="desc">Finance + contact both caught</div></div>
+            <div class="score-criterion"><span class="pts">40</span><div class="label">W038 not W029</div><div class="desc">"kache theke niyechi" = borrowed, critical distinction</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">JSON array returned</div><div class="desc">Correct format with both workers</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M-02 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">M-02</span>
+        <span class="card-title">3 Tasks in One Sentence</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-multi)">multi-intent</span>
+          <span class="tag" style="color:var(--cat-multi)">W051</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W051, NODE's task adder. Extract ALL tasks from the message as a JSON array. Even if mentioned casually in a list. Each task is a separate object.
+
+Fields per task: text (string), due_date (null if not mentioned), priority ("medium" default)</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">kal bank, assignment joma, ar doctor er sathe appointment fix korte hobe</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">[
+  {"text": "Bank e jao", "due_date": "tomorrow", "priority": "medium"},
+  {"text": "Assignment joma dao", "due_date": "tomorrow", "priority": "medium"},
+  {"text": "Doctor er sathe appointment fix koro", "due_date": "tomorrow", "priority": "medium"}
+]
+
+Notes: "kal" modifies ALL three items — all due tomorrow. 3 separate tasks from one casual list. "ar" = "and" signals additional item.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">40</span><div class="label">All 3 tasks extracted</div><div class="desc">Missing any = incomplete extraction</div></div>
+            <div class="score-criterion"><span class="pts">40</span><div class="label">"kal" applied to all 3</div><div class="desc">Due date "tomorrow" on all, not just first</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Actionable text</div><div class="desc">Task texts are action verbs, not just nouns</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M-03 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">M-03</span>
+        <span class="card-title">Expense + Reminder in One</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-multi)">multi-intent</span>
+          <span class="difficulty diff-hard">Hard</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE's multi-intent processor. Identify all intents and the data for each. Return JSON with "intents" array.
+
+Format:
+{
+  "intents": [
+    {"worker": "W0XX", "data": {...extracted data...}},
+    ...
+  ]
+}
+
+Workers available: W029 (expense), W001 (reminder), W051 (task)</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">bikel e medicine kinlam 380 taka, ar rate 9 tar somoy medicine khaoa mone koriye dio</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">{
+  "intents": [
+    {
+      "worker": "W029",
+      "data": {"amount": 380, "category": "other", "note": "medicine purchase", "date": "today"}
+    },
+    {
+      "worker": "W001",
+      "data": {"text": "Medicine khao", "triggerAt": "21:00", "date": "today"}
+    }
+  ]
+}
+
+Notes: "kinlam 380 taka" = bought for 380 = expense W029. "mone koriye dio...9 tar somoy" = remind at 9pm = W001. Two completely different workers from one message.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Both intents found</div><div class="desc">Expense AND reminder both extracted</div></div>
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Correct worker assignments</div><div class="desc">W029 for expense, W001 for reminder</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Time extraction correct</div><div class="desc">"rate 9 tar" → 21:00</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M-04 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">M-04</span>
+        <span class="card-title">Profile Info + Task Combo</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-multi)">multi-intent</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE's job_router. Identify ALL worker IDs needed for this message. Return as JSON array. Order by priority.
+
+Workers: W045 (personal profile saver), W051 (task adder), W016 (exam), W029 (expense), W000 (general)</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">amar blood group O positive, ar kal NID photocopy korte hobe</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">["W045", "W051"]
+
+W045: "amar blood group O positive" = personal profile data = save to profile.json
+W051: "NID photocopy korte hobe" = task with implicit tomorrow deadline = add to todos
+
+Two separate intents, two workers.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">50</span><div class="label">Both workers identified</div><div class="desc">W045 for profile info, W051 for task</div></div>
+            <div class="score-criterion"><span class="pts">50</span><div class="label">Correct workers</div><div class="desc">Not W042 (contact) — blood group is personal profile</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- M-05 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">M-05</span>
+        <span class="card-title">Messy Day Dump</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-multi)">multi-intent</span>
+          <span class="difficulty diff-extreme">Extreme</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE. A user just sent a chaotic "brain dump" message with MANY different pieces of information mixed together. 
+
+Your job: Extract and categorize everything into the appropriate data structures. Return a JSON object with keys for each data type found. Be exhaustive — miss nothing.
+
+Available categories: expenses, tasks, reminders, exams, contacts, notes</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">aj rickshaw 60, lunch 130, bikel 5 te Rafi ke call korte hobe, shombar math test chapter 2, Sumon er number 01800-111222 save koro, ar chemistry assignment joma dite hobe 15 tarikh er moddhe</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output</div>
+          <div class="expected-block">{
+  "expenses": [
+    {"amount": 60, "category": "transport", "note": "rickshaw"},
+    {"amount": 130, "category": "food", "note": "lunch"}
+  ],
+  "reminders": [
+    {"text": "Rafi ke call koro", "triggerAt": "17:00", "date": "today"}
+  ],
+  "exams": [
+    {"subject": "Math", "type": "class_test", "date": "Saturday", "syllabus": "Chapter 2"}
+  ],
+  "contacts": [
+    {"name": "Sumon", "phone": "01800-111222"}
+  ],
+  "tasks": [
+    {"text": "Chemistry assignment joma dao", "due_date": "15th of current month"}
+  ]
+}
+
+5 different data types from one message — all correctly categorized.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Expenses (2)</div><div class="desc">Both rickshaw and lunch extracted</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Reminder</div><div class="desc">Call Rafi at 5pm extracted</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Exam</div><div class="desc">Saturday math test chapter 2</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Contact</div><div class="desc">Sumon + phone number</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Task + deadline</div><div class="desc">Chemistry assignment with 15th deadline</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /multi -->
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       CATEGORY 6 — PROACTIVE INTELLIGENCE
+       ═══════════════════════════════════════════════════════ -->
+  <div class="category cat-proactive section-anchor" id="proactive">
+    <div class="cat-header">
+      <span class="cat-badge">06</span>
+      <span class="cat-title">Proactive Intelligence</span>
+      <span class="cat-desc">Can the model generate contextual, unsolicited insights by combining data from multiple sources?</span>
+    </div>
+
+    <!-- P-01 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">P-01</span>
+        <span class="card-title">Rain Alert + Outdoor Event Combo</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-proactive)">proactive</span>
+          <span class="tag" style="color:var(--cat-proactive)">W078</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W078, NODE's rain alert worker. You have access to these data sources:
+
+SCHEDULE: {"type": "class", "subject": "Physics", "startTime": "15:00", "location": "university", "outdoor": false}
+WEATHER: {"rain_probability_next_3h": 72, "expected_rain_at": "14:30", "condition": "Cloudy"}
+
+Generate a proactive alert if rain is likely BEFORE the user's scheduled activity. 
+Rules: Combine both data sources into ONE natural Bangla message. Mention specific time of event + rain probability. Keep it under 3 sentences. No bullet points.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Trigger</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>[Auto-trigger: 1 hour before scheduled class — weather check activated]</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good proactive alert:
+"Bikel 3 tar Physics class er age 2:30 nage borsha hote pare (72% chance)। Ber howar time chhata niye jao।"
+
+✓ What's right:
+- Mentions both data points (3pm class + 2:30 rain)
+- Gives rain probability
+- Actionable advice (take umbrella)
+- Short and practical
+
+✗ Bad:
+"Weather update: Rain probability is 72% in the next 3 hours. You have a Physics class at 15:00."</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Both data sources used</div><div class="desc">Schedule time + rain probability both in message</div></div>
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Actionable advice</div><div class="desc">Tells user what to do, not just reports weather</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Natural Bangla</div><div class="desc">Reads like a friend's reminder, not a weather app</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- P-02 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">P-02</span>
+        <span class="card-title">Spending Anomaly Detection</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-proactive)">proactive</span>
+          <span class="tag" style="color:var(--cat-multi)">W034</span>
+          <span class="difficulty diff-hard">Hard</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W034, NODE's overspending alert worker. After each expense save, compare to historical averages.
+
+DATA:
+- Today's food spending: 850 taka
+- User's 30-day average daily food spending: 280 taka
+- Threshold: alert if today > 150% of average
+
+If threshold breached, generate a casual non-judgmental alert. Don't make the user feel bad. Just note it as an observation. 2-3 sentences Bangla.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Trigger</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>[After logging: dinner 400 taka — total food today = 850 taka]</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good anomaly alert:
+"Aj food e 850 taka — tomar daily average er theke ektu beshi hoyeche (mota moti 280 taka/day)।
+Special kono occasion chilo ki?"
+
+✓ What's right:
+- States the fact (850 vs 280 average)
+- Non-judgmental — doesn't say "you spent too much"
+- Ends with a curious question, not a lecture
+- Casual tone
+
+✗ Bad:
+"WARNING: Food spending today (850 taka) exceeds 150% of your 30-day average (280 taka). Please review your spending habits."</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Both numbers stated</div><div class="desc">Today's total AND average both mentioned</div></div>
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Non-judgmental tone</div><div class="desc">Observation not scolding — no "you spent too much"</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Curious follow-up</div><div class="desc">Opens dialogue rather than closing with a warning</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- P-03 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">P-03</span>
+        <span class="card-title">Pre-Exam Night Alert</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-proactive)">proactive</span>
+          <span class="tag" style="color:var(--cat-proactive)">W004</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W004, NODE's exam countdown worker. Tonight (9pm) before a tomorrow 10am Physics class test.
+
+EXAM DATA: {subject: "Physics", type: "class_test", date: "tomorrow", time: "10:00", syllabus: "Chapter 3 — Electromagnetic Waves", prep_time_hrs: 2}
+
+Generate the night-before alert. Tone: motivating but calm. Mention syllabus. Suggest prep time. Bangla. 3-4 sentences.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Trigger</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>[Auto-trigger: 9:00 PM — night before Physics exam]</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good night-before alert:
+"Kal sokal 10 te Physics class test ache — chapter 3 theke।
+Aj rate 2 ghonta time dile bhaloi hobe, electromagnetic waves er concept ta clear kore nao।
+Phone charge e diye ghumao — good luck kal!"
+
+✓ Key elements:
+- Tomorrow exam time mentioned
+- Syllabus topic referenced
+- Prep time suggestion (2 hrs from saved data)
+- Phone charge reminder
+- Encouraging close
+
+✗ Bad:
+"Reminder: You have a Physics class test tomorrow at 10:00 AM covering Chapter 3."</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Syllabus mentioned</div><div class="desc">"electromagnetic waves" or "chapter 3" referenced</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Prep time suggested</div><div class="desc">2 hrs from saved data used in message</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Encouraging not alarming</div><div class="desc">Motivating tone, not anxious</div></div>
+            <div class="score-criterion"><span class="pts">15</span><div class="label">Phone charge tip</div><div class="desc">Practical night-before advice included</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- P-04 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">P-04</span>
+        <span class="card-title">Overdue Task Gentle Nudge</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-proactive)">proactive</span>
+          <span class="tag" style="color:var(--cat-proactive)">W060</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W060, NODE's procrastination nudge worker. A task is 2 days overdue.
+
+TASK DATA: {"text": "Bank form joma dao", "due_date": "2 days ago", "overdue": true}
+
+Generate an empathetic nudge. Rules:
+- Do NOT guilt-trip ("you should have done this by now")
+- Offer 3 options: extend deadline, mark done, break into smaller steps
+- Keep it friendly and non-judgmental
+- 3-4 sentences Bangla
+- End with chip options: [আজই করব] [Deadline বাড়াও] [ছোট ছোট করো]</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Trigger</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>[DataCollector: task "Bank form joma dao" 2 days overdue — W060 activated]</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good nudge:
+"Bank form er kaajta 2 din age korbo chilam — ekhono pending ache।
+Kono problem hoyeche ki, naki ektu time dorkar?
+[আজই করব] [Deadline বাড়াও] [ছোট ছোট করো]"
+
+✓ What's right:
+- States the fact without blame
+- Shows curiosity about why it's delayed
+- 3 action options provided as chips
+- Friendly not nagging
+
+✗ Bad:
+"You were supposed to complete 'Bank form joma dao' 2 days ago. This task is overdue. Please complete it immediately."</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">35</span><div class="label">No guilt-tripping</div><div class="desc">Empathetic, curious, not accusatory</div></div>
+            <div class="score-criterion"><span class="pts">35</span><div class="label">3 chip options</div><div class="desc">Done/Extend/Break down — all 3 options present</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Helpful framing</div><div class="desc">Problem-solving framing, not reminder-nagging</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- P-05 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">P-05</span>
+        <span class="card-title">Pattern Detection — Sleep Shift</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-proactive)">proactive</span>
+          <span class="tag" style="color:var(--cat-proactive)">W111</span>
+          <span class="difficulty diff-extreme">Extreme</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W111, NODE's pattern detector. Analyze 14 days of sleep data and produce a SPECIFIC observation — not generic advice.
+
+SLEEP DATA (last 14 days, bedtime):
+Week 1: 11pm, 11:30pm, 11pm, 10:45pm, 11:15pm, 12am, 11pm
+Week 2: 1am, 1:30am, 2am, 12:45am, 1am, 2:30am, 1:15am
+
+Task: Generate a casual Bangla observation about the pattern you see. Specific — use actual times from the data. 2-3 sentences. No generic "you should sleep earlier" advice.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Trigger</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>[Weekly pattern scan — Sunday auto-trigger — W111 analyzing sleep data]</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good specific observation:
+"Ekta pattern dekha jacche — first week e tumi mostly 11 tar aashe pashe ghumachile, but last week e seta 1-2 tar dike shift hoyeche।
+Kono karon ache ki ei shift er? Exam pressure, naki onno kichhu?"
+
+✓ What's right:
+- Uses actual week-over-week data (11pm → 1-2am)
+- SPECIFIC — quotes the actual times
+- Curious not prescriptive — asks why
+- No "you should sleep at 10pm" lecturing
+
+✗ Bad:
+"Pattern detected: Your average bedtime has shifted from 11:08 PM to 1:28 AM over the past 14 days. Recommendation: Return to earlier sleep schedule for better health outcomes."</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">40</span><div class="label">Specific data cited</div><div class="desc">Actual times from data used, not vague "you sleep late"</div></div>
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Curious not prescriptive</div><div class="desc">Asks why, doesn't lecture what to do</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Week comparison</div><div class="desc">Week 1 vs Week 2 contrast clearly visible</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /proactive -->
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       CATEGORY 7 — CONTEXT & MEMORY
+       ═══════════════════════════════════════════════════════ -->
+  <div class="category cat-memory section-anchor" id="memory">
+    <div class="cat-header">
+      <span class="cat-badge">07</span>
+      <span class="cat-title">Context & Memory Injection</span>
+      <span class="cat-desc">Does the model use injected saved data to make AI responses feel personalized and contextually aware?</span>
+    </div>
+
+    <!-- CM-01 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">CM-01</span>
+        <span class="card-title">Contact Lookup from Memory</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-memory)">memory</span>
+          <span class="tag" style="color:var(--cat-memory)">W043</span>
+          <span class="difficulty diff-easy">Easy</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE. You have access to the user's saved contacts:
+
+CONTACTS DATA:
+[
+  {"name": "Rafi bhai", "phone": "01711-234567", "relation": "friend", "notes": ["amar kache 500 taka debe"]},
+  {"name": "Karim", "phone": "01833-456789", "relation": "classmate"},
+  {"name": "Rahim sir", "phone": "01900-111222", "relation": "teacher"}
+]
+
+When user asks for a contact, retrieve from this data and respond naturally in Bangla. If not found, say so honestly.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">Rafi bhai er number ta ki ache?</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good response:
+"Rafi bhai: 01711-234567"
+
+✓ Or slightly richer:
+"Rafi bhai er number: 01711-234567। (Mone rakho, tar kache tomar 500 taka pawa)"
+
+Key: Phone returned instantly from saved data. Optional: shows saved note about them which adds personal context.
+
+✗ Bad:
+"I found a contact matching 'Rafi bhai' in the database. The phone number associated with this contact is 01711-234567."</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">40</span><div class="label">Correct number returned</div><div class="desc">01711-234567 found and returned</div></div>
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Casual Bangla format</div><div class="desc">Not a database lookup result — natural response</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Note bonus</div><div class="desc">Optionally surfaces the saved note (500 taka) for context</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CM-02 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">CM-02</span>
+        <span class="card-title">Today Summary from Injected Context</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-memory)">memory</span>
+          <span class="tag" style="color:var(--cat-memory)">context_memory</span>
+          <span class="difficulty diff-hard">Hard</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE. The user is asking what's happening today. You have this context injected:
+
+TODAY'S DATA:
+- Classes: Physics 10:00-11:00, Math 12:00-13:00
+- Exams: None today
+- Todos (pending): "Bank form joma dao" (overdue), "Call Rafi" (today)
+- Finance today: 430 taka spent so far
+- Reminders: Medicine at 21:00
+
+Respond with a quick, natural Bangla overview of today. Prose, not list. Highlight most important item first. 3-4 sentences max.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">aj ki ki ache?</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good response:
+"Bank form ta overdue ache — seta aj korar cheshta koro।
+Class duto ache: 10 te Physics, 12 te Math। Bikel Rafi ke call korte bholo na।
+Rate 9 te medicine r reminder ache। Aj ekhon porjonto 430 taka khoroch hoyeche।"
+
+✓ Key:
+- Overdue item highlighted first (most urgent)
+- Classes mentioned
+- Today's reminder noted
+- Finance summary included
+- All in flowing Bangla prose (not bullets)
+
+✗ Bad response:
+"Today's Summary:
+• Classes: Physics (10:00), Math (12:00)
+• Todos: Bank form, Call Rafi
+• Reminders: Medicine at 21:00"</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Overdue prioritized</div><div class="desc">Bank form (overdue) mentioned before classes</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">All 5 data points used</div><div class="desc">Classes, todo, reminder, finance all present</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Prose not list</div><div class="desc">No bullet points — natural flowing text</div></div>
+            <div class="score-criterion"><span class="pts">15</span><div class="label">Concise</div><div class="desc">3-4 sentences — not overwhelming</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CM-03 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">CM-03</span>
+        <span class="card-title">Conversation History Reference</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-memory)">memory</span>
+          <span class="difficulty diff-medium">Medium</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE. You have access to the last 5 conversation exchanges:
+
+HISTORY:
+User: "kal physics test ache"
+NODE: "Bujhlam. Kota te?"
+User: "sokal 10 ta te"
+NODE: "Ok, save korlam — Physics test kal 10am chapter 3"
+User: "chhata newa dorkar hobe ki?"
+
+Answer the user's latest question using the conversation history and any available context. You have weather data: rain 60% tomorrow morning.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">chhata newa dorkar hobe ki?</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good response (uses history + weather):
+"Kal sokal borsha 60% chance ache। Physics test er age ber hobe, tai chhata newa bhalo hobe।"
+
+✓ Key:
+- Knows "kal sokal" from the conversation history (exam is tomorrow morning)
+- Weather data combined with exam schedule
+- Practical advice
+
+✗ Bad:
+"I recommend taking an umbrella if you plan to go outside tomorrow."
+(generic — doesn't use the context that they have a morning exam tomorrow)</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">40</span><div class="label">Uses conversation history</div><div class="desc">Knows about exam from previous turns</div></div>
+            <div class="score-criterion"><span class="pts">40</span><div class="label">Weather + schedule combined</div><div class="desc">Both data sources integrated in one answer</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Personalized not generic</div><div class="desc">"kal sokal" for exam time — not just "tomorrow"</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CM-04 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">CM-04</span>
+        <span class="card-title">Memory Search — What Did I Save?</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-memory)">memory</span>
+          <span class="tag" style="color:var(--cat-memory)">W119</span>
+          <span class="difficulty diff-hard">Hard</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W119, NODE's context memory search worker. Search across all saved data for the user's query.
+
+AVAILABLE DATA SNAPSHOT:
+- Notes: "React documentation link saved", "thesis idea: ML for traffic prediction", "Rafi bhai owes 500tk"
+- Contacts: Rafi bhai (friend), Karim (classmate), Rahim sir (teacher)
+- Tasks: Bank form (overdue), Call Rafi (today)
+- Exams: Physics tomorrow 10am
+
+Return relevant matches naturally in Bangla. If multiple, list briefly.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">Rafi bhai bapare ki ki save ache amar kache?</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good search result:
+"Rafi bhai somporkhe je ta ache:
+— Contact e save ache: 01711-234567 (friend)
+— Note: tar kache tomar 500 taka paoa
+— Task: aj take call korte hobe"
+
+✓ Key:
+- Searched across contacts, notes, AND tasks
+- All 3 relevant matches returned
+- Organized but still conversational
+
+✗ Bad:
+"Search results for 'Rafi bhai': Found 3 entries in the database across contacts.json, notes.json, and todos.json."</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Cross-file search</div><div class="desc">Searches contacts, notes, AND tasks — not just one file</div></div>
+            <div class="score-criterion"><span class="pts">35</span><div class="label">All 3 results found</div><div class="desc">Phone + 500tk note + task all returned</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Natural presentation</div><div class="desc">Not a database dump — readable Bangla result</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /memory -->
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       CATEGORY 8 — CONFLICT & EDGE CASES
+       ═══════════════════════════════════════════════════════ -->
+  <div class="category cat-conflict section-anchor" id="conflict">
+    <div class="cat-header">
+      <span class="cat-badge">08</span>
+      <span class="cat-title">Conflict Detection & Edge Cases</span>
+      <span class="cat-desc">Can the model detect scheduling conflicts, handle ambiguous input, and respond gracefully to incomplete or contradictory data?</span>
+    </div>
+
+    <!-- CF-01 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">CF-01</span>
+        <span class="card-title">Schedule Conflict Detection</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-conflict)">conflict</span>
+          <span class="tag" style="color:var(--cat-conflict)">W113</span>
+          <span class="difficulty diff-hard">Hard</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W113, NODE's priority conflict detector. After every schedule save, check for conflicts.
+
+EXISTING SCHEDULE:
+{"subject": "Physics class", "day": "Wednesday", "startTime": "10:00", "endTime": "11:00"}
+{"subject": "Math class", "day": "Wednesday", "startTime": "12:00", "endTime": "13:00"}
+
+The user just tried to save a NEW event:
+{"title": "Doctor appointment", "date": "next Wednesday", "startTime": "10:30", "endTime": "11:30"}
+
+Detect the conflict and alert the user in friendly Bangla. Suggest resolution. 2-3 sentences.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Trigger</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button>[W113 conflict check: new event "Doctor appointment Wednesday 10:30-11:30" vs existing "Physics class Wednesday 10:00-11:00"]</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good conflict alert:
+"Shombar 10:30 e Doctor appointment save korte giyechi, kintu sei same time e Physics class ache (10-11)।
+Appointment ta ektu shorate parbe? [Doctor time change] [Physics miss koro] [Save kori tobe]"
+
+✓ Key:
+- Specific conflict mentioned (10:30 overlaps 10:00-11:00)
+- Offers 3 resolution paths as chips
+- Not just flagging — helping resolve
+
+✗ Bad:
+"CONFLICT DETECTED: New event 'Doctor appointment' (10:30-11:30) overlaps with existing event 'Physics class' (10:00-11:00)."</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">40</span><div class="label">Conflict correctly identified</div><div class="desc">Exact overlap times stated</div></div>
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Resolution options offered</div><div class="desc">3 chips with actionable choices</div></div>
+            <div class="score-criterion"><span class="pts">25</span><div class="label">Natural Bangla alert</div><div class="desc">Not an error message — conversational warning</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CF-02 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">CF-02</span>
+        <span class="card-title">Ambiguous Amount Handling</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-conflict)">conflict</span>
+          <span class="tag" style="color:var(--cat-extract)">extraction</span>
+          <span class="difficulty diff-hard">Hard</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are W029 (expense logger). You received a message where the expense amount is ambiguous — it could be 1500 or 2000. Do NOT guess or invent a number.
+
+Extract what you can, mark amount as null, and ask ONE clarifying question in a natural Bangla way. Include chips with the two possible amounts.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">aj bazar korechi, half hazar ar ekebare 2000 er moto khoroch holo</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good handling:
+"Bazar er khoroch ta save korchi — total koto holo ekebare?
+[1500 taka] [2000 taka] [Other amount]"
+
+Reasoning: "half hazar" = 500, but "ar ekebare 2000 er moto" is ambiguous — does it mean the total was 2000, or 500 + 2000? Don't guess. Ask clearly with chips.
+
+✗ Bad (inventing data):
+{"amount": 2500, "category": "food", "note": "grocery"} — assumed 500+2000 without asking
+
+✗ Also bad:
+Asking 3 questions instead of 1 focused clarification</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">50</span><div class="label">No amount invented</div><div class="desc">Amount not set to any value — asks instead</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Single clear question</div><div class="desc">One question with chips — not multiple questions</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Chips are sensible</div><div class="desc">Options like [1500] [2000] from the message context</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CF-03 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">CF-03</span>
+        <span class="card-title">Contradictory Preference Request</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-conflict)">conflict</span>
+          <span class="tag" style="color:var(--cat-conflict)">preference_manager</span>
+          <span class="difficulty diff-extreme">Extreme</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE's preference manager. The user previously set: "Prayer reminders NEVER". Now they're asking to be reminded for tomorrow's Friday prayer.
+
+This is a JUST_NOW exception — the user wants a one-time exception to a NEVER preference.
+
+Handle this gracefully: honor the request, make the temporary exception clear, offer to permanently re-enable. 2-3 sentences Bangla.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button><span class="bangla">kal Jummah er jonno ekbar reminder diye dio please</span></div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good handling:
+"Thik ache — kal Jummah er jonno ekbar reminder debo।
+Tumi age bollecho prayer reminder ar lagbe na, tai shudhu ei bar debo। Pore shob prayer reminder on korte chaile bolo।"
+
+✓ Key:
+- Honors the one-time request (JUST_NOW state)
+- Gently acknowledges the NEVER preference without being passive-aggressive
+- Offers permanent re-enable without forcing it
+- Warm tone — not bureaucratic
+
+✗ Bad:
+"ERROR: Prayer reminders are set to NEVER. Cannot create this reminder. Please update your preferences first."</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">35</span><div class="label">Request honored</div><div class="desc">One-time reminder created despite NEVER state</div></div>
+            <div class="score-criterion"><span class="pts">35</span><div class="label">NEVER preference acknowledged</div><div class="desc">Notes it's a one-time exception, not permanent change</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Re-enable offer</div><div class="desc">Door opened for permanent change without pressure</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CF-04 -->
+    <div class="test-card">
+      <div class="card-head" onclick="toggle(this)">
+        <span class="card-id">CF-04</span>
+        <span class="card-title">Empty / Meaningless Input</span>
+        <div class="card-tags">
+          <span class="tag" style="color:var(--cat-conflict)">edge case</span>
+          <span class="difficulty diff-easy">Easy</span>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="card-body">
+        <div class="block">
+          <div class="block-label">System Role</div>
+          <div class="role-block">You are NODE's job_router. A user sent a message that has no discernible intent or data to extract. Handle gracefully — do NOT crash, do NOT return an error, do NOT try to force-route to a worker.
+
+Return a natural Bangla response that gently invites the user to share more. 1-2 sentences max.</div>
+        </div>
+        <div class="block">
+          <div class="block-label">User Message</div>
+          <div class="prompt-block"><button class="copy-btn" onclick="copyPrompt(this)">copy</button">hmm"</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Expected Output (example)</div>
+          <div class="expected-block">✓ Good handling:
+"Ha? Kichhu bollena — ki dorkar bolo।"
+
+Or: "Kichhu mone holo naki? Bol।"
+
+Key: Acknowledges the message, invites more. Short. Friendly. Not "Invalid input" or "I don't understand."
+
+✗ Bad:
+"I'm sorry, I didn't understand your message. Please rephrase your request."
+
+✗ Also bad:
+Routing to W000 and generating a 5-sentence general response to "hmm"</div>
+        </div>
+        <div class="block">
+          <div class="block-label">Scoring Criteria</div>
+          <div class="scoring-block">
+            <div class="score-criterion"><span class="pts">50</span><div class="label">No error response</div><div class="desc">Graceful, friendly handling of empty/meaningless input</div></div>
+            <div class="score-criterion"><span class="pts">30</span><div class="label">Invites more</div><div class="desc">Opens conversation — doesn't close it</div></div>
+            <div class="score-criterion"><span class="pts">20</span><div class="label">Brevity</div><div class="desc">1-2 sentences — not over-reacting to "hmm"</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /conflict -->
+
+</main>
+</div><!-- /layout -->
+
+<script>
+  function toggle(el) {
+    const card = el.closest('.test-card');
+    const body = card.querySelector('.card-body');
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    card.classList.toggle('expanded', !isOpen);
+  }
+
+  function expandAll() {
+    document.querySelectorAll('.card-body').forEach(b => b.classList.add('open'));
+    document.querySelectorAll('.test-card').forEach(c => c.classList.add('expanded'));
+  }
+
+  function collapseAll() {
+    document.querySelectorAll('.card-body').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.test-card').forEach(c => c.classList.remove('expanded'));
+  }
+
+  function copyPrompt(btn) {
+    const block = btn.closest('.prompt-block');
+    const text = block.innerText.replace('copy\n','').replace('copy','').trim();
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+
+  // Nav smooth scroll + active state
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

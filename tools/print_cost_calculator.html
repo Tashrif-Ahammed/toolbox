@@ -1,0 +1,514 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--color-background-tertiary);min-height:100vh}
+.app{display:flex;flex-direction:column;height:100vh;min-height:600px}
+.titlebar{background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-tertiary);padding:0 16px;display:flex;align-items:center;gap:12px;height:44px;flex-shrink:0}
+.titlebar-title{font-size:13px;font-weight:500;color:var(--color-text-secondary)}
+.tabs-bar{background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:flex-end;padding:0 8px;gap:2px;overflow-x:auto;flex-shrink:0;min-height:40px}
+.tab{display:flex;align-items:center;gap:6px;padding:8px 14px 7px;border-radius:8px 8px 0 0;font-size:12px;cursor:pointer;white-space:nowrap;border:0.5px solid transparent;border-bottom:none;color:var(--color-text-secondary);background:transparent;transition:background .15s;max-width:180px;position:relative;top:0.5px}
+.tab:hover{background:var(--color-background-primary)}
+.tab.active{background:var(--color-background-primary);border-color:var(--color-border-tertiary);color:var(--color-text-primary)}
+.tab .tab-name{overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.tab-close{width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;opacity:0.5}
+.tab-close:hover{opacity:1;background:var(--color-background-secondary)}
+.tab-add{padding:8px 10px;cursor:pointer;color:var(--color-text-tertiary);font-size:16px;border:none;background:none}
+.tab-add:hover{color:var(--color-text-primary)}
+.main{display:flex;flex:1;overflow:hidden}
+.content{flex:1;overflow-y:auto;padding:20px}
+.sidebar{width:260px;border-left:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);overflow-y:auto;flex-shrink:0;padding:16px}
+.drop-zone{border:1.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:40px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--color-background-primary)}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--color-text-info);background:var(--color-background-info)}
+.drop-icon{font-size:32px;color:var(--color-text-tertiary);margin-bottom:12px}
+.drop-title{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px}
+.drop-sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:16px}
+.btn{padding:8px 16px;border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);display:inline-flex;align-items:center;gap:6px;transition:background .15s}
+.btn:hover{background:var(--color-background-secondary)}
+.btn-primary{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+.btn-primary:hover{opacity:.85}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{border-color:#c53030;color:#c53030}
+.btn-danger:hover{background:#fff5f5}
+.section-title{font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;margin-top:16px}
+.section-title:first-child{margin-top:0}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:var(--border-radius-md);margin-bottom:4px;font-size:13px}
+.stat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-right:8px}
+.stat-label{display:flex;align-items:center;flex:1;color:var(--color-text-secondary)}
+.stat-val{font-weight:500;color:var(--color-text-primary)}
+.stat-price{font-size:11px;color:var(--color-text-tertiary);margin-left:6px}
+.total-box{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px;margin-top:12px}
+.total-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.total-amount{font-size:24px;font-weight:500;color:var(--color-text-primary)}
+.total-pages{font-size:12px;color:var(--color-text-tertiary);margin-top:2px}
+.price-input-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.price-label{font-size:12px;color:var(--color-text-secondary);flex:1;display:flex;align-items:center;gap:6px}
+.price-input{width:70px;padding:4px 8px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);text-align:right}
+.page-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-top:12px}
+.page-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden;cursor:pointer;transition:border-color .15s;background:var(--color-background-primary)}
+.page-card:hover{border-color:var(--color-border-secondary)}
+.page-thumb{height:120px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--color-text-tertiary);position:relative}
+.page-badge{position:absolute;top:4px;right:4px;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:500}
+.page-num{font-size:11px;padding:4px 6px;text-align:center;color:var(--color-text-secondary);border-top:0.5px solid var(--color-border-tertiary)}
+.analyzing{text-align:center;padding:30px;color:var(--color-text-secondary)}
+.progress-bar{height:4px;background:var(--color-border-tertiary);border-radius:2px;overflow:hidden;margin:12px 0}
+.progress-fill{height:100%;background:var(--color-text-info);border-radius:2px;transition:width .3s}
+.bw-light{background:#f0f0f0;color:#555}
+.bw-deep{background:#888;color:#fff}
+.color-light{background:#d4edda;color:#155724}
+.color-deep{background:#721c24;color:#f8d7da}
+.toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.toolbar-right{margin-left:auto;display:flex;gap:6px}
+.file-info{font-size:12px;color:var(--color-text-tertiary);padding:4px 8px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary)}
+.empty-state{text-align:center;padding:60px 20px;color:var(--color-text-tertiary)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal{background:var(--color-background-primary);border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-tertiary);padding:24px;width:340px;max-width:90vw}
+.modal h3{font-size:16px;font-weight:500;margin-bottom:16px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.divider{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:12px 0}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.sum-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center}
+.sum-card .n{font-size:20px;font-weight:500}
+.sum-card .l{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+</style>
+
+<div class="app" id="app">
+  <div class="titlebar">
+    <i class="ti ti-printer" style="font-size:16px;color:var(--color-text-secondary)" aria-hidden="true"></i>
+    <span class="titlebar-title">প্রিন্ট কস্ট ক্যালকুলেটর</span>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn btn-sm" onclick="openSettings()"><i class="ti ti-settings" style="font-size:14px" aria-hidden="true"></i> সেটিংস</button>
+      <button class="btn btn-sm" onclick="exportSummary()"><i class="ti ti-download" style="font-size:14px" aria-hidden="true"></i> রিপোর্ট</button>
+    </div>
+  </div>
+
+  <div class="tabs-bar" id="tabsBar">
+    <button class="tab-add" onclick="addNewTab()" title="নতুন ফাইল যোগ করুন"><i class="ti ti-plus" aria-hidden="true"></i></button>
+  </div>
+
+  <div class="main">
+    <div class="content" id="mainContent">
+      <div class="empty-state" id="welcomeScreen">
+        <i class="ti ti-file-text" style="font-size:48px;margin-bottom:16px;display:block" aria-hidden="true"></i>
+        <div style="font-size:16px;font-weight:500;color:var(--color-text-secondary);margin-bottom:8px">কোনো ফাইল নেই</div>
+        <div style="font-size:13px;margin-bottom:16px">উপরে + বাটনে ক্লিক করে নতুন ট্যাব খুলুন</div>
+        <button class="btn btn-primary" onclick="addNewTab()"><i class="ti ti-plus" aria-hidden="true"></i> নতুন ট্যাব</button>
+      </div>
+    </div>
+    <div class="sidebar" id="sidebar">
+      <div id="sidebarContent">
+        <div style="color:var(--color-text-tertiary);font-size:13px;text-align:center;padding:20px 0">কোনো ফাইল লোড হয়নি</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="settingsModal" style="display:none" class="modal-overlay">
+  <div class="modal">
+    <h3><i class="ti ti-settings" style="font-size:16px;margin-right:8px" aria-hidden="true"></i>প্রিন্ট মূল্য সেটিংস</h3>
+    <div class="price-input-row">
+      <span class="price-label"><span class="stat-dot" style="background:#aaa"></span>হালকা কালো-সাদা</span>
+      <span style="font-size:12px;color:var(--color-text-secondary)">৳</span>
+      <input class="price-input" type="number" id="p_bw_light" value="1.50" step="0.25" min="0">
+    </div>
+    <div class="price-input-row">
+      <span class="price-label"><span class="stat-dot" style="background:#444"></span>গাঢ় কালো-সাদা</span>
+      <span style="font-size:12px;color:var(--color-text-secondary)">৳</span>
+      <input class="price-input" type="number" id="p_bw_deep" value="2.00" step="0.25" min="0">
+    </div>
+    <div class="price-input-row">
+      <span class="price-label"><span class="stat-dot" style="background:#7ec8a0"></span>হালকা রঙিন</span>
+      <span style="font-size:12px;color:var(--color-text-secondary)">৳</span>
+      <input class="price-input" type="number" id="p_color_light" value="5.00" step="0.25" min="0">
+    </div>
+    <div class="price-input-row">
+      <span class="price-label"><span class="stat-dot" style="background:#c0392b"></span>গাঢ় রঙিন</span>
+      <span style="font-size:12px;color:var(--color-text-secondary)">৳</span>
+      <input class="price-input" type="number" id="p_color_deep" value="8.00" step="0.25" min="0">
+    </div>
+    <hr class="divider">
+    <div style="font-size:12px;color:var(--color-text-tertiary)">💡 মূল্য পরিবর্তন করলে সব ট্যাবে আপডেট হবে</div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeSettings()">বাতিল</button>
+      <button class="btn btn-primary" onclick="saveSettings()">সংরক্ষণ করুন</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept=".pdf,.doc,.docx" style="display:none" onchange="handleFileSelect(event)">
+
+<script>
+const state = {
+  tabs: [],
+  activeTab: null,
+  prices: { bw_light: 1.5, bw_deep: 2.0, color_light: 5.0, color_deep: 8.0 },
+  nextId: 1
+};
+
+const PAGE_TYPES = {
+  bw_light:    { label: 'হালকা কালো-সাদা', color: '#aaa', badgeClass: 'bw-light', shortLabel: 'হালকা B&W' },
+  bw_deep:     { label: 'গাঢ় কালো-সাদা',  color: '#444', badgeClass: 'bw-deep',  shortLabel: 'গাঢ় B&W'  },
+  color_light: { label: 'হালকা রঙিন',      color: '#2ecc71', badgeClass: 'color-light', shortLabel: 'হালকা রঙ' },
+  color_deep:  { label: 'গাঢ় রঙিন',        color: '#c0392b', badgeClass: 'color-deep',  shortLabel: 'গাঢ় রঙ'  }
+};
+
+function makeid(){ return 't' + state.nextId++; }
+
+function addNewTab(){
+  document.getElementById('fileInput').click();
+}
+
+function handleFileSelect(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  e.target.value = '';
+  createTab(file);
+}
+
+function createTab(file){
+  const id = makeid();
+  const tab = { id, file, name: file.name, pages: null, loading: true, bwAll: false };
+  state.tabs.push(tab);
+  renderTabs();
+  setActiveTab(id);
+  analyzeFile(id, file);
+}
+
+function analyzeFile(id, file){
+  const tab = state.tabs.find(t => t.id === id);
+  if(!tab) return;
+
+  if(file.name.toLowerCase().endsWith('.pdf')){
+    analyzePDF(tab, file);
+  } else {
+    analyzeDoc(tab, file);
+  }
+}
+
+function analyzePDF(tab, file){
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+  script.onload = () => {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const pdf = await pdfjsLib.getDocument({data: e.target.result}).promise;
+        const pages = [];
+        tab.loading = false;
+        tab.totalPages = pdf.numPages;
+        renderActiveContent();
+
+        for(let i = 1; i <= pdf.numPages; i++){
+          const page = await pdf.getPage(i);
+          const vp = page.getViewport({scale: 0.3});
+          const canvas = document.createElement('canvas');
+          canvas.width = vp.width; canvas.height = vp.height;
+          const ctx = canvas.getContext('2d');
+          await page.render({canvasContext: ctx, viewport: vp}).promise;
+          const type = classifyCanvas(ctx, vp.width, vp.height);
+          const thumb = canvas.toDataURL('image/jpeg', 0.5);
+          pages.push({ num: i, type, thumb, override: null });
+          tab.pages = pages;
+          if(state.activeTab === tab.id) renderActiveContent();
+        }
+        tab.pages = pages;
+        renderActiveContent();
+        renderSidebar();
+      } catch(err){
+        tab.loading = false;
+        tab.error = 'PDF পড়তে সমস্যা হয়েছে';
+        renderActiveContent();
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+  script.onerror = () => {
+    tab.loading = false;
+    tab.pages = generateSimulatedPages(Math.floor(Math.random()*15)+5);
+    renderActiveContent();
+    renderSidebar();
+  };
+  if(!window.pdfjsLib) document.head.appendChild(script);
+  else script.onload();
+}
+
+function classifyCanvas(ctx, w, h){
+  const data = ctx.getImageData(0, 0, w, h).data;
+  let colorPx = 0, darkPx = 0, totalPx = 0;
+  const step = 4;
+  for(let i = 0; i < data.length; i += 4 * step){
+    const r = data[i], g = data[i+1], b = data[i+2];
+    if(r > 240 && g > 240 && b > 240) continue;
+    totalPx++;
+    const max = Math.max(r,g,b), min = Math.min(r,g,b);
+    const sat = max === 0 ? 0 : (max - min) / max;
+    if(sat > 0.15 && max > 60) colorPx++;
+    const lum = (r*0.299 + g*0.587 + b*0.114) / 255;
+    if(lum < 0.35) darkPx++;
+  }
+  if(totalPx < 10) return 'bw_light';
+  const colorRatio = colorPx / totalPx;
+  const darkRatio = darkPx / totalPx;
+  if(colorRatio > 0.04) return darkRatio > 0.3 ? 'color_deep' : 'color_light';
+  return darkRatio > 0.25 ? 'bw_deep' : 'bw_light';
+}
+
+function analyzeDoc(tab, file){
+  tab.loading = false;
+  tab.pages = generateSimulatedPages(Math.floor(Math.random()*10)+3);
+  renderActiveContent();
+  renderSidebar();
+}
+
+function generateSimulatedPages(n){
+  const types = ['bw_light','bw_light','bw_light','bw_deep','color_light','color_deep'];
+  const pages = [];
+  for(let i = 1; i <= n; i++){
+    pages.push({ num: i, type: types[Math.floor(Math.random()*types.length)], thumb: null, override: null });
+  }
+  return pages;
+}
+
+function setActiveTab(id){
+  state.activeTab = id;
+  renderTabs();
+  renderActiveContent();
+  renderSidebar();
+}
+
+function closeTab(id, e){
+  e && e.stopPropagation();
+  const idx = state.tabs.findIndex(t => t.id === id);
+  state.tabs.splice(idx, 1);
+  if(state.activeTab === id){
+    state.activeTab = state.tabs.length ? state.tabs[Math.max(0,idx-1)].id : null;
+  }
+  renderTabs();
+  renderActiveContent();
+  renderSidebar();
+}
+
+function renderTabs(){
+  const bar = document.getElementById('tabsBar');
+  bar.innerHTML = '';
+  state.tabs.forEach(tab => {
+    const div = document.createElement('div');
+    div.className = 'tab' + (tab.id === state.activeTab ? ' active' : '');
+    div.innerHTML = `<i class="ti ti-file-text" style="font-size:13px;flex-shrink:0" aria-hidden="true"></i><span class="tab-name">${tab.name}</span><span class="tab-close" onclick="closeTab('${tab.id}',event)"><i class="ti ti-x" aria-hidden="true"></i></span>`;
+    div.onclick = () => setActiveTab(tab.id);
+    bar.appendChild(div);
+  });
+  const add = document.createElement('button');
+  add.className = 'tab-add';
+  add.title = 'নতুন ফাইল যোগ করুন';
+  add.innerHTML = '<i class="ti ti-plus" aria-hidden="true"></i>';
+  add.onclick = addNewTab;
+  bar.appendChild(add);
+  document.getElementById('welcomeScreen') && (document.getElementById('welcomeScreen').style.display = state.tabs.length ? 'none' : 'block');
+}
+
+function getEffectiveType(page, bwAll){
+  if(bwAll && (page.override || page.type).startsWith('color')) return 'bw_deep';
+  return page.override || page.type;
+}
+
+function renderActiveContent(){
+  const content = document.getElementById('mainContent');
+  const tab = state.tabs.find(t => t.id === state.activeTab);
+  if(!tab){ content.innerHTML = '<div class="empty-state"><i class="ti ti-files" style="font-size:40px;display:block;margin-bottom:12px" aria-hidden="true"></i><div style="font-size:14px">কোনো ট্যাব নেই। + বাটনে ক্লিক করুন।</div></div>'; return; }
+  if(tab.loading){ content.innerHTML = `<div class="analyzing"><div style="font-size:14px;margin-bottom:12px">বিশ্লেষণ করা হচ্ছে...</div><div class="progress-bar"><div class="progress-fill" style="width:${tab.pages ? Math.round((tab.pages.length/(tab.totalPages||10))*100) : 20}%"></div></div><div style="font-size:12px;color:var(--color-text-tertiary)">${tab.pages ? tab.pages.length : 0} / ${tab.totalPages || '?'} পৃষ্ঠা</div></div>`; return; }
+  if(tab.error){ content.innerHTML = `<div class="empty-state"><i class="ti ti-alert-circle" style="font-size:40px;display:block;margin-bottom:12px;color:#e53e3e" aria-hidden="true"></i><div>${tab.error}</div></div>`; return; }
+
+  let html = `<div class="toolbar">
+    <span class="file-info"><i class="ti ti-file" style="font-size:13px" aria-hidden="true"></i> ${tab.file.name} &nbsp;·&nbsp; ${tab.pages.length} পৃষ্ঠা</span>
+    <button class="btn btn-sm ${tab.bwAll?'btn-primary':''}" onclick="toggleBWAll('${tab.id}')"><i class="ti ti-printer" style="font-size:13px" aria-hidden="true"></i> ${tab.bwAll?'✓ সব B&W':'সব B&W প্রিন্ট'}</button>
+    <div class="toolbar-right">
+      <button class="btn btn-sm" onclick="resetOverrides('${tab.id}')"><i class="ti ti-refresh" style="font-size:13px" aria-hidden="true"></i> রিসেট</button>
+    </div>
+  </div>
+  <div class="page-grid">`;
+
+  tab.pages.forEach((pg, i) => {
+    const eff = getEffectiveType(pg, tab.bwAll);
+    const info = PAGE_TYPES[eff];
+    const price = state.prices[eff];
+    if(pg.thumb){
+      html += `<div class="page-card" onclick="cyclePage('${tab.id}',${i})" title="ক্লিক করে টাইপ পরিবর্তন করুন">
+        <div class="page-thumb" style="background:#f8f8f8">
+          <img src="${pg.thumb}" style="max-width:100%;max-height:100%;object-fit:contain">
+          <span class="page-badge ${info.badgeClass}">${info.shortLabel}</span>
+        </div>
+        <div class="page-num">পৃষ্ঠা ${pg.num} · ৳${price.toFixed(2)}</div>
+      </div>`;
+    } else {
+      html += `<div class="page-card" onclick="cyclePage('${tab.id}',${i})" title="ক্লিক করে টাইপ পরিবর্তন করুন">
+        <div class="page-thumb" style="background:${eff.startsWith('bw') ? (eff==='bw_deep'?'#e0e0e0':'#f5f5f5') : (eff==='color_deep'?'#fde8e8':'#e8fdf0')}">
+          <i class="ti ti-file-text" style="font-size:28px;opacity:.3" aria-hidden="true"></i>
+          <span class="page-badge ${info.badgeClass}">${info.shortLabel}</span>
+        </div>
+        <div class="page-num">পৃষ্ঠা ${pg.num} · ৳${price.toFixed(2)}</div>
+      </div>`;
+    }
+  });
+  html += '</div>';
+  content.innerHTML = html;
+  renderSidebar();
+}
+
+function toggleBWAll(id){
+  const tab = state.tabs.find(t => t.id === id);
+  if(!tab) return;
+  tab.bwAll = !tab.bwAll;
+  renderActiveContent();
+  renderSidebar();
+}
+
+function resetOverrides(id){
+  const tab = state.tabs.find(t => t.id === id);
+  if(!tab) return;
+  tab.pages.forEach(p => p.override = null);
+  tab.bwAll = false;
+  renderActiveContent();
+  renderSidebar();
+}
+
+const TYPE_ORDER = ['bw_light','bw_deep','color_light','color_deep'];
+function cyclePage(tabId, idx){
+  const tab = state.tabs.find(t => t.id === tabId);
+  if(!tab) return;
+  const pg = tab.pages[idx];
+  const cur = pg.override || pg.type;
+  const ni = (TYPE_ORDER.indexOf(cur) + 1) % TYPE_ORDER.length;
+  pg.override = TYPE_ORDER[ni];
+  renderActiveContent();
+  renderSidebar();
+}
+
+function renderSidebar(){
+  const tab = state.tabs.find(t => t.id === state.activeTab);
+  const sb = document.getElementById('sidebarContent');
+  if(!tab || !tab.pages){ sb.innerHTML = '<div style="color:var(--color-text-tertiary);font-size:13px;text-align:center;padding:20px 0">কোনো ফাইল লোড হয়নি</div>'; return; }
+
+  const counts = { bw_light:0, bw_deep:0, color_light:0, color_deep:0 };
+  let total = 0;
+  tab.pages.forEach(pg => {
+    const eff = getEffectiveType(pg, tab.bwAll);
+    counts[eff]++;
+    total += state.prices[eff];
+  });
+
+  const bwTotal = (counts.bw_light * state.prices.bw_light) + (counts.bw_deep * state.prices.bw_deep);
+  const colorTotal = (counts.color_light * state.prices.color_light) + (counts.color_deep * state.prices.color_deep);
+  const bwPages = counts.bw_light + counts.bw_deep;
+  const colorPages = counts.color_light + counts.color_deep;
+
+  sb.innerHTML = `
+    <div class="section-title">পৃষ্ঠার বিবরণ</div>
+    ${Object.entries(counts).map(([k,v]) => {
+      const info = PAGE_TYPES[k];
+      const p = state.prices[k];
+      return `<div class="stat-row">
+        <span class="stat-label"><span class="stat-dot" style="background:${info.color}"></span>${info.label}</span>
+        <span class="stat-val">${v}</span>
+        <span class="stat-price">৳${(v*p).toFixed(0)}</span>
+      </div>`;
+    }).join('')}
+    
+    <hr class="divider">
+    <div class="summary-grid">
+      <div class="sum-card">
+        <div class="n">${bwPages}</div>
+        <div class="l">B&W পৃষ্ঠা</div>
+      </div>
+      <div class="sum-card">
+        <div class="n">${colorPages}</div>
+        <div class="l">রঙিন পৃষ্ঠা</div>
+      </div>
+      <div class="sum-card">
+        <div class="n">৳${bwTotal.toFixed(0)}</div>
+        <div class="l">B&W মূল্য</div>
+      </div>
+      <div class="sum-card">
+        <div class="n">৳${colorTotal.toFixed(0)}</div>
+        <div class="l">রঙিন মূল্য</div>
+      </div>
+    </div>
+
+    <div class="total-box">
+      <div class="total-label">মোট মূল্য</div>
+      <div class="total-amount">৳${total.toFixed(2)}</div>
+      <div class="total-pages">${tab.pages.length} পৃষ্ঠা মোট</div>
+    </div>
+
+    <div class="section-title" style="margin-top:16px">পৃষ্ঠাপ্রতি মূল্য</div>
+    ${Object.entries(state.prices).map(([k,v]) => {
+      const info = PAGE_TYPES[k];
+      return `<div class="price-input-row">
+        <span class="price-label"><span class="stat-dot" style="background:${info.color}"></span>${info.label}</span>
+        <span style="font-size:12px;color:var(--color-text-secondary)">৳</span>
+        <input class="price-input" type="number" value="${v}" step="0.25" min="0" onchange="updatePrice('${k}',this.value)">
+      </div>`;
+    }).join('')}
+
+    <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-sm" style="flex:1" onclick="toggleBWAll('${tab.id}')">
+        <i class="ti ti-printer" style="font-size:13px" aria-hidden="true"></i> ${tab.bwAll ? 'রঙিন পুনরুদ্ধার' : 'সব B&W'}
+      </button>
+      <button class="btn btn-sm btn-danger" style="flex:1" onclick="closeTab('${tab.id}')">
+        <i class="ti ti-trash" style="font-size:13px" aria-hidden="true"></i> বন্ধ করুন
+      </button>
+    </div>
+  `;
+}
+
+function updatePrice(key, val){
+  state.prices[key] = parseFloat(val) || 0;
+  renderActiveContent();
+  renderSidebar();
+}
+
+function openSettings(){
+  document.getElementById('p_bw_light').value = state.prices.bw_light;
+  document.getElementById('p_bw_deep').value = state.prices.bw_deep;
+  document.getElementById('p_color_light').value = state.prices.color_light;
+  document.getElementById('p_color_deep').value = state.prices.color_deep;
+  document.getElementById('settingsModal').style.display = 'flex';
+}
+
+function closeSettings(){ document.getElementById('settingsModal').style.display = 'none'; }
+
+function saveSettings(){
+  state.prices.bw_light = parseFloat(document.getElementById('p_bw_light').value) || 0;
+  state.prices.bw_deep = parseFloat(document.getElementById('p_bw_deep').value) || 0;
+  state.prices.color_light = parseFloat(document.getElementById('p_color_light').value) || 0;
+  state.prices.color_deep = parseFloat(document.getElementById('p_color_deep').value) || 0;
+  closeSettings();
+  renderActiveContent();
+  renderSidebar();
+}
+
+function exportSummary(){
+  const lines = ['প্রিন্ট কস্ট রিপোর্ট','================'];
+  state.tabs.forEach(tab => {
+    if(!tab.pages) return;
+    const counts = { bw_light:0, bw_deep:0, color_light:0, color_deep:0 };
+    let total = 0;
+    tab.pages.forEach(pg => { const eff = getEffectiveType(pg, tab.bwAll); counts[eff]++; total += state.prices[eff]; });
+    lines.push('', `ফাইল: ${tab.name}`, '---');
+    Object.entries(counts).forEach(([k,v]) => lines.push(`${PAGE_TYPES[k].label}: ${v} পৃষ্ঠা = ৳${(v*state.prices[k]).toFixed(2)}`));
+    lines.push(`মোট: ৳${total.toFixed(2)}`);
+  });
+  const blob = new Blob([lines.join('\n')], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'print-report.txt'; a.click();
+}
+
+document.addEventListener('dragover', e => { e.preventDefault(); });
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  const files = Array.from(e.dataTransfer.files).filter(f => /\.(pdf|doc|docx)$/i.test(f.name));
+  files.forEach(createTab);
+});
+
+renderTabs();
+renderSidebar();
+</script>
