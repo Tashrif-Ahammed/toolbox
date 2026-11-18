@@ -1,20 +1,7 @@
 {
  "v": 3,
- "updated": "2026-11-18T01:14:34.961Z",
- "tools": [
-  {
-   "id": "profile-manager-redesigned-3",
-   "name": "Claude tracker",
-   "desc": "When u work with tens of chrome profile and claude account to prevent tocken outage , you truely need it.",
-   "icon": "❄️",
-   "category": "tools",
-   "file": "tools/profile_manager_redesigned (3).html",
-   "autoDetected": true,
-   "reviewed": true,
-   "addedAt": 1782104776746,
-   "visibility": "public"
-  }
- ],
+ "updated": "2026-11-18T01:14:43.475Z",
+ "tools": [],
  "archived": [],
  "categories": [
   {
