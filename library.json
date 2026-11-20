@@ -1,6 +1,6 @@
 {
  "v": 3,
- "updated": "2026-11-18T08:57:44.495Z",
+ "updated": "2026-11-20T16:50:02.225Z",
  "tools": [
   {
    "id": "node-question-ui-and-flow-1",
@@ -65,7 +65,7 @@
   "tagline": "Tashrif",
   "announce": "",
   "defaultVisibility": "private",
-  "siteOpen": false
+  "siteOpen": true
  },
  "unlinked": [
   {
